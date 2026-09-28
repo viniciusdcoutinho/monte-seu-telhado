@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4F6F8">
+<title>Monte seu Telhado</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app de uma coluna, altura da tela; casa fixa no topo, conteúdo rola, botão fixo embaixo */
+:root{
+  --p:#0A4DA2; --pSoft:color-mix(in oklab,#0A4DA2 22%,transparent);
+  --ink:#0F1E2E; --muted:#46556A; --ground:#F4F6F8; --line:#DAE1E8; --outer:#DDE3EA;
+  --display:'Bricolage Grotesque','Figtree',system-ui,sans-serif; --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:var(--outer);color:var(--ink);font-family:var(--body);-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button{font-family:inherit;color:inherit}
+#app{height:100%;display:flex;justify-content:center;align-items:center}
+.app{width:100%;max-width:430px;height:100%;position:relative;overflow:hidden;background:var(--ground);display:flex;flex-direction:column}
+@media (min-width:600px) and (min-height:700px){.app{height:min(844px,calc(100% - 40px));border-radius:36px;box-shadow:0 30px 80px rgba(15,30,46,.25),0 0 0 10px #10263F}}
+.h1{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.12;letter-spacing:-0.015em;margin:0;text-wrap:balance}
+.sub{font-size:15px;line-height:1.45;color:var(--muted);margin:0;text-wrap:pretty}
+.screen{display:flex;flex-direction:column;gap:18px;animation:rise .35s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.iconbtn{width:44px;height:44px;border-radius:14px;border:0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(15,30,46,.1);flex-shrink:0}
+.seg{flex:1;height:8px;border-radius:4px;background:#D3DBE3;transition:background .3s}
+.seg.done{background:var(--p)}
+.seg.cur{background:linear-gradient(90deg,var(--p) 50%,#D3DBE3 50%)}
+.stage{margin:4px 16px 0;border-radius:24px;background:#CFE3F5;position:relative;overflow:hidden;flex-shrink:0;transition:height .35s}
+.stage-in{position:absolute;left:50%;top:0;width:358px;transform-origin:top center}
+.cta{width:100%;height:56px;border:0;border-radius:18px;background:var(--p);color:#fff;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .2s;box-shadow:0 6px 16px var(--pSoft)}
+.cta:active{transform:scale(.98)}
+.cta:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.link{background:none;border:0;color:var(--p);font-weight:700;font-size:15px;min-height:44px;padding:0 4px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;align-self:center}
+.opt{position:relative;border:2px solid var(--line);background:#fff;border-radius:22px;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;text-align:left;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:44px}
+.opt:active{transform:scale(.97)}
+.opt.on{border-color:var(--p);box-shadow:0 0 0 4px var(--pSoft)}
+.chk{position:absolute;top:10px;right:10px;width:24px;height:24px;border-radius:12px;background:var(--p);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.4);transition:all .2s}
+.opt.on .chk{opacity:1;transform:scale(1)}
+.ico{width:52px;height:52px;border-radius:16px;background:#EEF3F8;display:flex;align-items:center;justify-content:center;color:var(--p);transition:background .2s,color .2s}
+.opt.on .ico{background:var(--p);color:#fff}
+.otitle{font-weight:700;font-size:16px;line-height:1.2}
+.odesc{font-size:13px;color:#56657A;line-height:1.35}
+.field{width:100%;height:56px;border-radius:16px;border:2px solid #CFD8E1;background:#fff;font-size:20px;font-weight:600;padding:0 16px;letter-spacing:.04em;font-family:inherit;color:var(--ink)}
+.field:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px var(--pSoft)}
+.ok{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:#E3F3EA;color:#155C39;font-size:14px;font-weight:600;animation:rise .3s both}
+.chip{min-height:44px;padding:0 16px;border-radius:14px;border:2px solid var(--line);background:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 30px 10px;margin:0 -20px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.gcard{flex:0 0 290px;scroll-snap-align:center;border-radius:26px;background:#10263F;color:#fff;padding:14px;display:flex;flex-direction:column;gap:12px;border:3px solid #2A4563;animation:deal .5s cubic-bezier(.2,.8,.2,1.2) both}
+.gcard.ideal{border-color:#F29A3F;box-shadow:0 10px 28px rgba(242,154,63,.35)}
+@keyframes deal{from{opacity:0;transform:translateY(30px) rotate(-4deg) scale(.9)}to{opacity:1;transform:none}}
+.badge{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:8px;background:#2A4563;color:#fff}
+.gcard.ideal .badge{background:#F29A3F;color:#1F1200}
+.bar{height:8px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:#F5A650;animation:grow .8s .2s ease-out both;transform-origin:left}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.dot{width:44px;height:44px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.dot i{width:8px;height:8px;border-radius:4px;background:#B9C4CF;transition:all .25s}
+.dot.on i{width:22px;background:var(--p)}
+.sw{background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0;font-size:14px;font-weight:600;min-height:44px}
+.sw .ring{width:68px;height:68px;border-radius:34px;padding:5px;border:3px solid transparent;transition:border-color .2s,transform .2s;display:block}
+.sw.on .ring{border-color:var(--p);transform:scale(1.06)}
+.sw .fill{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 -6px 0 rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.12)}
+.tip{display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:16px;background:#FFF3E3;color:#6B3A00;font-size:14px;line-height:1.4;animation:rise .3s both}
+.seal{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:8px;background:#FFE1BF;color:#7A3D00;text-transform:uppercase}
+.extra{font-weight:800;font-size:15px;white-space:nowrap;text-align:right}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.shape.wide{grid-column:span 2;flex-direction:row;align-items:center}
+.stepper{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;padding:10px;border:2px solid var(--line)}
+.stepper .mid{flex-grow:1;text-align:center;display:flex;flex-direction:column}
+.stepper .lbl{font-size:13px;font-weight:700;color:#56657A}
+.sbtn{width:52px;height:52px;border-radius:16px;border:0;background:#EEF3F8;color:var(--p);font-size:26px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s;touch-action:manipulation}
+.sbtn:active{transform:scale(.92);background:var(--pSoft)}
+.seg3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.slope{border:2px solid var(--line);background:#fff;border-radius:16px;min-height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:700;cursor:pointer;color:#34435A}
+.slope.on{border-color:var(--p);color:var(--p);box-shadow:0 0 0 3px var(--pSoft)}
+.result{border-radius:22px;background:#10263F;color:#fff;padding:18px;display:flex;flex-direction:column;gap:4px}
+.big{font-family:var(--display);font-size:30px;font-weight:800;line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.tag{position:absolute;min-height:44px;padding:0 12px;font-size:13px!important;border-radius:22px;border:2px solid var(--p);background:#fff;color:var(--p);font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 4px 10px rgba(15,30,46,.15);transition:background .2s,color .2s}
+.tag.on{background:var(--p);color:#fff;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--pSoft)}50%{box-shadow:0 0 0 8px transparent}}
+.kitrow{display:flex;gap:14px;align-items:flex-start;padding:14px;border-radius:18px;background:#fff;border:2px solid var(--line);cursor:pointer;transition:all .2s;position:relative}
+.kitrow.on{border-color:#BFD2E6}
+.kitrow.off{background:#F7F8FA;border-style:dashed}
+.kitrow.off .otitle,.kitrow.off .odesc{opacity:.6}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.box{width:28px;height:28px;border-radius:9px;border:2px solid #B5C1CD;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;color:transparent}
+.kitrow.on .box{background:var(--p);border-color:var(--p);color:#fff}
+.kitrow:focus-within{box-shadow:0 0 0 4px var(--pSoft)}
+.warn{display:flex;gap:10px;padding:12px 14px;border-radius:14px;background:#FFF3E3;color:#6B3A00;font-size:14px;line-height:1.4;animation:rise .25s both}
+.complete{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:#E3F3EA;color:#155C39;font-weight:800;animation:pop .45s both}
+@keyframes pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
+.sum{background:#fff;border-radius:22px;border:2px solid var(--line);overflow:hidden}
+.sumhead{width:100%;min-height:56px;border:0;background:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:16px;font-weight:700;cursor:pointer}
+.chev{transition:transform .25s}
+.chev.open{transform:rotate(180deg)}
+.line{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.35;font-variant-numeric:tabular-nums}
+.muted{color:#56657A}
+.line>:last-child{white-space:nowrap}
+.result .big{font-size:28px}
+.sec{min-height:48px;border-radius:16px;border:2px solid #CBD5DF;background:#fff;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:0 8px}
+.fade{transition:opacity .45s}
+.roof{transition:fill .5s}
+.houseB{transform-box:fill-box;transform-origin:center}
+.houseB.pop{animation:pop .6s both}
+.conf{position:absolute;top:-20px;width:9px;height:15px;border-radius:2px;animation:fall 2.8s ease-in both;pointer-events:none}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(620deg);opacity:.3}}
+.toast{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px;border-radius:14px;background:#E3F3EA;color:#155C39;font-weight:700;animation:pop .4s both}
+.ctabar{position:absolute;left:0;right:0;bottom:0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));background:var(--ground);box-shadow:0 -8px 24px rgba(15,30,46,.08)}
+.scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:20px 20px 130px;-webkit-overflow-scrolling:touch}
+button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px)}</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+class DCLogic {
+  constructor() { this.props = {}; this.state = {}; }
+  setState(p) { this.state = Object.assign({}, this.state, p); scheduleRender(); }
+}
+class Component extends DCLogic {
+  st(k, blank, demo) {
+    const s = this.state || {};
+    if (s[k] !== undefined) return s[k];
+    return Number(this.props.startStep || 0) > 0 ? demo : blank;
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const start = Number(this.props.startStep || 0);
+    const step = s.step !== undefined ? s.step : start;
+    const accent = this.props.accent || '#0A4DA2';
+    const set = (p) => self.setState(p);
+    const go = (n) => set({ step: n, alertKey: null });
+    const f1 = (n) => n.toFixed(1);
+    const nf = (n, d) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const money = (n) => 'R$ ' + nf(n, 2);
+
+    // CEP e fábrica
+    const cep = this.st('cep', '', '75132-000');
+    const digits = cep.replace(/\D/g, '');
+    const cepOk = digits.length === 8;
+    const p2 = parseInt(digits.slice(0, 2) || '0', 10);
+    let fab = 'Anápolis (GO)', dias = 4;
+    if (p2 >= 78 && p2 <= 79) { fab = 'Várzea Grande (MT)'; dias = 5; }
+    else if (p2 >= 80) { fab = 'Araquari (SC)'; dias = 5; }
+    else if (p2 >= 66 && p2 <= 69) { fab = 'Várzea Grande (MT)'; dias = 12; }
+    else if (p2 >= 50 && p2 <= 56) { fab = 'Vitória de Santo Antão (PE)'; dias = 5; }
+    else if (p2 >= 40 && p2 <= 65) { fab = 'Vitória de Santo Antão (PE)'; dias = 8; }
+    else if (p2 >= 20 && p2 <= 39) { fab = 'Cambuí (MG)'; dias = 5; }
+    else if (p2 >= 1 && p2 <= 19) { fab = 'Cambuí (MG)'; dias = 4; }
+    const onCep = (e) => {
+      const d = String(e.target.value).replace(/\D/g, '').slice(0, 8);
+      set({ cep: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d });
+    };
+
+    // Telhas
+    const TELHAS = [
+      { id: 'trap', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, silencio: 4, preco: 4, base: 119, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
+      { id: 'colonial', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, silencio: 4, preco: 3, base: 149, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
+      { id: 'ond', nome: 'Telha Térmica Ondulada', curto: 'Ondulada', desc: 'Leve, simples de instalar e cabe no bolso.', termico: 3, silencio: 3, preco: 5, base: 99, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
+    ];
+    const area = this.st('area', null, 'casa');
+    const prios = this.st('prios', [], ['fresca', 'silencio']);
+    const revealed = s.revealed !== undefined ? s.revealed : Number(this.props.startReveal || 0) > 0;
+    const has = (k) => prios.indexOf(k) >= 0;
+    const score = (t) => (has('fresca') ? t.termico : 0) + (has('silencio') ? t.silencio : 0) + (has('preco') ? t.preco * 1.3 : 0) + (has('colonial') && t.id === 'colonial' ? 10 : 0) + (t.id === 'trap' ? 0.5 : 0);
+    const ordered = TELHAS.slice().sort((a, b) => score(b) - score(a));
+    const cardIdx = s.cardIdx || 0;
+    const telhaId = s.telha || (start > 0 ? 'trap' : ordered[0].id);
+    const telha = TELHAS.find((t) => t.id === telhaId) || TELHAS[0];
+
+    const COLORS = [
+      { id: 'branco', nome: 'Branco', hex: '#EEF1F3' },
+      { id: 'cinza', nome: 'Cinza claro', hex: '#AEB7C0' },
+      { id: 'grafite', nome: 'Grafite', hex: '#454D57' },
+      { id: 'terracota', nome: 'Terracota', hex: '#B5523B' },
+      { id: 'azul', nome: 'Azul', hex: '#2F5E8C' },
+      { id: 'verde', nome: 'Verde', hex: '#4F7A5A' }
+    ];
+    const colorId = s.color || (telha.id === 'colonial' ? 'terracota' : 'grafite');
+    const color = COLORS.find((c) => c.id === colorId) || COLORS[2];
+    const roofHex = step >= 3 ? color.hex : '#9AA5B1';
+
+    const COMF = [
+      { id: 'bom', nome: 'Bom', mm: '30 mm', desc: 'Para garagens, varandas e áreas abertas.', extraV: 0, level: 0.35 },
+      { id: 'melhor', nome: 'Melhor', mm: '50 mm', desc: 'Ideal para quartos, salas e cozinha.', extraV: 18, level: 0.68, rec: true },
+      { id: 'max', nome: 'Máximo', mm: '80 mm', desc: 'Para regiões muito quentes ou ambientes com ar-condicionado.', extraV: 39, level: 1 }
+    ];
+    const comfortId = s.comfort || 'melhor';
+    const comfort = COMF.find((c) => c.id === comfortId);
+    const tk = step >= 4 ? ({ bom: 5, melhor: 8, max: 11 })[comfortId] : 5;
+
+    const shape = this.st('shape', null, '2');
+    const hs = shape ? (shape === '1' ? '1' : '2') : (area === 'gourmet' ? '1' : '2');
+    const DIMS = { casa: [9, 7], gourmet: [4, 6], galpao: [12, 20], comercio: [8, 12] };
+    const dims = DIMS[area || 'casa'];
+    const w = s.w !== undefined ? s.w : dims[0];
+    const l = s.l !== undefined ? s.l : dims[1];
+    const SLOPES = [
+      { id: 'reto', nome: 'Quase reto', v: 0.10, k: 5 },
+      { id: 'medio', nome: 'Médio', v: 0.15, k: 10 },
+      { id: 'inclinado', nome: 'Bem inclinado', v: 0.25, k: 18 }
+    ];
+    const slopeId = s.slope || 'medio';
+    const sv = SLOPES.find((x) => x.id === slopeId).v;
+    const focus = s.focus || 'w';
+    const knowSize = !!s.knowSize;
+    const kLen = s.kLen !== undefined ? s.kLen : 5.2;
+    const kQty = s.kQty !== undefined ? s.kQty : 14;
+
+    // Cálculo das telhas (largura útil 1,00 m, beiral 0,60 m)
+    const aguas = hs === '1' ? 1 : 2;
+    const cosA = 1 / Math.sqrt(1 + sv * sv);
+    const run = (hs === '1' ? w : w / 2) + 0.6;
+    const autoLen = Math.ceil((run / cosA) * 10 - 1e-6) / 10;
+    const autoQty = Math.ceil(l - 1e-6) * aguas;
+    const tLen = knowSize ? kLen : autoLen;
+    const tQty = knowSize ? kQty : autoQty;
+    const areaM2 = tQty * tLen;
+
+    // Kit
+    const kit = s.kit || { cumeeira: true, rufos: true, parafusos: true, vedacao: true };
+    const alertKey = s.alertKey || null;
+    const KIT = [
+      { id: 'cumeeira', nome: aguas === 2 ? 'Cumeeira' : 'Rufo de topo', desc: aguas === 2 ? 'Fecha o encontro das duas águas lá no alto' : 'Fecha o lado mais alto do telhado', qty: Math.ceil(l), un: 'peças', unit: 89, alert: 'Sem ela, a chuva pode entrar pelo topo do telhado. Tem certeza?' },
+      { id: 'rufos', nome: 'Rufos laterais', desc: 'Acabamento das bordas, protege as paredes', qty: Math.ceil((tLen * aguas * 2) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode escorrer pela parede e manchar.' },
+      { id: 'parafusos', nome: 'Parafusos com vedação', desc: 'Prendem as telhas com firmeza', qty: Math.ceil((areaM2 * 3) / 50) * 50, un: 'unidades', unit: 0.85, alert: 'As telhas precisam de parafusos próprios. Se você já tem, tudo bem!' },
+      { id: 'vedacao', nome: 'Fita de vedação', desc: 'Evita goteiras nas emendas', qty: Math.max(1, Math.ceil(tQty / 6)), un: 'rolos', unit: 49, alert: 'Sem vedação, podem aparecer goteiras nas emendas.' }
+    ];
+    const kitItems = KIT.map((k) => ({
+      nome: k.nome, desc: k.desc, alert: k.alert, on: !!kit[k.id],
+      cls: kit[k.id] ? 'kitrow on' : 'kitrow off',
+      qtyTxt: k.qty + ' ' + k.un,
+      price: money(k.qty * k.unit),
+      total: kit[k.id] ? k.qty * k.unit : 0,
+      showAlert: alertKey === k.id && !kit[k.id],
+      toggle: () => { const nk = Object.assign({}, kit); nk[k.id] = !kit[k.id]; set({ kit: nk, alertKey: kit[k.id] ? k.id : null }); }
+    }));
+    const kitComplete = kitItems.every((k) => k.on);
+    const acess = kitItems.reduce((a, k) => a + k.total, 0);
+    const precoM2 = telha.base + comfort.extraV;
+    const telhasV = areaM2 * precoM2;
+    const frete = 290 + dias * 25;
+    const total = telhasV + acess + frete;
+
+    // Casa 3D (isométrica) — evolui a cada escolha
+    const roofOp = 1;
+    const acc = step >= 7;
+    const stageH = step === 6 ? 230 : 200;
+    const mg = 2.4;
+    const span = w + l + 4 * mg;
+    const sc = Math.min(11, 330 / (span * 0.866), (stageH - 96) / (span * 0.5));
+    const btype = area || 'casa';
+    const isOpen = btype === 'gourmet';
+    const WH = ({ casa: 2.8, gourmet: 2.6, galpao: 5, comercio: 3.5 })[btype];
+    const hk = Math.max(6, sc * 1.45);
+    const wallH = WH * hk;
+    const rise = Math.max(6, (hs === '1' ? w : w / 2) * sv * sc * 1.7);
+    const tkp = step >= 4 ? ({ bom: 3, melhor: 5, max: 7 })[comfortId] : 3;
+    const X0 = 179 - (l - w) * 0.866 * sc / 2;
+    const Y0 = stageH - 20 - mg * sc;
+    const pr = (x, y, h) => ({ x: X0 + (y - x) * 0.866 * sc, y: Y0 - (x + y) * 0.5 * sc - (h || 0) });
+    const pts = (arr) => arr.map((p) => f1(p.x) + ',' + f1(p.y)).join(' ');
+    const L2 = (p, q) => 'M' + f1(p.x) + ' ' + f1(p.y) + ' L' + f1(q.x) + ' ' + f1(q.y) + ' ';
+    const circ = (p, r) => 'M' + f1(p.x - r) + ' ' + f1(p.y) + ' a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(2 * r) + ' 0 a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(-2 * r) + ' 0 ';
+    const dn = (p) => ({ x: p.x, y: p.y + 10 });
+    const g00 = pr(-mg, -mg), gw0 = pr(w + mg, -mg), g0l = pr(-mg, l + mg), gwl = pr(w + mg, l + mg);
+    const platTop = pts([g00, gw0, gwl, g0l]);
+    const platR = pts([g00, gw0, dn(gw0), dn(g00)]);
+    const platL = pts([g00, g0l, dn(g0l), dn(g00)]);
+    let grassD = '';
+    for (let i = 1; i < 6; i++) { const t = i / 6; grassD += L2(pr(-mg + t * (w + 2 * mg), -mg), pr(-mg + t * (w + 2 * mg) - 0.8, -mg + 0.5)); }
+
+    const H = wallH;
+    const ribN = Math.max(4, Math.round(l * ({ trap: 2.2, colonial: 3.6, ond: 4.6 })[telha.id]));
+    let wallL, wallF, gable = '', roofA, roofB = '', bandF, bandS, ribs = '', cumD, rufD, vedD, roofOutline;
+    let screwD = '';
+    if (hs === '1') {
+      const hA = H + rise, hB = H;
+      wallL = pts([pr(0, 0, 0), pr(0, l, 0), pr(0, l, hA), pr(0, 0, hA)]);
+      wallF = pts([pr(0, 0, 0), pr(w, 0, 0), pr(w, 0, hB), pr(0, 0, hA)]);
+      roofA = pts([pr(0, 0, hA + tkp), pr(0, l, hA + tkp), pr(w, l, hB + tkp), pr(w, 0, hB + tkp)]);
+      roofOutline = roofA;
+      bandF = pts([pr(0, 0, hA), pr(w, 0, hB), pr(w, 0, hB + tkp), pr(0, 0, hA + tkp)]);
+      bandS = pts([pr(0, 0, hA), pr(0, l, hA), pr(0, l, hA + tkp), pr(0, 0, hA + tkp)]);
+      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * l, hA + tkp), pr(w, t * l, hB + tkp)); }
+      cumD = L2(pr(0, 0, hA + tkp), pr(0, l, hA + tkp));
+      rufD = L2(pr(0, 0, hA + tkp), pr(w, 0, hB + tkp));
+      vedD = L2(pr(w, 0, hB + tkp), pr(w, l, hB + tkp));
+      [0.2, 0.5, 0.8].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * w, v * l, hA + (hB - hA) * u + tkp), 1.4); });
+    } else {
+      const top = H + rise;
+      wallL = pts([pr(0, 0, 0), pr(0, l, 0), pr(0, l, H), pr(0, 0, H)]);
+      wallF = pts([pr(0, 0, 0), pr(w, 0, 0), pr(w, 0, H), pr(0, 0, H)]);
+      gable = pts([pr(0, 0, H), pr(w, 0, H), pr(w / 2, 0, top)]);
+      const R1 = pr(w / 2, 0, top + tkp), R2 = pr(w / 2, l, top + tkp);
+      roofA = pts([pr(0, 0, H + tkp), pr(0, l, H + tkp), R2, R1]);
+      roofB = pts([pr(w, 0, H + tkp), pr(w, l, H + tkp), R2, R1]);
+      roofOutline = pts([pr(0, 0, H + tkp), pr(0, l, H + tkp), R2, pr(w, l, H + tkp), pr(w, 0, H + tkp), R1]);
+      bandF = pts([pr(0, 0, H), pr(w / 2, 0, top), pr(w, 0, H), pr(w, 0, H + tkp), R1, pr(0, 0, H + tkp)]);
+      bandS = pts([pr(0, 0, H), pr(0, l, H), pr(0, l, H + tkp), pr(0, 0, H + tkp)]);
+      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * l, H + tkp), pr(w / 2, t * l, top + tkp)) + L2(pr(w, t * l, H + tkp), pr(w / 2, t * l, top + tkp)); }
+      cumD = L2(R1, R2);
+      const e0 = pr(0, 0, H + tkp), e1 = pr(w, 0, H + tkp);
+      rufD = 'M' + f1(e0.x) + ' ' + f1(e0.y) + ' L' + f1(R1.x) + ' ' + f1(R1.y) + ' L' + f1(e1.x) + ' ' + f1(e1.y);
+      vedD = L2(pr(0, 0, H + tkp), pr(0, l, H + tkp));
+      [0.3, 0.7].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * w / 2, v * l, H + rise * u + tkp), 1.4); });
+    }
+    // Detalhes por tipo de obra
+    const onX = (y0, y1, h0, h1) => pts([pr(0, y0, h0 * hk), pr(0, y1, h0 * hk), pr(0, y1, h1 * hk), pr(0, y0, h1 * hk)]);
+    const onY = (x0, x1, h0, h1) => pts([pr(x0, 0, h0 * hk), pr(x1, 0, h0 * hk), pr(x1, 0, h1 * hk), pr(x0, 0, h1 * hk)]);
+    const poly = (arr) => 'M' + arr.map((p) => f1(p.x) + ' ' + f1(p.y)).join(' L') + ' Z ';
+    const box = (x0, x1, y0, y1, h0, h1) => ({
+      top: poly([pr(x0, y0, h1 * hk), pr(x1, y0, h1 * hk), pr(x1, y1, h1 * hk), pr(x0, y1, h1 * hk)]),
+      fx: poly([pr(x0, y0, h0 * hk), pr(x0, y1, h0 * hk), pr(x0, y1, h1 * hk), pr(x0, y0, h1 * hk)]),
+      fy: poly([pr(x0, y0, h0 * hk), pr(x1, y0, h0 * hk), pr(x1, y0, h1 * hk), pr(x0, y0, h1 * hk)])
+    });
+    const joinBoxes = (bs) => ({ top: bs.map((b) => b.top).join(''), fx: bs.map((b) => b.fx).join(''), fy: bs.map((b) => b.fy).join('') });
+    let door = '', win1 = '', win2 = '', featD = '', awning = '', awningD = '', doorFill = '#6E4B35';
+    let pilB = { top: '', fx: '', fy: '' }, pilF = { top: '', fx: '', fy: '' }, car = { top: '', fx: '', fy: '' };
+    if (btype === 'casa') {
+      const dy = 0.35 * l, wy = 0.74 * l;
+      door = onX(dy - 0.45, dy + 0.45, 0, 2.1);
+      win1 = onX(wy - 0.6, wy + 0.6, 1.0, 2.0);
+      win2 = onY(0.5 * w - 0.6, 0.5 * w + 0.6, 1.0, 2.0);
+    } else if (btype === 'galpao') {
+      doorFill = '#8E99A4';
+      const x0 = 0.28 * w, x1 = 0.72 * w, dh = Math.min(4, WH - 0.6);
+      door = onY(x0, x1, 0, dh);
+      for (let h = 0.4; h < dh; h += 0.4) featD += L2(pr(x0, 0, h * hk), pr(x1, 0, h * hk));
+      win1 = onX(0.08 * l, 0.92 * l, WH - 1.4, WH - 0.5);
+      for (let y = 0.08 * l + 2; y < 0.92 * l; y += 2) featD += L2(pr(0, y, (WH - 1.4) * hk), pr(0, y, (WH - 0.5) * hk));
+    } else if (btype === 'comercio') {
+      doorFill = '#1F3347';
+      win2 = onY(0.12 * w, 0.88 * w, 0.1, 2.5);
+      door = onY(0.42 * w, 0.58 * w, 0, 2.3);
+      [0.27, 0.73].forEach((f) => { featD += L2(pr(f * w, 0, 0.1 * hk), pr(f * w, 0, 2.5 * hk)); });
+      win1 = onX(0.35 * l, 0.65 * l, 1.0, 2.2);
+      const a0 = pr(0.06 * w, 0, 2.9 * hk), a1 = pr(0.94 * w, 0, 2.9 * hk), a2 = pr(0.94 * w, -1.1, 2.3 * hk), a3 = pr(0.06 * w, -1.1, 2.3 * hk);
+      awning = pts([a0, a1, a2, a3]);
+      const n = 8;
+      for (let i = 0; i < n; i += 2) {
+        const t0 = 0.06 + 0.88 * i / n, t1 = 0.06 + 0.88 * (i + 1) / n;
+        awningD += poly([pr(t0 * w, 0, 2.9 * hk), pr(t1 * w, 0, 2.9 * hk), pr(t1 * w, -1.1, 2.3 * hk), pr(t0 * w, -1.1, 2.3 * hk)]);
+      }
+    } else {
+      const p = 0.3, ph = hs === '1' ? (H + rise) / hk : WH;
+      const phB = WH;
+      pilB = joinBoxes([box(w - p, w, l - p, l, 0, phB), box(w - p, w, 0, p, 0, phB), box(0, p, l - p, l, 0, ph)]);
+      pilF = joinBoxes([box(0, p, 0, p, 0, ph)]);
+      const cx = w / 2, cy = Math.max(2.3, l / 2);
+      car = joinBoxes([box(cx - 0.9, cx + 0.9, cy - 2.1, cy + 2.1, 0.25, 0.95), box(cx - 0.75, cx + 0.75, cy - 1.1, cy + 0.9, 0.95, 1.5)]);
+    }
+    if (isOpen) { wallL = ''; wallF = ''; gable = ''; }
+
+    const tree = (x, y) => {
+      const b = pr(x, y, 0), th = 1.1 * hk, r = 0.85 * sc;
+      return {
+        trunk: 'M' + f1(b.x - 1.8) + ' ' + f1(b.y) + ' h3.6 v' + f1(-th) + ' h-3.6 Z ',
+        canopy: circ({ x: b.x, y: b.y - th - r * 0.55 }, r) + circ({ x: b.x - r * 0.6, y: b.y - th }, r * 0.72) + circ({ x: b.x + r * 0.6, y: b.y - th - r * 0.1 }, r * 0.72)
+      };
+    };
+    const tb = [tree(w + 1.5, l * 0.5), tree(w * 0.3, l + 1.4)];
+    const tf = [tree(w + 1.1, -1.3), tree(-1.5, l + 0.5)];
+    const trunkBackD = tb.map((t) => t.trunk).join(''), canopyBackD = tb.map((t) => t.canopy).join('');
+    const trunkFrontD = tf.map((t) => t.trunk).join(''), canopyFrontD = tf.map((t) => t.canopy).join('');
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const measureD = L2(pr(0, -0.9, 0), pr(w, -0.9, 0)) + L2(pr(-0.9, 0, 0), pr(-0.9, l, 0));
+    const midW = pr(w / 2, -0.9, 0), midL = pr(-0.9, l / 2, 0);
+    const tagW = { cls: focus === 'w' ? 'tag on' : 'tag', left: f1(clamp(midW.x - 110, 6, 40)), top: f1(clamp(midW.y - 8, 6, stageH - 50)) };
+    const tagL = { cls: focus === 'l' ? 'tag on' : 'tag', left: f1(clamp(midL.x - 30, 150, 358 - 196)), top: f1(clamp(midL.y - 8, 6, stageH - 50)) };
+    const mirrorT = (s.mirror && step !== 6) ? 'translate(358 0) scale(-1 1)' : 'translate(0 0)';
+
+    // Progresso
+    const NAMES = ['Área', 'Telha', 'Conforto', 'Medidas', 'Kit', 'Pronto'];
+    const phase = [0, 1, 2, 2, 3, 4, 4, 5, 6][step];
+    const segs = NAMES.map((n, i) => ({ cls: (i < phase - 1 || step === 8) ? 'seg done' : (i === phase - 1 ? 'seg cur' : 'seg') }));
+    const phaseLabel = step === 0 ? 'Obra · vamos começar' : (step === 8 ? 'Obra concluída' : 'Obra · ' + NAMES[phase - 1]);
+    const phaseCount = phase + '/6';
+
+    // Opções
+    const AREAS = [
+      { id: 'casa', nome: 'Casa', sub: 'O telhado da sua casa', icon: 'M5 15 L16 6 L27 15 M8 13 V26 H24 V13 M13 26 V19 H19 V26' },
+      { id: 'gourmet', nome: 'Área gourmet ou garagem', sub: 'Varanda, churrasqueira, carro', icon: 'M4 12 L16 6 L28 12 M7 11 V27 M25 11 V27 M10 24 V20 L12.5 16.5 H19.5 L22 20 V24 Z M12.5 24 V26 M19.5 24 V26' },
+      { id: 'galpao', nome: 'Galpão', sub: 'Depósito, oficina, barracão', icon: 'M4 27 V14 Q16 3 28 14 V27 Z M11 27 V19 H21 V27 M11 22.5 H21' },
+      { id: 'comercio', nome: 'Comércio', sub: 'Loja, escritório, salão', icon: 'M5 12 H27 L25 6 H7 Z M5 12 Q8 16 11 12 Q14 16 17 12 Q20 16 23 12 Q26 16 27 12 M7 15 V27 H25 V15 M13 27 V20 H19 V27' }
+    ];
+    const areas = AREAS.map((a) => ({ ...a, on: area === a.id, cls: area === a.id ? 'opt on' : 'opt', pick: () => set({ area: a.id, w: DIMS[a.id][0], l: DIMS[a.id][1] }) }));
+    const models = TELHAS.map((t) => ({ curto: t.curto, pick: () => set({ telha: t.id, area: area || 'casa', prios: prios, step: 3, color: undefined }) }));
+    const PRIOS = [
+      { id: 'fresca', nome: 'Casa fresquinha', sub: 'Menos calor lá dentro', icon: 'M16 4 V28 M4 16 H28 M7.5 7.5 L24.5 24.5 M24.5 7.5 L7.5 24.5 M12.5 5.5 L16 9 L19.5 5.5 M12.5 26.5 L16 23 L19.5 26.5' },
+      { id: 'silencio', nome: 'Silêncio na chuva', sub: 'Sem aquele barulhão', icon: 'M9 18 H23 A5 5 0 0 0 22 8.2 A7 7 0 0 0 9.5 10 A4 4 0 0 0 9 18 Z M11 22 L10 26 M16 22 L15 26 M21 22 L20 26' },
+      { id: 'colonial', nome: 'Visual colonial', sub: 'Jeitinho de telha de barro', icon: 'M4 18 Q8 12 12 18 Q16 12 20 18 Q24 12 28 18 M4 25 Q8 19 12 25 Q16 19 20 25 Q24 19 28 25' },
+      { id: 'preco', nome: 'Melhor preço', sub: 'O melhor custo-benefício', icon: 'M5 5 H15 L27 17 L17 27 L5 15 Z M10.5 10.5 L10.6 10.6' }
+    ];
+    const prioOpts = PRIOS.map((p) => ({ ...p, on: has(p.id), cls: has(p.id) ? 'opt on' : 'opt', pick: () => set({ prios: has(p.id) ? prios.filter((x) => x !== p.id) : prios.concat([p.id]) }) }));
+    const cards = ordered.map((t, i) => ({
+      nome: t.nome, desc: t.desc, profile: t.profile,
+      cls: i === 0 ? 'gcard ideal' : 'gcard',
+      badge: i === 0 ? 'Sua telha ideal' : 'Alternativa',
+      num: (i + 1) + ' de 3',
+      delay: (i * 0.12) + 's',
+      preco: money(t.base),
+      bars: [
+        { label: 'Conforto térmico', w: (t.termico * 20) + '%' },
+        { label: 'Silêncio', w: (t.silencio * 20) + '%' },
+        { label: 'Preço', w: (t.preco * 20) + '%' }
+      ]
+    }));
+    const dots = ordered.map((t, i) => ({
+      cls: i === cardIdx ? 'dot on' : 'dot', label: 'Ver ' + t.nome,
+      go: () => { set({ cardIdx: i }); if (self.car) self.car.scrollTo({ left: i * 302, behavior: 'smooth' }); }
+    }));
+    const colors = COLORS.map((c) => ({ ...c, on: c.id === colorId, cls: c.id === colorId ? 'sw on' : 'sw', pick: () => set({ color: c.id }) }));
+    const comforts = COMF.map((c) => ({
+      nome: c.nome, mm: c.mm, desc: c.desc, rec: !!c.rec, on: c.id === comfortId,
+      cls: c.id === comfortId ? 'opt on' : 'opt',
+      extra: c.extraV === 0 ? 'Incluso' : '+ ' + money(c.extraV) + '/m²',
+      th: f1(38 * c.level), ty: f1(44 - 38 * c.level),
+      pick: () => set({ comfort: c.id })
+    }));
+    const SHAPES = [
+      { id: '1', nome: '1 água', sub: 'A chuva cai para um lado só', wall: 'M14 52 V26 L66 34 V52 Z', roof: 'M8 23 L72 33' },
+      { id: '2', nome: '2 águas', sub: 'A chuva cai para os dois lados', wall: 'M16 52 V30 L40 15 L64 30 V52 Z', roof: 'M10 33 L40 12 L70 33' },
+      { id: 'outro', nome: 'Outro formato', sub: 'Com mais lados ou cantos? Um especialista te ajuda.', wall: 'M12 52 V32 H68 V52 Z', roof: 'M7 33 L24 17 H56 L73 33' }
+    ];
+    const shapes = SHAPES.map((x) => ({ ...x, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => set({ shape: x.id, especialista: false }) }));
+    const slopes = SLOPES.map((x) => ({ nome: x.nome, on: x.id === slopeId, cls: x.id === slopeId ? 'slope on' : 'slope', d: 'M4 26 H40 M4 26 L40 ' + (26 - x.k), pick: () => set({ slope: x.id }) }));
+
+    const LIM = { w: [3, 20], l: [2, 30] };
+    const bump = (dlt) => { const v = focus === 'w' ? w : l; const lim = LIM[focus]; const nv = Math.round(Math.max(lim[0], Math.min(lim[1], v + dlt)) * 10) / 10; set(focus === 'w' ? { w: nv } : { l: nv }); };
+
+    // CTA
+    let ctaTxt = 'Continuar', ctaOff = false, onCta = () => go(step + 1);
+    if (step === 0) { ctaTxt = 'Começar obra'; ctaOff = !cepOk; }
+    else if (step === 1) { ctaOff = !area; }
+    else if (step === 2) {
+      if (!revealed) { ctaTxt = 'Ver minha telha ideal'; ctaOff = prios.length === 0; onCta = () => set({ revealed: true, cardIdx: 0 }); }
+      else { ctaTxt = 'Escolher esta telha'; onCta = () => set({ telha: ordered[cardIdx].id, step: 3, color: undefined }); }
+    }
+    else if (step === 3) { ctaTxt = 'Gostei dessa cor'; }
+    else if (step === 5) {
+      ctaOff = !shape;
+      if (shape === 'outro') { ctaTxt = 'Falar com especialista'; onCta = () => set({ especialista: true }); }
+    }
+    else if (step === 6) { ctaTxt = 'Ver acessórios'; }
+    else if (step === 7) { ctaTxt = 'Ver meu telhado pronto'; }
+    else if (step === 8) { ctaTxt = s.added ? 'Ir para o carrinho' : 'Colocar tudo no carrinho'; onCta = () => set({ added: true }); }
+
+    const onBack = () => {
+      if (step === 2 && revealed) set({ revealed: false });
+      else if (step > 0) go(step - 1);
+    };
+
+    const PALETTE = [accent, '#F29A3F', '#F6C445', '#2E8B57', '#E4572E'];
+    const confetti = [];
+    for (let i = 0; i < 26; i++) confetti.push({ left: ((i * 37) % 100) + '%', delay: ((i % 9) * 0.11) + 's', color: PALETTE[i % 5], rot: ((i * 47) % 180) + 'deg' });
+
+    const sumOpen = s.sumOpen !== undefined ? s.sumOpen : true;
+
+    return {
+      accent, onBack, segs, phaseLabel, phaseCount,
+      stageH,
+      notPersp: step !== 6, isPersp: step === 6,
+      houseCls: step === 8 ? 'houseB pop' : 'houseB',
+      mirrorT, rotate: () => set({ mirror: !s.mirror }),
+      platTop, platL, platR, grassD,
+      wallL, wallF, gable, door, win1, win2, roofA, roofB, bandF, bandS, ribs, roofOutline,
+      cumD, rufD, vedD, screwD,
+      trunkBackD, canopyBackD, trunkFrontD, canopyFrontD, treesOp: 1,
+      doorFill, featD, awning, awningD,
+      pilBtop: pilB.top, pilBfx: pilB.fx, pilBfy: pilB.fy, pilFtop: pilF.top, pilFfx: pilF.fx, pilFfy: pilF.fy,
+      carTop: car.top, carFx: car.fx, carFy: car.fy,
+      measureD, measureOp: step === 6 ? 1 : 0,
+      is0: step === 0, is1: step === 1, is2a: step === 2 && !revealed, is2b: step === 2 && revealed,
+      is3: step === 3, is4: step === 4, is5: step === 5, is6: step === 6, is7: step === 7, is8: step === 8,
+      cep, onCep, cepOk, fab, dias,
+      roofHex,
+      roofOp, outlineOp: (step >= 1 && roofOp === 0) ? 0.45 : 0,
+      sunOp: step >= 2 && has('fresca') ? 1 : 0, rainOp: step >= 2 && has('silencio') ? 1 : 0,
+      cumOp: acc && kit.cumeeira ? 1 : 0, rufOp: acc && kit.rufos ? 1 : 0, parOp: acc && kit.parafusos ? 1 : 0, vedOp: acc && kit.vedacao ? 1 : 0,
+      tagW, tagL,
+      wTxt: nf(w, 1), lTxt: nf(l, 1),
+      focusW: () => set({ focus: 'w' }), focusL: () => set({ focus: 'l' }),
+      areas, showModels: !!s.showModels, toggleModels: () => set({ showModels: !s.showModels }), models,
+      prioOpts, cards, dots,
+      setRef: (el) => { self.car = el; },
+      onCarScroll: (e) => { const i = Math.max(0, Math.min(2, Math.round(e.currentTarget.scrollLeft / 302))); if (i !== ((self.state || {}).cardIdx || 0)) set({ cardIdx: i }); },
+      colors, comforts, shapes,
+      showEsp: shape === 'outro',
+      espMsg: s.especialista ? 'Pronto! Um especialista vai te chamar no WhatsApp para montar seu telhado junto com você.' : 'Telhados com mais lados precisam de um olhar de perto. Um especialista monta a lista com você, sem custo.',
+      byHouse: !knowSize, bySize: knowSize,
+      focusLabel: focus === 'w' ? 'Largura da obra' : 'Comprimento da obra',
+      focusVal: nf(focus === 'w' ? w : l, 1),
+      dec: () => bump(-0.5), inc: () => bump(0.5),
+      slopes,
+      kLenTxt: nf(kLen, 2), kQty,
+      decKL: () => set({ kLen: Math.max(1, Math.round((kLen - 0.1) * 10) / 10) }),
+      incKL: () => set({ kLen: Math.min(14, Math.round((kLen + 0.1) * 10) / 10) }),
+      decKQ: () => set({ kQty: Math.max(1, kQty - 1) }),
+      incKQ: () => set({ kQty: kQty + 1 }),
+      resultTxt: tQty + ' telhas de ' + nf(tLen, 2) + ' m',
+      areaTxt: nf(Math.round(areaM2), 0),
+      toggleSize: () => set({ knowSize: !knowSize }),
+      sizeLink: knowSize ? 'Prefiro informar as medidas da casa' : 'Já sei o tamanho das telhas',
+      kitItems, kitComplete,
+      kitOn: kitItems.filter((k) => k.on),
+      sumOpen, toggleSum: () => set({ sumOpen: !sumOpen }), chevCls: sumOpen ? 'chev open' : 'chev',
+      sumTelha: tQty + ' × ' + telha.nome,
+      sumTelhaDet: color.nome + ' · ' + comfort.mm + ' · ' + nf(tLen, 2) + ' m cada · ' + nf(Math.round(areaM2), 0) + ' m²',
+      telhasMoney: money(telhasV), freteMoney: money(frete),
+      totalMoney: money(total), parcelaMoney: money(total / 10),
+      added: !!s.added,
+      confetti,
+      ctaTxt, ctaOff, onCta
+    };
+  }
+}
+
+const C = new Component();
+C.props = { startStep: 0, accent: '#0A4DA2' };
+C.state = {};
+
+let handlers = [];
+const on = (fn) => { handlers.push(fn); return handlers.length - 1; };
+const CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg>';
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const each = (arr, fn) => arr.map(fn).join('');
+const iff = (c, html) => c ? html : '';
+
+function optCard(it, extraStyle) {
+  return `<button class="${it.cls}" style="${extraStyle || ''}" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span><span class="ico"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${it.icon}"></path></svg></span><span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></button>`;
+}
+
+function view(v, s) {
+  handlers = [];
+  const P = (pts, attrs) => `<polygon points="${pts}" ${attrs}></polygon>`;
+  const D = (d, attrs) => `<path d="${d}" ${attrs}></path>`;
+  const K = 'stroke="#0F1E2E" stroke-linejoin="round"';
+  const H = v.stageH;
+  const house = `
+<svg width="358" height="${H}" viewBox="0 0 358 ${H}" aria-hidden="true" style="display:block">
+${D('M78 40 a10 10 0 0 1 18 -6 a12 12 0 0 1 22 4 a8 8 0 0 1 2 16 h-40 a7 7 0 0 1 -2 -14 Z M232 26 a8 8 0 0 1 14 -5 a10 10 0 0 1 18 3 a7 7 0 0 1 1 13 h-32 a6 6 0 0 1 -1 -11 Z', 'fill="#FFFFFF" opacity="0.85"')}
+<circle cx="322" cy="30" r="15" fill="#F6B73C" opacity="${v.sunOp}" class="fade"></circle>
+${D('M30 18 l-4 10 M44 12 l-4 10 M58 20 l-4 10 M38 34 l-4 10 M52 36 l-4 10', `stroke="#4E7BAE" stroke-width="2.5" stroke-linecap="round" opacity="${v.rainOp}" class="fade"`)}
+<g transform="${v.mirrorT}"><g class="${v.houseCls}">
+${P(v.platR, 'fill="#4F853A"')}${P(v.platL, 'fill="#5E9A45"')}${P(v.platTop, 'fill="#8CC56B"')}
+${D(v.grassD, 'stroke="#7AB35A" stroke-width="1.2" fill="none"')}
+${D(v.trunkBackD, 'fill="#8A5A3C"')}${D(v.canopyBackD, 'fill="#4E8F3A" stroke="#3B7129" stroke-width="1"')}
+${P(v.wallL, 'fill="#E7D8C2" stroke-width="1.8" ' + K)}${P(v.wallF, 'fill="#F7EFE4" stroke-width="1.8" ' + K)}${P(v.gable, 'fill="#F7EFE4" stroke-width="1.8" ' + K)}
+${P(v.win1, 'fill="#BFD6EA" stroke-width="1.5" ' + K)}${P(v.win2, 'fill="#BFD6EA" stroke-width="1.5" ' + K)}${P(v.door, `fill="${v.doorFill}" stroke-width="1.5" ` + K)}
+${D(v.featD, 'stroke="#0F1E2E" stroke-opacity="0.45" stroke-width="1" fill="none"')}
+${P(v.awning, 'fill="#FFFFFF"')}${D(v.awningD, 'fill="#E4572E"')}${P(v.awning, 'fill="none" stroke-width="1.5" ' + K)}
+${D(v.pilBfx, 'fill="#E7D8C2" stroke-width="1.2" ' + K)}${D(v.pilBfy, 'fill="#F7EFE4" stroke-width="1.2" ' + K)}
+${D(v.carFx, 'fill="#1E5FA8" stroke-width="1.2" ' + K)}${D(v.carFy, 'fill="#2F74C0" stroke-width="1.2" ' + K)}${D(v.carTop, 'fill="#4A8BD1" stroke-width="1.2" ' + K)}
+${D(v.pilFfx, 'fill="#E7D8C2" stroke-width="1.2" ' + K)}${D(v.pilFfy, 'fill="#F7EFE4" stroke-width="1.2" ' + K)}
+${P(v.roofB, `fill="${v.roofHex}" stroke-width="1.8" class="roof" ` + K)}${P(v.roofB, 'fill="#000000" opacity="0.2"')}
+${P(v.bandF, 'fill="#F2D48A" stroke-width="1.5" ' + K)}${P(v.bandS, 'fill="#F2D48A" stroke-width="1.5" ' + K)}
+${P(v.roofA, `fill="${v.roofHex}" stroke-width="1.8" class="roof" ` + K)}
+${D(v.ribs, 'stroke="#000000" stroke-opacity="0.22" stroke-width="1" fill="none"')}
+${D(v.vedD, `stroke="#F28C28" stroke-width="3" stroke-linecap="round" fill="none" opacity="${v.vedOp}" class="fade"`)}
+${D(v.screwD, `fill="#0F1E2E" opacity="${v.parOp}" class="fade"`)}
+${D(v.rufD, `stroke="#2B3440" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="${v.rufOp}" class="fade"`)}
+${D(v.cumD, `stroke="#2B3440" stroke-width="5.5" stroke-linecap="round" fill="none" opacity="${v.cumOp}" class="fade"`)}
+${D(v.trunkFrontD, 'fill="#8A5A3C"')}${D(v.canopyFrontD, 'fill="#5A9D44" stroke="#3B7129" stroke-width="1"')}
+${D(v.measureD, `stroke="${v.accent}" stroke-width="2.5" stroke-dasharray="4 4" fill="none" opacity="${v.measureOp}"`)}
+</g></g></svg>
+${iff(v.isPersp, `<button class="${v.tagW.cls}" style="left:${v.tagW.left}px;top:${v.tagW.top}px" data-c="${on(v.focusW)}" aria-label="Ajustar largura">Largura ${v.wTxt} m</button><button class="${v.tagL.cls}" style="left:${v.tagL.left}px;top:${v.tagL.top}px" data-c="${on(v.focusL)}" aria-label="Ajustar comprimento">Comprimento ${v.lTxt} m</button>`)}`;
+
+  let body = '';
+  if (v.is0) body = `<div class="screen" data-k="s0">
+<h1 class="h1">Monte seu telhado em 2 minutos</h1>
+<p class="sub">Responda algumas perguntas rápidas e a gente monta a lista completa, com tudo que combina entre si.</p>
+<div style="display:flex;flex-direction:column;gap:8px"><label for="cep" style="font-weight:700;font-size:15px">CEP da obra</label>
+<input id="cep" class="field" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${esc(v.cep)}" data-in="${on(v.onCep)}"></div>
+${iff(v.cepOk, `<div class="ok"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 C12 21 5 14.5 5 9.5 A7 7 0 0 1 19 9.5 C19 14.5 12 21 12 21 Z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg><span>Atendido pela fábrica de ${v.fab} · entrega em ${v.dias} dias úteis</span></div>`)}
+</div>`;
+  else if (v.is1) body = `<div class="screen" data-k="s1">
+<h1 class="h1">O que você vai cobrir?</h1>
+<div class="grid2">${each(v.areas, (it) => optCard(it, 'min-height:150px'))}</div>
+<button class="link" data-c="${on(v.toggleModels)}">Já sei qual telha quero</button>
+${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;animation:rise .3s both"><span class="odesc" style="text-align:center">Escolha o modelo e pule direto para a cor:</span><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${each(v.models, (m) => `<button class="chip" data-c="${on(m.pick)}">${m.curto}</button>`)}</div></div>`)}
+</div>`;
+  else if (v.is2a) body = `<div class="screen" data-k="s2a">
+<h1 class="h1">O que é mais importante pra você?</h1><p class="sub">Pode escolher mais de um.</p>
+<div class="grid2">${each(v.prioOpts, (it) => optCard(it, 'min-height:150px'))}</div></div>`;
+  else if (v.is2b) body = `<div class="screen" data-k="s2b" style="gap:12px">
+<h1 class="h1">Sua telha ideal</h1><p class="sub">Arraste para o lado e veja as alternativas.</p>
+<div class="carousel" data-scroll="1">${each(v.cards, (c) => `<div class="${c.cls}" style="animation-delay:${c.delay}">
+<div style="display:flex;justify-content:space-between;align-items:center"><span class="badge">${c.badge}</span><span style="font-size:12px;font-weight:700;opacity:.75">${c.num}</span></div>
+<div style="height:118px;border-radius:16px;background:#E9EEF3;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg width="262" height="90" viewBox="0 0 262 90" aria-hidden="true"><path d="${c.profile}" fill="none" stroke="#F2D48A" stroke-width="14" stroke-linejoin="round" transform="translate(0 12)"></path><path d="${c.profile}" fill="none" stroke="#6E7B89" stroke-width="6" stroke-linejoin="round"></path></svg><span style="position:absolute;left:10px;bottom:8px;font-size:11px;font-weight:700;color:#3F4D5E;background:rgba(255,255,255,.8);padding:2px 8px;border-radius:6px">Foto do produto</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--display);font-size:21px;font-weight:800;line-height:1.1">${c.nome}</span><span style="font-size:14px;opacity:.8">${c.desc}</span></div>
+<div style="display:flex;flex-direction:column;gap:9px">${each(c.bars, (b) => `<div style="display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:10px;font-size:13px;font-weight:600"><span>${b.label}</span><div class="bar"><i style="width:${b.w}"></i></div></div>`)}</div>
+<div style="font-size:13px;opacity:.85;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">A partir de <b>${c.preco}</b> por m²</div></div>`)}</div>
+<div style="display:flex;justify-content:center">${each(v.dots, (d) => `<button class="${d.cls}" data-c="${on(d.go)}" aria-label="${d.label}"><i></i></button>`)}</div></div>`;
+  else if (v.is3) body = `<div class="screen" data-k="s3">
+<h1 class="h1">Escolha a cor</h1><p class="sub">Toque numa cor e veja o telhado mudar lá em cima.</p>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${each(v.colors, (co) => `<button class="${co.cls}" data-c="${on(co.pick)}" aria-pressed="${co.on}"><span class="ring"><span class="fill" style="background:${co.hex}"></span></span><span>${co.nome}</span></button>`)}</div>
+<div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><circle cx="12" cy="12" r="4"></circle><path d="M12 2 v2 M12 20 v2 M2 12 h2 M20 12 h2 M4.9 4.9 l1.4 1.4 M17.7 17.7 l1.4 1.4 M4.9 19.1 l1.4 -1.4 M17.7 6.3 l1.4 -1.4"></path></svg><span>Dica: cores claras refletem mais o sol e ajudam a deixar o ambiente mais fresco.</span></div></div>`;
+  else if (v.is4) body = `<div class="screen" data-k="s4">
+<h1 class="h1">Qual nível de conforto?</h1><p class="sub">Quanto mais grossa a telha, mais fresco e silencioso fica embaixo dela.</p>
+<div style="display:flex;flex-direction:column;gap:12px">${each(v.comforts, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}" style="flex-direction:row;align-items:center;gap:14px">
+<svg width="30" height="60" viewBox="0 0 30 60" aria-hidden="true" style="flex-shrink:0"><rect x="10" y="4" width="10" height="40" rx="5" fill="#EEF3F8" stroke="#34435A" stroke-width="2"></rect><circle cx="15" cy="49" r="8" fill="${v.accent}" stroke="#34435A" stroke-width="2"></circle><rect x="12.5" y="${it.ty}" width="5" height="${it.th}" rx="2.5" fill="${v.accent}"></rect></svg>
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:4px">${iff(it.rec, '<span class="seal">Recomendado</span>')}<span class="otitle">${it.nome} · ${it.mm}</span><span class="odesc">${it.desc}</span></div>
+<span class="extra">${it.extra}</span></button>`)}</div></div>`;
+  else if (v.is5) body = `<div class="screen" data-k="s5">
+<h1 class="h1">Qual o formato do telhado?</h1><p class="sub">"Água" é cada lado por onde a chuva escorre.</p>
+<div class="grid2">${each(v.shapes, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span>
+<svg width="80" height="56" viewBox="0 0 80 56" aria-hidden="true" style="flex-shrink:0"><path d="${it.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2" stroke-linejoin="round"></path><path d="${it.roof}" fill="none" stroke="${v.roofHex}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="display:flex;flex-direction:column;gap:4px"><span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></div></button>`)}</div>
+${iff(v.showEsp, `<div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 5 H20 V16 H9 L4 20 Z"></path></svg><span>${v.espMsg}</span></div>`)}</div>`;
+  else if (v.is6) {
+    const stp = (lbl, val, dec, inc, a1, a2) => `<div class="stepper"><button class="sbtn" data-c="${on(dec)}" aria-label="${a1}">−</button><div class="mid"><span class="lbl">${lbl}</span><span class="big" style="font-size:28px">${val}</span></div><button class="sbtn" data-c="${on(inc)}" aria-label="${a2}">+</button></div>`;
+    body = `<div class="screen" data-k="s6" style="gap:16px">
+${v.byHouse ? `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Medidas da obra</h1><p class="sub">Toque numa medida no desenho e ajuste aqui embaixo.</p></div>
+${stp(v.focusLabel, v.focusVal + ' m', v.dec, v.inc, 'Diminuir', 'Aumentar')}
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:15px">Quanto o telhado é inclinado?</span><div class="seg3">${each(v.slopes, (sl) => `<button class="${sl.cls}" data-c="${on(sl.pick)}" aria-pressed="${sl.on}"><svg width="44" height="30" viewBox="0 0 44 30" aria-hidden="true"><path d="${sl.d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${sl.nome}</span></button>`)}</div></div>`
+      : `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Tamanho das telhas</h1><p class="sub">Informe direto o comprimento e a quantidade.</p></div>
+${stp('Comprimento de cada telha', v.kLenTxt + ' m', v.decKL, v.incKL, 'Diminuir comprimento', 'Aumentar comprimento')}
+${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', 'Aumentar quantidade')}`}
+<div class="result"><span style="font-size:13px;font-weight:700;opacity:.8">Você vai precisar de</span><span class="big">${v.resultTxt}</span><span style="font-size:14px;opacity:.8">Cobrindo cerca de ${v.areaTxt} m²</span></div>
+<button class="link" data-c="${on(v.toggleSize)}">${v.sizeLink}</button></div>`;
+  }
+  else if (v.is7) body = `<div class="screen" data-k="s7" style="gap:14px">
+<h1 class="h1">Seu kit de acessórios</h1><p class="sub">Já separamos o que seu telhado precisa, nas quantidades certas.</p>
+${iff(v.kitComplete, `<div class="complete"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 L19.5 5.5 L24.5 5 L25.5 10 L30 12.5 L28 17 L30 21.5 L25.5 23.5 L24.5 28.5 L19.5 28 L16 31 L12.5 28 L7.5 28.5 L6.5 23.5 L2 21.5 L4 17 L2 12.5 L6.5 10 L7.5 5 L12.5 5.5 Z" fill="#2E8B57"></path><path d="M10.5 16.5 L14.5 20.5 L22 12.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Kit completo! Nada vai faltar na hora da obra.</span></div>`)}
+<div style="display:flex;flex-direction:column;gap:10px">${each(v.kitItems, (k, i) => `<div style="display:flex;flex-direction:column;gap:8px" data-k="kit${i}">
+<label class="${k.cls}"><input type="checkbox" class="sr" ${k.on ? 'checked' : ''} data-ch="${on(k.toggle)}"><span class="box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg></span>
+<span style="flex-grow:1;display:flex;flex-direction:column;gap:3px"><span class="otitle">${k.nome}</span><span class="odesc">${k.desc}</span><span style="font-size:13px;font-weight:700;color:#34435A">${k.qtyTxt}</span></span><span class="extra" style="font-size:14px">${k.price}</span></label>
+${iff(k.showAlert, `<div class="warn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5 V13 M12 16.5 v.01"></path></svg><span>${k.alert}</span></div>`)}</div>`)}</div></div>`;
+  else if (v.is8) body = `<div class="screen" data-k="s8" style="gap:14px">
+<div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center"><span class="seal" style="align-self:center;background:#E3F3EA;color:#155C39">Obra concluída</span><h1 class="h1">Seu telhado está 100%</h1><p class="sub">Tudo compatível entre si e pronto para entrega.</p></div>
+<div class="sum"><button class="sumhead" data-c="${on(v.toggleSum)}" aria-expanded="${v.sumOpen}"><span>Resumo do pedido</span><svg class="${v.chevCls}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9 L12 15 L18 9"></path></svg></button>
+${iff(v.sumOpen, `<div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:12px;animation:rise .25s both">
+<div style="display:flex;flex-direction:column;gap:4px"><div class="line"><b>${v.sumTelha}</b><b>${v.telhasMoney}</b></div><span class="muted" style="font-size:13px">${v.sumTelhaDet}</span></div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #E4E9EE;padding-top:12px">${each(v.kitOn, (k) => `<div class="line"><span>${k.nome} <span class="muted">· ${k.qtyTxt}</span></span><span>${k.price}</span></div>`)}</div>
+<div class="line" style="border-top:1px solid #E4E9EE;padding-top:12px"><span>Frete · fábrica de ${v.fab}, ${v.dias} dias úteis</span><span>${v.freteMoney}</span></div></div>`)}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;padding:14px 16px;background:#F1F5F9"><span style="font-weight:700">Total</span><div style="display:flex;flex-direction:column;align-items:flex-end"><span class="big" style="font-size:26px">${v.totalMoney}</span><span class="muted" style="font-size:13px">ou 10x de ${v.parcelaMoney} sem juros</span></div></div></div>
+${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg><span>Tudo no carrinho!</span></div>`)}
+<div style="display:flex;gap:10px"><button class="sec"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L5.3 16.2 A8 8 0 1 1 8 18.8 Z"></path></svg>Receber no WhatsApp</button><button class="sec"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21 C4 16.5 7.5 14 12 14 C16.5 14 20 16.5 20 21"></path></svg>Falar com especialista</button></div>
+<button class="link" data-c="${on(restart)}">Recomeçar a simulação</button></div>`;
+
+  return `<div class="app" style="--p:${v.accent}">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px">
+<button class="iconbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
+<div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
+${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>
+<div class="scroll" data-k="scroll">${body}</div>
+<div class="ctabar"><button class="cta" ${v.ctaOff ? 'disabled' : ''} data-c="${on(v.onCta)}">${v.ctaTxt}</button></div>
+${iff(v.is8, `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden" data-k="conf">${each(v.confetti, (cf) => `<span class="conf" style="left:${cf.left};animation-delay:${cf.delay};background:${cf.color};transform:rotate(${cf.rot})"></span>`)}</div>`)}
+</div>`;
+}
+
+function restart() { C.state = { step: 0 }; scheduleRender(); }
+
+function morph(a, b) {
+  if (a.nodeType !== b.nodeType || a.nodeName !== b.nodeName ||
+      (a.nodeType === 1 && a.getAttribute('data-k') !== b.getAttribute('data-k'))) {
+    a.replaceWith(b.cloneNode(true)); return;
+  }
+  if (a.nodeType !== 1) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+  for (const at of Array.from(a.attributes)) if (!b.hasAttribute(at.name)) a.removeAttribute(at.name);
+  for (const at of Array.from(b.attributes)) if (a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+  if (a.tagName === 'INPUT') {
+    if (a.type === 'checkbox') a.checked = b.hasAttribute('checked');
+    else { const nv = b.getAttribute('value') || ''; if (a.value !== nv) a.value = nv; }
+  }
+  if (a.tagName === 'BUTTON') a.disabled = b.hasAttribute('disabled');
+  const ac = Array.from(a.childNodes), bc = Array.from(b.childNodes);
+  for (let i = 0; i < bc.length; i++) { if (i < ac.length) morph(ac[i], bc[i]); else a.appendChild(bc[i].cloneNode(true)); }
+  for (let i = bc.length; i < ac.length; i++) ac[i].remove();
+}
+
+const root = document.getElementById('app');
+let lastStep = null, queued = false;
+function scheduleRender() { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } }
+function render() {
+  const v = C.renderVals();
+  const html = view(v, C.state);
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  const next = t.content.firstElementChild;
+  if (!root.firstElementChild) root.appendChild(next);
+  else morph(root.firstElementChild, next);
+  const step = C.state.step || 0;
+  if (step !== lastStep) { const sc = root.querySelector('.scroll'); if (sc) sc.scrollTop = 0; lastStep = step; }
+  fitStage();
+}
+function fitStage() {
+  const st = root.querySelector('.stage'), inner = root.querySelector('.stage-in');
+  if (!st || !inner) return;
+  const k = Math.min(1, st.clientWidth / 358);
+  inner.style.transform = 'translateX(-50%) scale(' + k.toFixed(3) + ')';
+}
+window.addEventListener('resize', fitStage);
+
+root.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-c]');
+  if (!el || el.disabled) return;
+  const fn = handlers[+el.getAttribute('data-c')];
+  if (!fn) return;
+  const isDot = el.classList.contains('dot');
+  fn(e);
+  if (isDot) {
+    const car = root.querySelector('.carousel'), idx = Array.from(el.parentNode.children).indexOf(el);
+    if (car) car.scrollTo({ left: idx * 302, behavior: 'smooth' });
+  }
+});
+root.addEventListener('input', (e) => {
+  const el = e.target.closest('[data-in]');
+  if (el) handlers[+el.getAttribute('data-in')]({ target: el });
+});
+root.addEventListener('change', (e) => {
+  const el = e.target.closest('[data-ch]');
+  if (el) handlers[+el.getAttribute('data-ch')]({ target: el });
+});
+root.addEventListener('scroll', (e) => {
+  const el = e.target;
+  if (el && el.classList && el.classList.contains('carousel')) {
+    const i = Math.max(0, Math.min(2, Math.round(el.scrollLeft / 302)));
+    if (i !== (C.state.cardIdx || 0)) C.setState({ cardIdx: i });
+  }
+}, true);
+
+render();
+</script>
+
+</body>
+</html>
