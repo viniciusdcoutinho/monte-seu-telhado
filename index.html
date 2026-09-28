@@ -29,7 +29,7 @@ button{font-family:inherit;color:inherit}
 .seg{flex:1;height:8px;border-radius:4px;background:#D3DBE3;transition:background .3s}
 .seg.done{background:var(--p)}
 .seg.cur{background:linear-gradient(90deg,var(--p) 50%,#D3DBE3 50%)}
-.stage{margin:4px 16px 0;border-radius:24px;background:#CFE3F5;position:relative;overflow:hidden;flex-shrink:0;transition:height .35s}
+.stage{margin:0 -4px 20px;border-radius:24px;background:#CFE3F5;position:relative;overflow:hidden;flex-shrink:0;transition:height .35s}
 .stage-in{position:absolute;left:50%;top:0;width:358px;transform-origin:top center}
 .cta{width:100%;height:56px;border:0;border-radius:18px;background:var(--p);color:#fff;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .2s;box-shadow:0 6px 16px var(--pSoft)}
 .cta:active{transform:scale(.98)}
@@ -111,7 +111,7 @@ button{font-family:inherit;color:inherit}
 @keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(620deg);opacity:.3}}
 .toast{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px;border-radius:14px;background:#E3F3EA;color:#155C39;font-weight:700;animation:pop .4s both}
 .ctabar{position:absolute;left:0;right:0;bottom:0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));background:var(--ground);box-shadow:0 -8px 24px rgba(15,30,46,.08)}
-.scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:20px 20px 130px;-webkit-overflow-scrolling:touch}
+.scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:4px 20px 130px;-webkit-overflow-scrolling:touch}
 button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -199,7 +199,7 @@ class Component extends DCLogic {
 
     const shape = this.st('shape', null, '2');
     const hs = shape ? (shape === '1' ? '1' : '2') : (area === 'gourmet' ? '1' : '2');
-    const DIMS = { casa: [9, 7], gourmet: [4, 6], galpao: [12, 20], comercio: [8, 12] };
+    const DIMS = { casa: [7, 9], gourmet: [6, 4], galpao: [20, 12], comercio: [12, 8] };
     const dims = DIMS[area || 'casa'];
     const w = s.w !== undefined ? s.w : dims[0];
     const l = s.l !== undefined ? s.l : dims[1];
@@ -218,9 +218,9 @@ class Component extends DCLogic {
     // Cálculo das telhas (largura útil 1,00 m, beiral 0,60 m)
     const aguas = hs === '1' ? 1 : 2;
     const cosA = 1 / Math.sqrt(1 + sv * sv);
-    const run = (hs === '1' ? w : w / 2) + 0.6;
+    const run = (hs === '1' ? l : l / 2) + 0.6;
     const autoLen = Math.ceil((run / cosA) * 10 - 1e-6) / 10;
-    const autoQty = Math.ceil(l - 1e-6) * aguas;
+    const autoQty = Math.ceil(w - 1e-6) * aguas;
     const tLen = knowSize ? kLen : autoLen;
     const tQty = knowSize ? kQty : autoQty;
     const areaM2 = tQty * tLen;
@@ -229,7 +229,7 @@ class Component extends DCLogic {
     const kit = s.kit || { cumeeira: true, rufos: true, parafusos: true, vedacao: true };
     const alertKey = s.alertKey || null;
     const KIT = [
-      { id: 'cumeeira', nome: aguas === 2 ? 'Cumeeira' : 'Rufo de topo', desc: aguas === 2 ? 'Fecha o encontro das duas águas lá no alto' : 'Fecha o lado mais alto do telhado', qty: Math.ceil(l), un: 'peças', unit: 89, alert: 'Sem ela, a chuva pode entrar pelo topo do telhado. Tem certeza?' },
+      { id: 'cumeeira', nome: aguas === 2 ? 'Cumeeira' : 'Rufo de topo', desc: aguas === 2 ? 'Fecha o encontro das duas águas lá no alto' : 'Fecha o lado mais alto do telhado', qty: Math.ceil(w), un: 'peças', unit: 89, alert: 'Sem ela, a chuva pode entrar pelo topo do telhado. Tem certeza?' },
       { id: 'rufos', nome: 'Rufos laterais', desc: 'Acabamento das bordas, protege as paredes', qty: Math.ceil((tLen * aguas * 2) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode escorrer pela parede e manchar.' },
       { id: 'parafusos', nome: 'Parafusos com vedação', desc: 'Prendem as telhas com firmeza', qty: Math.ceil((areaM2 * 3) / 50) * 50, un: 'unidades', unit: 0.85, alert: 'As telhas precisam de parafusos próprios. Se você já tem, tudo bem!' },
       { id: 'vedacao', nome: 'Fita de vedação', desc: 'Evita goteiras nas emendas', qty: Math.max(1, Math.ceil(tQty / 6)), un: 'rolos', unit: 49, alert: 'Sem vedação, podem aparecer goteiras nas emendas.' }
@@ -251,67 +251,69 @@ class Component extends DCLogic {
     const total = telhasV + acess + frete;
 
     // Casa 3D (isométrica) — evolui a cada escolha
+    // eixo x do desenho = comprimento (sentido da caída da telha); eixo y = largura (sentido da cumeeira)
+    const GW = l, GL = w;
     const roofOp = 1;
     const acc = step >= 7;
     const stageH = step === 6 ? 230 : 200;
     const mg = 2.4;
-    const span = w + l + 4 * mg;
+    const span = GW + GL + 4 * mg;
     const sc = Math.min(11, 330 / (span * 0.866), (stageH - 96) / (span * 0.5));
     const btype = area || 'casa';
     const isOpen = btype === 'gourmet';
     const WH = ({ casa: 2.8, gourmet: 2.6, galpao: 5, comercio: 3.5 })[btype];
     const hk = Math.max(6, sc * 1.45);
     const wallH = WH * hk;
-    const rise = Math.max(6, (hs === '1' ? w : w / 2) * sv * sc * 1.7);
+    const rise = Math.max(6, (hs === '1' ? GW : GW / 2) * sv * sc * 1.7);
     const tkp = step >= 4 ? ({ bom: 3, melhor: 5, max: 7 })[comfortId] : 3;
-    const X0 = 179 - (l - w) * 0.866 * sc / 2;
+    const X0 = 179 - (GL - GW) * 0.866 * sc / 2;
     const Y0 = stageH - 20 - mg * sc;
     const pr = (x, y, h) => ({ x: X0 + (y - x) * 0.866 * sc, y: Y0 - (x + y) * 0.5 * sc - (h || 0) });
     const pts = (arr) => arr.map((p) => f1(p.x) + ',' + f1(p.y)).join(' ');
     const L2 = (p, q) => 'M' + f1(p.x) + ' ' + f1(p.y) + ' L' + f1(q.x) + ' ' + f1(q.y) + ' ';
     const circ = (p, r) => 'M' + f1(p.x - r) + ' ' + f1(p.y) + ' a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(2 * r) + ' 0 a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(-2 * r) + ' 0 ';
     const dn = (p) => ({ x: p.x, y: p.y + 10 });
-    const g00 = pr(-mg, -mg), gw0 = pr(w + mg, -mg), g0l = pr(-mg, l + mg), gwl = pr(w + mg, l + mg);
+    const g00 = pr(-mg, -mg), gw0 = pr(GW + mg, -mg), g0l = pr(-mg, GL + mg), gwl = pr(GW + mg, GL + mg);
     const platTop = pts([g00, gw0, gwl, g0l]);
     const platR = pts([g00, gw0, dn(gw0), dn(g00)]);
     const platL = pts([g00, g0l, dn(g0l), dn(g00)]);
     let grassD = '';
-    for (let i = 1; i < 6; i++) { const t = i / 6; grassD += L2(pr(-mg + t * (w + 2 * mg), -mg), pr(-mg + t * (w + 2 * mg) - 0.8, -mg + 0.5)); }
+    for (let i = 1; i < 6; i++) { const t = i / 6; grassD += L2(pr(-mg + t * (GW + 2 * mg), -mg), pr(-mg + t * (GW + 2 * mg) - 0.8, -mg + 0.5)); }
 
     const H = wallH;
-    const ribN = Math.max(4, Math.round(l * ({ trap: 2.2, colonial: 3.6, ond: 4.6 })[telha.id]));
+    const ribN = Math.max(4, Math.round(GL * ({ trap: 2.2, colonial: 3.6, ond: 4.6 })[telha.id]));
     let wallL, wallF, gable = '', roofA, roofB = '', bandF, bandS, ribs = '', cumD, rufD, vedD, roofOutline;
     let screwD = '';
     if (hs === '1') {
       const hA = H + rise, hB = H;
-      wallL = pts([pr(0, 0, 0), pr(0, l, 0), pr(0, l, hA), pr(0, 0, hA)]);
-      wallF = pts([pr(0, 0, 0), pr(w, 0, 0), pr(w, 0, hB), pr(0, 0, hA)]);
-      roofA = pts([pr(0, 0, hA + tkp), pr(0, l, hA + tkp), pr(w, l, hB + tkp), pr(w, 0, hB + tkp)]);
+      wallL = pts([pr(0, 0, 0), pr(0, GL, 0), pr(0, GL, hA), pr(0, 0, hA)]);
+      wallF = pts([pr(0, 0, 0), pr(GW, 0, 0), pr(GW, 0, hB), pr(0, 0, hA)]);
+      roofA = pts([pr(0, 0, hA + tkp), pr(0, GL, hA + tkp), pr(GW, GL, hB + tkp), pr(GW, 0, hB + tkp)]);
       roofOutline = roofA;
-      bandF = pts([pr(0, 0, hA), pr(w, 0, hB), pr(w, 0, hB + tkp), pr(0, 0, hA + tkp)]);
-      bandS = pts([pr(0, 0, hA), pr(0, l, hA), pr(0, l, hA + tkp), pr(0, 0, hA + tkp)]);
-      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * l, hA + tkp), pr(w, t * l, hB + tkp)); }
-      cumD = L2(pr(0, 0, hA + tkp), pr(0, l, hA + tkp));
-      rufD = L2(pr(0, 0, hA + tkp), pr(w, 0, hB + tkp));
-      vedD = L2(pr(w, 0, hB + tkp), pr(w, l, hB + tkp));
-      [0.2, 0.5, 0.8].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * w, v * l, hA + (hB - hA) * u + tkp), 1.4); });
+      bandF = pts([pr(0, 0, hA), pr(GW, 0, hB), pr(GW, 0, hB + tkp), pr(0, 0, hA + tkp)]);
+      bandS = pts([pr(0, 0, hA), pr(0, GL, hA), pr(0, GL, hA + tkp), pr(0, 0, hA + tkp)]);
+      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * GL, hA + tkp), pr(GW, t * GL, hB + tkp)); }
+      cumD = L2(pr(0, 0, hA + tkp), pr(0, GL, hA + tkp));
+      rufD = L2(pr(0, 0, hA + tkp), pr(GW, 0, hB + tkp));
+      vedD = L2(pr(GW, 0, hB + tkp), pr(GW, GL, hB + tkp));
+      [0.2, 0.5, 0.8].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * GW, v * GL, hA + (hB - hA) * u + tkp), 1.4); });
     } else {
       const top = H + rise;
-      wallL = pts([pr(0, 0, 0), pr(0, l, 0), pr(0, l, H), pr(0, 0, H)]);
-      wallF = pts([pr(0, 0, 0), pr(w, 0, 0), pr(w, 0, H), pr(0, 0, H)]);
-      gable = pts([pr(0, 0, H), pr(w, 0, H), pr(w / 2, 0, top)]);
-      const R1 = pr(w / 2, 0, top + tkp), R2 = pr(w / 2, l, top + tkp);
-      roofA = pts([pr(0, 0, H + tkp), pr(0, l, H + tkp), R2, R1]);
-      roofB = pts([pr(w, 0, H + tkp), pr(w, l, H + tkp), R2, R1]);
-      roofOutline = pts([pr(0, 0, H + tkp), pr(0, l, H + tkp), R2, pr(w, l, H + tkp), pr(w, 0, H + tkp), R1]);
-      bandF = pts([pr(0, 0, H), pr(w / 2, 0, top), pr(w, 0, H), pr(w, 0, H + tkp), R1, pr(0, 0, H + tkp)]);
-      bandS = pts([pr(0, 0, H), pr(0, l, H), pr(0, l, H + tkp), pr(0, 0, H + tkp)]);
-      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * l, H + tkp), pr(w / 2, t * l, top + tkp)) + L2(pr(w, t * l, H + tkp), pr(w / 2, t * l, top + tkp)); }
+      wallL = pts([pr(0, 0, 0), pr(0, GL, 0), pr(0, GL, H), pr(0, 0, H)]);
+      wallF = pts([pr(0, 0, 0), pr(GW, 0, 0), pr(GW, 0, H), pr(0, 0, H)]);
+      gable = pts([pr(0, 0, H), pr(GW, 0, H), pr(GW / 2, 0, top)]);
+      const R1 = pr(GW / 2, 0, top + tkp), R2 = pr(GW / 2, GL, top + tkp);
+      roofA = pts([pr(0, 0, H + tkp), pr(0, GL, H + tkp), R2, R1]);
+      roofB = pts([pr(GW, 0, H + tkp), pr(GW, GL, H + tkp), R2, R1]);
+      roofOutline = pts([pr(0, 0, H + tkp), pr(0, GL, H + tkp), R2, pr(GW, GL, H + tkp), pr(GW, 0, H + tkp), R1]);
+      bandF = pts([pr(0, 0, H), pr(GW / 2, 0, top), pr(GW, 0, H), pr(GW, 0, H + tkp), R1, pr(0, 0, H + tkp)]);
+      bandS = pts([pr(0, 0, H), pr(0, GL, H), pr(0, GL, H + tkp), pr(0, 0, H + tkp)]);
+      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * GL, H + tkp), pr(GW / 2, t * GL, top + tkp)) + L2(pr(GW, t * GL, H + tkp), pr(GW / 2, t * GL, top + tkp)); }
       cumD = L2(R1, R2);
-      const e0 = pr(0, 0, H + tkp), e1 = pr(w, 0, H + tkp);
+      const e0 = pr(0, 0, H + tkp), e1 = pr(GW, 0, H + tkp);
       rufD = 'M' + f1(e0.x) + ' ' + f1(e0.y) + ' L' + f1(R1.x) + ' ' + f1(R1.y) + ' L' + f1(e1.x) + ' ' + f1(e1.y);
-      vedD = L2(pr(0, 0, H + tkp), pr(0, l, H + tkp));
-      [0.3, 0.7].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * w / 2, v * l, H + rise * u + tkp), 1.4); });
+      vedD = L2(pr(0, 0, H + tkp), pr(0, GL, H + tkp));
+      [0.3, 0.7].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * GW / 2, v * GL, H + rise * u + tkp), 1.4); });
     }
     // Detalhes por tipo de obra
     const onX = (y0, y1, h0, h1) => pts([pr(0, y0, h0 * hk), pr(0, y1, h0 * hk), pr(0, y1, h1 * hk), pr(0, y0, h1 * hk)]);
@@ -326,36 +328,36 @@ class Component extends DCLogic {
     let door = '', win1 = '', win2 = '', featD = '', awning = '', awningD = '', doorFill = '#6E4B35';
     let pilB = { top: '', fx: '', fy: '' }, pilF = { top: '', fx: '', fy: '' }, car = { top: '', fx: '', fy: '' };
     if (btype === 'casa') {
-      const dy = 0.35 * l, wy = 0.74 * l;
+      const dy = 0.35 * GL, wy = 0.74 * GL;
       door = onX(dy - 0.45, dy + 0.45, 0, 2.1);
       win1 = onX(wy - 0.6, wy + 0.6, 1.0, 2.0);
-      win2 = onY(0.5 * w - 0.6, 0.5 * w + 0.6, 1.0, 2.0);
+      win2 = onY(0.5 * GW - 0.6, 0.5 * GW + 0.6, 1.0, 2.0);
     } else if (btype === 'galpao') {
       doorFill = '#8E99A4';
-      const x0 = 0.28 * w, x1 = 0.72 * w, dh = Math.min(4, WH - 0.6);
+      const x0 = 0.28 * GW, x1 = 0.72 * GW, dh = Math.min(4, WH - 0.6);
       door = onY(x0, x1, 0, dh);
       for (let h = 0.4; h < dh; h += 0.4) featD += L2(pr(x0, 0, h * hk), pr(x1, 0, h * hk));
-      win1 = onX(0.08 * l, 0.92 * l, WH - 1.4, WH - 0.5);
-      for (let y = 0.08 * l + 2; y < 0.92 * l; y += 2) featD += L2(pr(0, y, (WH - 1.4) * hk), pr(0, y, (WH - 0.5) * hk));
+      win1 = onX(0.08 * GL, 0.92 * GL, WH - 1.4, WH - 0.5);
+      for (let y = 0.08 * GL + 2; y < 0.92 * GL; y += 2) featD += L2(pr(0, y, (WH - 1.4) * hk), pr(0, y, (WH - 0.5) * hk));
     } else if (btype === 'comercio') {
       doorFill = '#1F3347';
-      win2 = onY(0.12 * w, 0.88 * w, 0.1, 2.5);
-      door = onY(0.42 * w, 0.58 * w, 0, 2.3);
-      [0.27, 0.73].forEach((f) => { featD += L2(pr(f * w, 0, 0.1 * hk), pr(f * w, 0, 2.5 * hk)); });
-      win1 = onX(0.35 * l, 0.65 * l, 1.0, 2.2);
-      const a0 = pr(0.06 * w, 0, 2.9 * hk), a1 = pr(0.94 * w, 0, 2.9 * hk), a2 = pr(0.94 * w, -1.1, 2.3 * hk), a3 = pr(0.06 * w, -1.1, 2.3 * hk);
+      win2 = onY(0.12 * GW, 0.88 * GW, 0.1, 2.5);
+      door = onY(0.42 * GW, 0.58 * GW, 0, 2.3);
+      [0.27, 0.73].forEach((f) => { featD += L2(pr(f * GW, 0, 0.1 * hk), pr(f * GW, 0, 2.5 * hk)); });
+      win1 = onX(0.35 * GL, 0.65 * GL, 1.0, 2.2);
+      const a0 = pr(0.06 * GW, 0, 2.9 * hk), a1 = pr(0.94 * GW, 0, 2.9 * hk), a2 = pr(0.94 * GW, -1.1, 2.3 * hk), a3 = pr(0.06 * GW, -1.1, 2.3 * hk);
       awning = pts([a0, a1, a2, a3]);
       const n = 8;
       for (let i = 0; i < n; i += 2) {
         const t0 = 0.06 + 0.88 * i / n, t1 = 0.06 + 0.88 * (i + 1) / n;
-        awningD += poly([pr(t0 * w, 0, 2.9 * hk), pr(t1 * w, 0, 2.9 * hk), pr(t1 * w, -1.1, 2.3 * hk), pr(t0 * w, -1.1, 2.3 * hk)]);
+        awningD += poly([pr(t0 * GW, 0, 2.9 * hk), pr(t1 * GW, 0, 2.9 * hk), pr(t1 * GW, -1.1, 2.3 * hk), pr(t0 * GW, -1.1, 2.3 * hk)]);
       }
     } else {
       const p = 0.3, ph = hs === '1' ? (H + rise) / hk : WH;
       const phB = WH;
-      pilB = joinBoxes([box(w - p, w, l - p, l, 0, phB), box(w - p, w, 0, p, 0, phB), box(0, p, l - p, l, 0, ph)]);
+      pilB = joinBoxes([box(GW - p, GW, GL - p, GL, 0, phB), box(GW - p, GW, 0, p, 0, phB), box(0, p, GL - p, GL, 0, ph)]);
       pilF = joinBoxes([box(0, p, 0, p, 0, ph)]);
-      const cx = w / 2, cy = Math.max(2.3, l / 2);
+      const cx = GW / 2, cy = Math.max(2.3, GL / 2);
       car = joinBoxes([box(cx - 0.9, cx + 0.9, cy - 2.1, cy + 2.1, 0.25, 0.95), box(cx - 0.75, cx + 0.75, cy - 1.1, cy + 0.9, 0.95, 1.5)]);
     }
     if (isOpen) { wallL = ''; wallF = ''; gable = ''; }
@@ -367,16 +369,16 @@ class Component extends DCLogic {
         canopy: circ({ x: b.x, y: b.y - th - r * 0.55 }, r) + circ({ x: b.x - r * 0.6, y: b.y - th }, r * 0.72) + circ({ x: b.x + r * 0.6, y: b.y - th - r * 0.1 }, r * 0.72)
       };
     };
-    const tb = [tree(w + 1.5, l * 0.5), tree(w * 0.3, l + 1.4)];
-    const tf = [tree(w + 1.1, -1.3), tree(-1.5, l + 0.5)];
+    const tb = [tree(GW + 1.5, GL * 0.5), tree(GW * 0.3, GL + 1.4)];
+    const tf = [tree(GW + 1.1, -1.3), tree(-1.5, GL + 0.5)];
     const trunkBackD = tb.map((t) => t.trunk).join(''), canopyBackD = tb.map((t) => t.canopy).join('');
     const trunkFrontD = tf.map((t) => t.trunk).join(''), canopyFrontD = tf.map((t) => t.canopy).join('');
 
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const measureD = L2(pr(0, -0.9, 0), pr(w, -0.9, 0)) + L2(pr(-0.9, 0, 0), pr(-0.9, l, 0));
-    const midW = pr(w / 2, -0.9, 0), midL = pr(-0.9, l / 2, 0);
-    const tagW = { cls: focus === 'w' ? 'tag on' : 'tag', left: f1(clamp(midW.x - 110, 6, 40)), top: f1(clamp(midW.y - 8, 6, stageH - 50)) };
-    const tagL = { cls: focus === 'l' ? 'tag on' : 'tag', left: f1(clamp(midL.x - 30, 150, 358 - 196)), top: f1(clamp(midL.y - 8, 6, stageH - 50)) };
+    const measureD = L2(pr(0, -0.9, 0), pr(GW, -0.9, 0)) + L2(pr(-0.9, 0, 0), pr(-0.9, GL, 0));
+    const midW = pr(GW / 2, -0.9, 0), midL = pr(-0.9, GL / 2, 0);
+    const tagW = { cls: focus === 'w' ? 'tag on' : 'tag', left: f1(clamp(midL.x - 30, 190, 358 - 136)), top: f1(clamp(midL.y - 8, 6, stageH - 50)) };
+    const tagL = { cls: focus === 'l' ? 'tag on' : 'tag', left: f1(clamp(midW.x - 150, 6, 20)), top: f1(clamp(midW.y - 8, 6, stageH - 50)) };
     const mirrorT = (s.mirror && step !== 6) ? 'translate(358 0) scale(-1 1)' : 'translate(0 0)';
 
     // Progresso
@@ -652,9 +654,9 @@ ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 2
 <div style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px">
 <button class="iconbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
 <div style="flex-grow:1;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
-<div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
+<div class="scroll" data-k="scroll"><div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
 ${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>
-<div class="scroll" data-k="scroll">${body}</div>
+${body}</div>
 <div class="ctabar"><button class="cta" ${v.ctaOff ? 'disabled' : ''} data-c="${on(v.onCta)}">${v.ctaTxt}</button></div>
 ${iff(v.is8, `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden" data-k="conf">${each(v.confetti, (cf) => `<span class="conf" style="left:${cf.left};animation-delay:${cf.delay};background:${cf.color};transform:rotate(${cf.rot})"></span>`)}</div>`)}
 </div>`;
