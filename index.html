@@ -162,9 +162,9 @@ class Component extends DCLogic {
 
     // Telhas
     const TELHAS = [
-      { id: 'trap', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, silencio: 4, preco: 4, base: 119, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
-      { id: 'colonial', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, silencio: 4, preco: 3, base: 149, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
-      { id: 'ond', nome: 'Telha Térmica Ondulada', curto: 'Ondulada', desc: 'Leve, simples de instalar e cabe no bolso.', termico: 3, silencio: 3, preco: 5, base: 99, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
+      { id: 'trap', img: 'https://t56141.vtexassets.com/arquivos/ids/162027-1200-auto?v=638824150350300000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, silencio: 4, preco: 4, base: 119, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
+      { id: 'colonial', img: 'https://t56141.vtexassets.com/arquivos/ids/165766-1200-auto?v=639217235976000000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, silencio: 4, preco: 3, base: 149, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
+      { id: 'ond', img: 'https://t56141.vtexassets.com/arquivos/ids/157344-1200-auto?v=638364229269630000&width=1200&height=auto&aspect=true', nome: 'Telha Residence', curto: 'Residence', desc: 'Linha pensada para telhados de casas.', termico: 3, silencio: 3, preco: 5, base: 99, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
     ];
     const area = this.st('area', null, 'casa');
     const prios = this.st('prios', [], ['fresca', 'silencio']);
@@ -405,7 +405,7 @@ class Component extends DCLogic {
     ];
     const prioOpts = PRIOS.map((p) => ({ ...p, on: has(p.id), cls: has(p.id) ? 'opt on' : 'opt', pick: () => set({ prios: has(p.id) ? prios.filter((x) => x !== p.id) : prios.concat([p.id]) }) }));
     const cards = ordered.map((t, i) => ({
-      nome: t.nome, desc: t.desc, profile: t.profile,
+      nome: t.nome, desc: t.desc, profile: t.profile, img: t.img,
       cls: i === 0 ? 'gcard ideal' : 'gcard',
       badge: i === 0 ? 'Sua telha ideal' : 'Alternativa',
       num: (i + 1) + ' de 3',
@@ -598,7 +598,7 @@ ${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;anim
 <h1 class="h1">Sua telha ideal</h1><p class="sub">Arraste para o lado e veja as alternativas.</p>
 <div class="carousel" data-scroll="1">${each(v.cards, (c) => `<div class="${c.cls}" style="animation-delay:${c.delay}">
 <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge">${c.badge}</span><span style="font-size:12px;font-weight:700;opacity:.75">${c.num}</span></div>
-<div style="height:118px;border-radius:16px;background:#E9EEF3;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg width="262" height="90" viewBox="0 0 262 90" aria-hidden="true"><path d="${c.profile}" fill="none" stroke="#F2D48A" stroke-width="14" stroke-linejoin="round" transform="translate(0 12)"></path><path d="${c.profile}" fill="none" stroke="#6E7B89" stroke-width="6" stroke-linejoin="round"></path></svg><span style="position:absolute;left:10px;bottom:8px;font-size:11px;font-weight:700;color:#3F4D5E;background:rgba(255,255,255,.8);padding:2px 8px;border-radius:6px">Foto do produto</span></div>
+<div style="height:150px;border-radius:16px;background:#E9EEF3;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg width="262" height="90" viewBox="0 0 262 90" aria-hidden="true"><path d="${c.profile}" fill="none" stroke="#F2D48A" stroke-width="14" stroke-linejoin="round" transform="translate(0 12)"></path><path d="${c.profile}" fill="none" stroke="#6E7B89" stroke-width="6" stroke-linejoin="round"></path></svg><img src="${c.img}" alt="${c.nome}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff"></div>
 <div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:var(--display);font-size:21px;font-weight:800;line-height:1.1">${c.nome}</span><span style="font-size:14px;opacity:.8">${c.desc}</span></div>
 <div style="display:flex;flex-direction:column;gap:9px">${each(c.bars, (b) => `<div style="display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:10px;font-size:13px;font-weight:600"><span>${b.label}</span><div class="bar"><i style="width:${b.w}"></i></div></div>`)}</div>
 <div style="font-size:13px;opacity:.85;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">A partir de <b>${c.preco}</b> por m²</div></div>`)}</div>
@@ -717,6 +717,7 @@ root.addEventListener('click', (e) => {
     if (car) car.scrollTo({ left: idx * 302, behavior: 'smooth' });
   }
 });
+root.addEventListener('error', (e) => { if (e.target && e.target.tagName === 'IMG') e.target.style.display = 'none'; }, true);
 root.addEventListener('input', (e) => {
   const el = e.target.closest('[data-in]');
   if (el) handlers[+el.getAttribute('data-in')]({ target: el });
