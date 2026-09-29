@@ -101,7 +101,7 @@ button{font-family:inherit;color:inherit}
 .line{display:flex;justify-content:space-between;gap:12px;font-size:14px;line-height:1.35;font-variant-numeric:tabular-nums}
 .muted{color:#56657A}
 .line>:last-child{white-space:nowrap}
-.result .big{font-size:28px}
+.result .big{font-size:26px}
 .sec{min-height:48px;border-radius:16px;border:2px solid #CBD5DF;background:#fff;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:0 8px}
 .fade{transition:opacity .45s}
 .roof{transition:fill .5s}
@@ -114,6 +114,8 @@ button{font-family:inherit;color:inherit}
 .scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:4px 20px 130px;-webkit-overflow-scrolling:touch}
 button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.ico2{width:64px;height:64px;border-radius:18px;background:#EEF3F8;display:flex;align-items:center;justify-content:center}
+.note{font-size:14px;color:#46556A;background:#EEF3F8;border-radius:14px;padding:12px 14px;line-height:1.4}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px)}</style>
 </head>
@@ -142,7 +144,7 @@ class Component extends DCLogic {
     const nf = (n, d) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
     const money = (n) => 'R$ ' + nf(n, 2);
 
-    // CEP e fábrica
+    // ---------- CEP e fábrica ----------
     const cep = this.st('cep', '', '75132-000');
     const digits = cep.replace(/\D/g, '');
     const cepOk = digits.length === 8;
@@ -160,13 +162,14 @@ class Component extends DCLogic {
       set({ cep: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d });
     };
 
-    // Telhas
+    // ---------- Telhas ----------
     const TELHAS = [
-      { id: 'trap', img: 'https://t56141.vtexassets.com/arquivos/ids/162027-1200-auto?v=638824150350300000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, silencio: 4, preco: 4, base: 119, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
-      { id: 'colonial', img: 'https://t56141.vtexassets.com/arquivos/ids/165766-1200-auto?v=639217235976000000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, silencio: 4, preco: 3, base: 149, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
-      { id: 'ond', img: 'https://t56141.vtexassets.com/arquivos/ids/157344-1200-auto?v=638364229269630000&width=1200&height=auto&aspect=true', nome: 'Telha Residence', curto: 'Residence', desc: 'Linha pensada para telhados de casas.', termico: 3, silencio: 3, preco: 5, base: 99, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
+      { id: 'trap', img: 'https://t56141.vtexassets.com/arquivos/ids/162027-1200-auto?v=638824150350300000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, silencio: 4, preco: 4, base: 119, ribs: 2.2, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
+      { id: 'colonial', img: 'https://t56141.vtexassets.com/arquivos/ids/165766-1200-auto?v=639217235976000000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, silencio: 4, preco: 3, base: 149, ribs: 3.6, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
+      { id: 'ond', img: 'https://t56141.vtexassets.com/arquivos/ids/157344-1200-auto?v=638364229269630000&width=1200&height=auto&aspect=true', nome: 'Telha Residence', curto: 'Residence', desc: 'Linha pensada para telhados de casas.', termico: 3, silencio: 3, preco: 5, base: 99, ribs: 4.6, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
     ];
     const area = this.st('area', null, 'casa');
+    const btype = area || 'casa';
     const prios = this.st('prios', [], ['fresca', 'silencio']);
     const revealed = s.revealed !== undefined ? s.revealed : Number(this.props.startReveal || 0) > 0;
     const has = (k) => prios.indexOf(k) >= 0;
@@ -186,7 +189,9 @@ class Component extends DCLogic {
     ];
     const colorId = s.color || (telha.id === 'colonial' ? 'terracota' : 'grafite');
     const color = COLORS.find((c) => c.id === colorId) || COLORS[2];
-    const roofHex = step >= 3 ? color.hex : '#9AA5B1';
+    const roofHex = step >= 5 ? color.hex : '#9AA5B1';
+    const shadeHex = (hex, k) => { const n = parseInt(hex.slice(1), 16); const r = Math.round(((n >> 16) & 255) * k), g = Math.round(((n >> 8) & 255) * k), b = Math.round((n & 255) * k); return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); };
+    const roofDark = shadeHex(roofHex, 0.8);
 
     const COMF = [
       { id: 'bom', nome: 'Bom', mm: '30 mm', desc: 'Para garagens, varandas e áreas abertas.', extraV: 0, level: 0.35 },
@@ -195,43 +200,72 @@ class Component extends DCLogic {
     ];
     const comfortId = s.comfort || 'melhor';
     const comfort = COMF.find((c) => c.id === comfortId);
-    const tk = step >= 4 ? ({ bom: 5, melhor: 8, max: 11 })[comfortId] : 5;
+    const tk = step >= 6 ? ({ bom: 3, melhor: 5, max: 7 })[comfortId] : 3;
 
+    // ---------- Formato e medidas ----------
+    const isCasa = btype === 'casa';
     const shape = this.st('shape', null, '2');
-    const hs = shape ? (shape === '1' ? '1' : '2') : (area === 'gourmet' ? '1' : '2');
+    const SH = shape || (btype === 'gourmet' ? '1' : '2');
+    const hs = ['1', '2', 'chale', 'plat', 'varanda'].indexOf(SH) >= 0 ? SH : '2';
     const DIMS = { casa: [7, 9], gourmet: [6, 4], galpao: [20, 12], comercio: [12, 8] };
-    const dims = DIMS[area || 'casa'];
+    const dims = DIMS[btype];
     const w = s.w !== undefined ? s.w : dims[0];
     const l = s.l !== undefined ? s.l : dims[1];
+    const GW = l, GL = w;
     const SLOPES = [
       { id: 'reto', nome: 'Quase reto', v: 0.10, k: 5 },
       { id: 'medio', nome: 'Médio', v: 0.15, k: 10 },
       { id: 'inclinado', nome: 'Bem inclinado', v: 0.25, k: 18 }
     ];
     const slopeId = s.slope || 'medio';
-    const sv = SLOPES.find((x) => x.id === slopeId).v;
+    const sv = hs === 'chale' ? 1.0 : SLOPES.find((x) => x.id === slopeId).v;
     const focus = s.focus || 'w';
     const knowSize = !!s.knowSize;
     const kLen = s.kLen !== undefined ? s.kLen : 5.2;
     const kQty = s.kQty !== undefined ? s.kQty : 14;
+    const vdep = Math.max(1.2, Math.min(2, GW / 4, GL / 4));
+    const coreW = GW - 2 * vdep, coreL = GL - 2 * vdep;
 
-    // Cálculo das telhas (largura útil 1,00 m, beiral 0,60 m)
-    const aguas = hs === '1' ? 1 : 2;
+    // ---------- Fixação ----------
+    const fix = this.st('fix', null, 'madeira');
+
+    // ---------- Cálculo das telhas (largura útil 1,00 m) ----------
     const cosA = 1 / Math.sqrt(1 + sv * sv);
-    const run = (hs === '1' ? l : l / 2) + 0.6;
-    const autoLen = Math.ceil((run / cosA) * 10 - 1e-6) / 10;
-    const autoQty = Math.ceil(w - 1e-6) * aguas;
-    const tLen = knowSize ? kLen : autoLen;
-    const tQty = knowSize ? kQty : autoQty;
-    const areaM2 = tQty * tLen;
+    const up10 = (x) => Math.ceil(x * 10 - 1e-6) / 10;
+    let pieces;
+    if (knowSize) pieces = [{ qty: kQty, len: kLen }];
+    else if (hs === '1') pieces = [{ qty: Math.ceil(GL - 1e-6), len: up10((GW + 0.6) / cosA) }];
+    else if (hs === 'plat') pieces = [{ qty: Math.ceil(GL - 1e-6) * 2, len: up10((GW / 2 + 0.1) / cosA) }];
+    else if (hs === 'varanda') {
+      const len1 = up10((coreW / 2 + 0.3) / cosA), len2 = up10((vdep + 0.3) / cosA);
+      pieces = [{ qty: Math.ceil(coreW * coreL / cosA / len1), len: len1 }, { qty: Math.ceil((GW * GL - coreW * coreL) / cosA / len2), len: len2 }];
+    }
+    else pieces = [{ qty: Math.ceil(GL - 1e-6) * 2, len: up10((GW / 2 + 0.6) / cosA) }];
+    const tQty = pieces.reduce((a, p) => a + p.qty, 0);
+    const areaM2 = pieces.reduce((a, p) => a + p.qty * p.len, 0);
+    const tLen = Math.max.apply(null, pieces.map((p) => p.len));
+    const aguas = hs === '1' ? 1 : 2;
+    const resultTxt = pieces.map((p, i) => (i ? p.qty + ' de ' : p.qty + ' telhas de ') + nf(p.len, 2) + ' m').join(' + ');
 
-    // Kit
+    // ---------- Kit ----------
     const kit = s.kit || { cumeeira: true, rufos: true, parafusos: true, vedacao: true };
     const alertKey = s.alertKey || null;
+    let top;
+    if (hs === 'plat') top = { nome: 'Calha central', desc: 'Recebe a água das duas águas no meio do telhado', qty: Math.ceil(GL / 3), un: 'peças de 3 m', unit: 129, alert: 'Sem a calha, a chuva não tem por onde sair.' };
+    else if (hs === '1') top = { nome: 'Rufo de topo', desc: 'Fecha o lado mais alto do telhado', qty: Math.ceil(GL), un: 'peças', unit: 89, alert: 'Sem ele, a chuva pode entrar pelo lado mais alto. Tem certeza?' };
+    else if (hs === 'varanda') top = { nome: 'Cumeeira e espigões', desc: 'Fecham o topo e as quinas do telhado', qty: Math.ceil(Math.max(0, coreL - coreW) + 4 * (coreW / 2) * 1.5), un: 'peças', unit: 89, alert: 'Sem elas, a chuva pode entrar pelo topo e pelas quinas.' };
+    else top = { nome: 'Cumeeira', desc: 'Fecha o encontro das duas águas lá no alto', qty: Math.ceil(GL), un: 'peças', unit: 89, alert: 'Sem ela, a chuva pode entrar pelo topo do telhado. Tem certeza?' };
+    let rufo;
+    if (hs === 'plat') rufo = { nome: 'Rufos de platibanda', desc: 'Vedam o encontro do telhado com a mureta', qty: Math.ceil(2 * (GW + GL) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode infiltrar na mureta.' };
+    else if (hs === 'varanda') rufo = { nome: 'Rufos de encontro', desc: 'Vedam o encontro da varanda com a parede', qty: Math.ceil(2 * (coreW + coreL) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode escorrer pela parede.' };
+    else rufo = { nome: 'Rufos laterais', desc: 'Acabamento das bordas, protege as paredes', qty: Math.ceil((tLen * aguas * 2) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode escorrer pela parede e manchar.' };
+    const FIXN = { madeira: 'Parafusos para madeira', metalon: 'Parafusos autobrocantes para metalon', lsf: 'Parafusos autobrocantes para LSF', naosei: 'Parafusos (modelo a confirmar)' };
+    const FIXD = { madeira: 'Rosca para madeira, com arruela de vedação', metalon: 'Furam o aço sozinhos, com arruela de vedação', lsf: 'Próprios para perfis de aço leve', naosei: 'Um especialista confirma o modelo com você' };
+    const fk = fix || 'naosei';
     const KIT = [
-      { id: 'cumeeira', nome: aguas === 2 ? 'Cumeeira' : 'Rufo de topo', desc: aguas === 2 ? 'Fecha o encontro das duas águas lá no alto' : 'Fecha o lado mais alto do telhado', qty: Math.ceil(w), un: 'peças', unit: 89, alert: 'Sem ela, a chuva pode entrar pelo topo do telhado. Tem certeza?' },
-      { id: 'rufos', nome: 'Rufos laterais', desc: 'Acabamento das bordas, protege as paredes', qty: Math.ceil((tLen * aguas * 2) / 3), un: 'peças de 3 m', unit: 64, alert: 'Sem rufos, a água pode escorrer pela parede e manchar.' },
-      { id: 'parafusos', nome: 'Parafusos com vedação', desc: 'Prendem as telhas com firmeza', qty: Math.ceil((areaM2 * 3) / 50) * 50, un: 'unidades', unit: 0.85, alert: 'As telhas precisam de parafusos próprios. Se você já tem, tudo bem!' },
+      Object.assign({ id: 'cumeeira' }, top),
+      Object.assign({ id: 'rufos' }, rufo),
+      { id: 'parafusos', nome: FIXN[fk], desc: FIXD[fk], qty: Math.ceil((areaM2 * 3) / 50) * 50, un: 'unidades', unit: 0.85, alert: 'As telhas precisam de parafusos próprios. Se você já tem, tudo bem!' },
       { id: 'vedacao', nome: 'Fita de vedação', desc: 'Evita goteiras nas emendas', qty: Math.max(1, Math.ceil(tQty / 6)), un: 'rolos', unit: 49, alert: 'Sem vedação, podem aparecer goteiras nas emendas.' }
     ];
     const kitItems = KIT.map((k) => ({
@@ -250,153 +284,231 @@ class Component extends DCLogic {
     const frete = 290 + dias * 25;
     const total = telhasV + acess + frete;
 
-    // Casa 3D (isométrica) — evolui a cada escolha
-    // eixo x do desenho = comprimento (sentido da caída da telha); eixo y = largura (sentido da cumeeira)
-    const GW = l, GL = w;
-    const roofOp = 1;
-    const acc = step >= 7;
-    const stageH = step === 6 ? 230 : 200;
-    const mg = 2.4;
-    const span = GW + GL + 4 * mg;
-    const sc = Math.min(11, 330 / (span * 0.866), (stageH - 96) / (span * 0.5));
-    const btype = area || 'casa';
+    // ---------- Casa 3D (isométrica) ----------
+    // eixo x = comprimento (sentido da caída da telha), eixo y = largura (sentido da cumeeira); z em metros
+    const stageH = step === 3 ? 230 : 200;
+    const EX = sv < 0.5 ? 1.7 : 1.0;
+    const rz = (dist) => dist * sv * EX;
     const isOpen = btype === 'gourmet';
-    const WH = ({ casa: 2.8, gourmet: 2.6, galpao: 5, comercio: 3.5 })[btype];
-    const hk = Math.max(6, sc * 1.45);
-    const wallH = WH * hk;
-    const rise = Math.max(6, (hs === '1' ? GW : GW / 2) * sv * sc * 1.7);
-    const tkp = step >= 4 ? ({ bom: 3, melhor: 5, max: 7 })[comfortId] : 3;
+    let WH = ({ casa: 2.8, gourmet: 2.6, galpao: 5, comercio: 3.5 })[btype];
+    if (hs === 'chale') WH = 1.0;
+    let zTop;
+    if (hs === '1') zTop = WH + rz(GW);
+    else if (hs === 'plat') zTop = WH + rz(GW / 2) + 0.5;
+    else if (hs === 'varanda') zTop = 2.5 + rz(vdep) + 0.5 + rz(coreW / 2);
+    else zTop = WH + rz(GW / 2);
+    zTop = Math.max(zTop, 3.4);
+    const mg = 2.4, span = GW + GL + 4 * mg;
+    const sc = Math.min(11, 330 / (span * 0.866), (stageH - 46) / (span * 0.5 + zTop * 1.45));
+    const hk = sc * 1.45;
     const X0 = 179 - (GL - GW) * 0.866 * sc / 2;
     const Y0 = stageH - 20 - mg * sc;
-    const pr = (x, y, h) => ({ x: X0 + (y - x) * 0.866 * sc, y: Y0 - (x + y) * 0.5 * sc - (h || 0) });
-    const pts = (arr) => arr.map((p) => f1(p.x) + ',' + f1(p.y)).join(' ');
-    const L2 = (p, q) => 'M' + f1(p.x) + ' ' + f1(p.y) + ' L' + f1(q.x) + ' ' + f1(q.y) + ' ';
-    const circ = (p, r) => 'M' + f1(p.x - r) + ' ' + f1(p.y) + ' a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(2 * r) + ' 0 a' + f1(r) + ' ' + f1(r) + ' 0 1 0 ' + f1(-2 * r) + ' 0 ';
+    const P = (x, y, z) => ({ x: X0 + (y - x) * 0.866 * sc, y: Y0 - (x + y) * 0.5 * sc - (z || 0) * hk });
+    const Pz = (p, dz) => P(p[0], p[1], p[2] + (dz || 0));
+    const poly = (pts) => 'M' + pts.map((p) => f1(p.x) + ' ' + f1(p.y)).join(' L') + ' Z ';
+    const line = (a, b) => 'M' + f1(a.x) + ' ' + f1(a.y) + ' L' + f1(b.x) + ' ' + f1(b.y) + ' ';
+    const circ = (p, r) => 'M' + f1(p.x - r) + ' ' + f1(p.y) + ' a' + r + ' ' + r + ' 0 1 0 ' + (2 * r) + ' 0 a' + r + ' ' + r + ' 0 1 0 ' + (-2 * r) + ' 0 ';
+    const L3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    const items = [];
+    const add = (d, o) => { if (d) items.push(Object.assign({ d: d, f: 'none', s: 'none', w: 0, o: 1, da: '', c: '' }, o || {})); };
+    const K = '#0F1E2E', WALL = '#F7EFE4', WALL2 = '#E7D8C2';
+    const acc = step >= 8;
+    const fixView = step === 7;
+    const roofO = fixView ? 0.25 : 1;
+    const FIXC = { madeira: '#8B5A2B', metalon: '#5F6B78', lsf: '#9AA7B4', naosei: '#7B8794' };
+    const tkm = tk / hk;
+    const faceX = (x, y0, y1, z0, z1) => poly([P(x, y0, z0), P(x, y1, z0), P(x, y1, z1), P(x, y0, z1)]);
+    const faceY = (y, x0, x1, z0, z1) => poly([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)]);
+
+    // terreno
     const dn = (p) => ({ x: p.x, y: p.y + 10 });
-    const g00 = pr(-mg, -mg), gw0 = pr(GW + mg, -mg), g0l = pr(-mg, GL + mg), gwl = pr(GW + mg, GL + mg);
-    const platTop = pts([g00, gw0, gwl, g0l]);
-    const platR = pts([g00, gw0, dn(gw0), dn(g00)]);
-    const platL = pts([g00, g0l, dn(g0l), dn(g00)]);
-    let grassD = '';
-    for (let i = 1; i < 6; i++) { const t = i / 6; grassD += L2(pr(-mg + t * (GW + 2 * mg), -mg), pr(-mg + t * (GW + 2 * mg) - 0.8, -mg + 0.5)); }
-
-    const H = wallH;
-    const ribN = Math.max(4, Math.round(GL * ({ trap: 2.2, colonial: 3.6, ond: 4.6 })[telha.id]));
-    let wallL, wallF, gable = '', roofA, roofB = '', bandF, bandS, ribs = '', cumD, rufD, vedD, roofOutline;
-    let screwD = '';
-    if (hs === '1') {
-      const hA = H + rise, hB = H;
-      wallL = pts([pr(0, 0, 0), pr(0, GL, 0), pr(0, GL, hA), pr(0, 0, hA)]);
-      wallF = pts([pr(0, 0, 0), pr(GW, 0, 0), pr(GW, 0, hB), pr(0, 0, hA)]);
-      roofA = pts([pr(0, 0, hA + tkp), pr(0, GL, hA + tkp), pr(GW, GL, hB + tkp), pr(GW, 0, hB + tkp)]);
-      roofOutline = roofA;
-      bandF = pts([pr(0, 0, hA), pr(GW, 0, hB), pr(GW, 0, hB + tkp), pr(0, 0, hA + tkp)]);
-      bandS = pts([pr(0, 0, hA), pr(0, GL, hA), pr(0, GL, hA + tkp), pr(0, 0, hA + tkp)]);
-      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * GL, hA + tkp), pr(GW, t * GL, hB + tkp)); }
-      cumD = L2(pr(0, 0, hA + tkp), pr(0, GL, hA + tkp));
-      rufD = L2(pr(0, 0, hA + tkp), pr(GW, 0, hB + tkp));
-      vedD = L2(pr(GW, 0, hB + tkp), pr(GW, GL, hB + tkp));
-      [0.2, 0.5, 0.8].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * GW, v * GL, hA + (hB - hA) * u + tkp), 1.4); });
-    } else {
-      const top = H + rise;
-      wallL = pts([pr(0, 0, 0), pr(0, GL, 0), pr(0, GL, H), pr(0, 0, H)]);
-      wallF = pts([pr(0, 0, 0), pr(GW, 0, 0), pr(GW, 0, H), pr(0, 0, H)]);
-      gable = pts([pr(0, 0, H), pr(GW, 0, H), pr(GW / 2, 0, top)]);
-      const R1 = pr(GW / 2, 0, top + tkp), R2 = pr(GW / 2, GL, top + tkp);
-      roofA = pts([pr(0, 0, H + tkp), pr(0, GL, H + tkp), R2, R1]);
-      roofB = pts([pr(GW, 0, H + tkp), pr(GW, GL, H + tkp), R2, R1]);
-      roofOutline = pts([pr(0, 0, H + tkp), pr(0, GL, H + tkp), R2, pr(GW, GL, H + tkp), pr(GW, 0, H + tkp), R1]);
-      bandF = pts([pr(0, 0, H), pr(GW / 2, 0, top), pr(GW, 0, H), pr(GW, 0, H + tkp), R1, pr(0, 0, H + tkp)]);
-      bandS = pts([pr(0, 0, H), pr(0, GL, H), pr(0, GL, H + tkp), pr(0, 0, H + tkp)]);
-      for (let i = 1; i < ribN; i++) { const t = i / ribN; ribs += L2(pr(0, t * GL, H + tkp), pr(GW / 2, t * GL, top + tkp)) + L2(pr(GW, t * GL, H + tkp), pr(GW / 2, t * GL, top + tkp)); }
-      cumD = L2(R1, R2);
-      const e0 = pr(0, 0, H + tkp), e1 = pr(GW, 0, H + tkp);
-      rufD = 'M' + f1(e0.x) + ' ' + f1(e0.y) + ' L' + f1(R1.x) + ' ' + f1(R1.y) + ' L' + f1(e1.x) + ' ' + f1(e1.y);
-      vedD = L2(pr(0, 0, H + tkp), pr(0, GL, H + tkp));
-      [0.3, 0.7].forEach((u) => { for (let v = 0.12; v < 1; v += 0.19) screwD += circ(pr(u * GW / 2, v * GL, H + rise * u + tkp), 1.4); });
-    }
-    // Detalhes por tipo de obra
-    const onX = (y0, y1, h0, h1) => pts([pr(0, y0, h0 * hk), pr(0, y1, h0 * hk), pr(0, y1, h1 * hk), pr(0, y0, h1 * hk)]);
-    const onY = (x0, x1, h0, h1) => pts([pr(x0, 0, h0 * hk), pr(x1, 0, h0 * hk), pr(x1, 0, h1 * hk), pr(x0, 0, h1 * hk)]);
-    const poly = (arr) => 'M' + arr.map((p) => f1(p.x) + ' ' + f1(p.y)).join(' L') + ' Z ';
-    const box = (x0, x1, y0, y1, h0, h1) => ({
-      top: poly([pr(x0, y0, h1 * hk), pr(x1, y0, h1 * hk), pr(x1, y1, h1 * hk), pr(x0, y1, h1 * hk)]),
-      fx: poly([pr(x0, y0, h0 * hk), pr(x0, y1, h0 * hk), pr(x0, y1, h1 * hk), pr(x0, y0, h1 * hk)]),
-      fy: poly([pr(x0, y0, h0 * hk), pr(x1, y0, h0 * hk), pr(x1, y0, h1 * hk), pr(x0, y0, h1 * hk)])
-    });
-    const joinBoxes = (bs) => ({ top: bs.map((b) => b.top).join(''), fx: bs.map((b) => b.fx).join(''), fy: bs.map((b) => b.fy).join('') });
-    let door = '', win1 = '', win2 = '', featD = '', awning = '', awningD = '', doorFill = '#6E4B35';
-    let pilB = { top: '', fx: '', fy: '' }, pilF = { top: '', fx: '', fy: '' }, car = { top: '', fx: '', fy: '' };
-    if (btype === 'casa') {
-      const dy = 0.35 * GL, wy = 0.74 * GL;
-      door = onX(dy - 0.45, dy + 0.45, 0, 2.1);
-      win1 = onX(wy - 0.6, wy + 0.6, 1.0, 2.0);
-      win2 = onY(0.5 * GW - 0.6, 0.5 * GW + 0.6, 1.0, 2.0);
-    } else if (btype === 'galpao') {
-      doorFill = '#8E99A4';
-      const x0 = 0.28 * GW, x1 = 0.72 * GW, dh = Math.min(4, WH - 0.6);
-      door = onY(x0, x1, 0, dh);
-      for (let h = 0.4; h < dh; h += 0.4) featD += L2(pr(x0, 0, h * hk), pr(x1, 0, h * hk));
-      win1 = onX(0.08 * GL, 0.92 * GL, WH - 1.4, WH - 0.5);
-      for (let y = 0.08 * GL + 2; y < 0.92 * GL; y += 2) featD += L2(pr(0, y, (WH - 1.4) * hk), pr(0, y, (WH - 0.5) * hk));
-    } else if (btype === 'comercio') {
-      doorFill = '#1F3347';
-      win2 = onY(0.12 * GW, 0.88 * GW, 0.1, 2.5);
-      door = onY(0.42 * GW, 0.58 * GW, 0, 2.3);
-      [0.27, 0.73].forEach((f) => { featD += L2(pr(f * GW, 0, 0.1 * hk), pr(f * GW, 0, 2.5 * hk)); });
-      win1 = onX(0.35 * GL, 0.65 * GL, 1.0, 2.2);
-      const a0 = pr(0.06 * GW, 0, 2.9 * hk), a1 = pr(0.94 * GW, 0, 2.9 * hk), a2 = pr(0.94 * GW, -1.1, 2.3 * hk), a3 = pr(0.06 * GW, -1.1, 2.3 * hk);
-      awning = pts([a0, a1, a2, a3]);
-      const n = 8;
-      for (let i = 0; i < n; i += 2) {
-        const t0 = 0.06 + 0.88 * i / n, t1 = 0.06 + 0.88 * (i + 1) / n;
-        awningD += poly([pr(t0 * GW, 0, 2.9 * hk), pr(t1 * GW, 0, 2.9 * hk), pr(t1 * GW, -1.1, 2.3 * hk), pr(t0 * GW, -1.1, 2.3 * hk)]);
-      }
-    } else {
-      const p = 0.3, ph = hs === '1' ? (H + rise) / hk : WH;
-      const phB = WH;
-      pilB = joinBoxes([box(GW - p, GW, GL - p, GL, 0, phB), box(GW - p, GW, 0, p, 0, phB), box(0, p, GL - p, GL, 0, ph)]);
-      pilF = joinBoxes([box(0, p, 0, p, 0, ph)]);
-      const cx = GW / 2, cy = Math.max(2.3, GL / 2);
-      car = joinBoxes([box(cx - 0.9, cx + 0.9, cy - 2.1, cy + 2.1, 0.25, 0.95), box(cx - 0.75, cx + 0.75, cy - 1.1, cy + 0.9, 0.95, 1.5)]);
-    }
-    if (isOpen) { wallL = ''; wallF = ''; gable = ''; }
-
-    const tree = (x, y) => {
-      const b = pr(x, y, 0), th = 1.1 * hk, r = 0.85 * sc;
-      return {
-        trunk: 'M' + f1(b.x - 1.8) + ' ' + f1(b.y) + ' h3.6 v' + f1(-th) + ' h-3.6 Z ',
-        canopy: circ({ x: b.x, y: b.y - th - r * 0.55 }, r) + circ({ x: b.x - r * 0.6, y: b.y - th }, r * 0.72) + circ({ x: b.x + r * 0.6, y: b.y - th - r * 0.1 }, r * 0.72)
-      };
-    };
+    const g00 = P(-mg, -mg), gw0 = P(GW + mg, -mg), g0l = P(-mg, GL + mg), gwl = P(GW + mg, GL + mg);
+    add(poly([g00, gw0, dn(gw0), dn(g00)]), { f: '#4F853A' });
+    add(poly([g00, g0l, dn(g0l), dn(g00)]), { f: '#5E9A45' });
+    add(poly([g00, gw0, gwl, g0l]), { f: '#8CC56B' });
+    let grass = '';
+    for (let i = 1; i < 6; i++) { const t = i / 6; grass += line(P(-mg + t * (GW + 2 * mg), -mg), P(-mg + t * (GW + 2 * mg) - 0.8, -mg + 0.5)); }
+    add(grass, { s: '#7AB35A', w: 1.2 });
+    const tree = (x, y) => { const b = P(x, y, 0), th = 1.1 * hk, r = 0.85 * sc; return { t: 'M' + f1(b.x - 1.8) + ' ' + f1(b.y) + ' h3.6 v' + f1(-th) + ' h-3.6 Z ', c: circ({ x: b.x, y: b.y - th - r * 0.55 }, +f1(r)) + circ({ x: b.x - r * 0.6, y: b.y - th }, +f1(r * 0.72)) + circ({ x: b.x + r * 0.6, y: b.y - th - r * 0.1 }, +f1(r * 0.72)) }; };
     const tb = [tree(GW + 1.5, GL * 0.5), tree(GW * 0.3, GL + 1.4)];
+    add(tb.map((t) => t.t).join(''), { f: '#8A5A3C' });
+    add(tb.map((t) => t.c).join(''), { f: '#4E8F3A', s: '#3B7129', w: 1 });
+
+    // telhado: plano com bordas E0-E1 (beiral) e T0-T1 (topo)
+    const plane = (E0, E1, T0, T1, dark, noBand) => {
+      const bil = (u, v) => L3(L3(E0, E1, v), L3(T0, T1, v), u);
+      if (!noBand) add(poly([Pz(E0), Pz(E1), Pz(E1, tkm), Pz(E0, tkm)]) + poly([Pz(E0), Pz(T0), Pz(T0, tkm), Pz(E0, tkm)]) + poly([Pz(E1), Pz(T1), Pz(T1, tkm), Pz(E1, tkm)]), { f: '#F2D48A', s: K, w: 1.1, o: roofO, c: 'fade' });
+      add(poly([Pz(E0, tkm), Pz(E1, tkm), Pz(T1, tkm), Pz(T0, tkm)]), { f: dark ? roofDark : roofHex, s: K, w: 1.6, o: roofO, c: 'roof' });
+      const lenV = Math.hypot(E1[0] - E0[0], E1[1] - E0[1]);
+      const n = Math.max(3, Math.round(lenV * telha.ribs));
+      let rd = '';
+      for (let i = 1; i < n; i++) { const v = i / n; rd += line(Pz(bil(0, v), tkm), Pz(bil(1, v), tkm)); }
+      add(rd, { s: '#000000', w: 1, o: 0.22 * roofO, c: 'fade' });
+      if (fixView) {
+        let pd = '';
+        [0.06, 0.37, 0.68, 0.96].forEach((u) => { pd += line(Pz(bil(u, 0), -0.05), Pz(bil(u, 1), -0.05)); });
+        add(pd, { s: FIXC[fk], w: fk === 'lsf' ? 3 : 4, da: fk === 'naosei' ? '5 5' : '', c: 'fade' });
+      }
+      if (acc) {
+        let sd = '';
+        [0.2, 0.55, 0.9].forEach((u) => { for (let v = 0.12; v < 1; v += 0.2) sd += circ(Pz(bil(u, v), tkm), 1.3); });
+        add(sd, { f: K, o: kit.parafusos ? 1 : 0, c: 'fade' });
+      }
+    };
+    const pillars = (list) => {
+      let fx = '', fy = '';
+      list.forEach((p) => { const a = 0.13, x = p[0], y = p[1], z = p[2]; fx += faceX(x - a, y - a, y + a, 0, z); fy += faceY(y - a, x - a, x + a, 0, z); });
+      add(fx, { f: WALL2, s: K, w: 1 });
+      add(fy, { f: WALL, s: K, w: 1 });
+    };
+    const box = (x0, x1, y0, y1, z0, z1, cx, cy, ct) => {
+      add(faceX(x0, y0, y1, z0, z1), { f: cx, s: K, w: 1.1 });
+      add(faceY(y0, x0, x1, z0, z1), { f: cy, s: K, w: 1.1 });
+      add(poly([P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)]), { f: ct, s: K, w: 1.1 });
+    };
+    const casaOpenings = (xf, ya, yb, yf, xa, xb) => {
+      const L = yb - ya, dy = ya + 0.35 * L, wy = ya + 0.74 * L;
+      add(faceX(xf, wy - 0.6, wy + 0.6, 1.0, 2.0), { f: '#BFD6EA', s: K, w: 1.4 });
+      add(faceY(yf, (xa + xb) / 2 - 0.6, (xa + xb) / 2 + 0.6, 1.0, 2.0), { f: '#BFD6EA', s: K, w: 1.4 });
+      add(faceX(xf, dy - 0.45, dy + 0.45, 0, 2.1), { f: '#6E4B35', s: K, w: 1.4 });
+    };
+    const H = WH;
+    let ridge = '', rufD = '', vedD = '', ridgeC = '#2B3440';
+
+    if (hs === 'varanda') {
+      const d = vdep, a0 = d, a1 = GW - d, b0 = d, b1 = GL - d, Hv = 2.5, Hi = Hv + rz(d), Hc = Hi + 0.5, hw = (a1 - a0) / 2, rc = rz(hw), xm = (a0 + a1) / 2;
+      let r1y = b0 + hw, r2y = b1 - hw;
+      if (r1y > r2y) { r1y = (b0 + b1) / 2; r2y = r1y; }
+      const R1 = [xm, r1y, Hc + rc], R2 = [xm, r2y, Hc + rc];
+      const pts2 = [];
+      const along = (n0, n1) => { const n = Math.max(1, Math.round((n1 - n0) / 3)); const r = []; for (let i = 0; i <= n; i++) r.push(n0 + (n1 - n0) * i / n); return r; };
+      along(0.15, GL - 0.15).forEach((y) => { pts2.push([0.15, y]); pts2.push([GW - 0.15, y]); });
+      along(0.15, GW - 0.15).forEach((x) => { pts2.push([x, 0.15]); pts2.push([x, GL - 0.15]); });
+      const seen = {}; const uniq = pts2.filter((p) => { const k = f1(p[0]) + ',' + f1(p[1]); if (seen[k]) return false; seen[k] = 1; return true; });
+      const mid = (GW + GL) / 2;
+      pillars(uniq.filter((p) => p[0] + p[1] > mid).map((p) => [p[0], p[1], Hv]));
+      plane([0, GL, Hv], [GW, GL, Hv], [a0, b1, Hi], [a1, b1, Hi], true);
+      plane([GW, 0, Hv], [GW, GL, Hv], [a1, b0, Hi], [a1, b1, Hi], true);
+      add(faceX(a0, b0, b1, 0, Hc), { f: WALL2, s: K, w: 1.6 });
+      add(faceY(b0, a0, a1, 0, Hc), { f: WALL, s: K, w: 1.6 });
+      casaOpenings(a0, b0, b1, b0, a0, a1);
+      plane([a0, b1, Hc], [a1, b1, Hc], R2, R2, true);
+      plane([a1, b0, Hc], [a1, b1, Hc], R1, R2, true);
+      plane([a0, b0, Hc], [a0, b1, Hc], R1, R2, false);
+      plane([a0, b0, Hc], [a1, b0, Hc], R1, R1, false);
+      pillars(uniq.filter((p) => p[0] + p[1] <= mid).map((p) => [p[0], p[1], Hv]));
+      plane([0, 0, Hv], [0, GL, Hv], [a0, b0, Hi], [a0, b1, Hi], false);
+      plane([0, 0, Hv], [GW, 0, Hv], [a0, b0, Hi], [a1, b0, Hi], false);
+      ridge = line(Pz(R1, tkm), Pz(R2, tkm)) + line(P(a0, b0, Hc + tkm), Pz(R1, tkm)) + line(P(a1, b0, Hc + tkm), Pz(R1, tkm)) + line(P(a0, b1, Hc + tkm), Pz(R2, tkm));
+      rufD = line(P(a0, b0, Hi + tkm), P(a1, b0, Hi + tkm)) + line(P(a0, b0, Hi + tkm), P(a0, b1, Hi + tkm));
+      vedD = line(P(0, 0, Hv + tkm), P(GW, 0, Hv + tkm)) + line(P(0, 0, Hv + tkm), P(0, GL, Hv + tkm));
+    } else if (hs === 'plat') {
+      const Hr = H + rz(GW / 2), Hp = Hr + 0.5;
+      add(poly([P(GW, 0, Hr), P(GW, GL, Hr), P(GW, GL, Hp), P(GW, 0, Hp)]), { f: '#DCCDB6', s: K, w: 1.3 });
+      add(poly([P(0, GL, Hr), P(GW / 2, GL, H), P(GW, GL, Hr), P(GW, GL, Hp), P(0, GL, Hp)]), { f: '#EADFCC', s: K, w: 1.3 });
+      plane([GW / 2, 0, H], [GW / 2, GL, H], [GW, 0, Hr], [GW, GL, Hr], false, true);
+      plane([GW / 2, 0, H], [GW / 2, GL, H], [0, 0, Hr], [0, GL, Hr], true, true);
+      add(faceX(0, 0, GL, 0, Hp), { f: WALL2, s: K, w: 1.6 });
+      add(faceY(0, 0, GW, 0, Hp), { f: WALL, s: K, w: 1.6 });
+      casaOpenings(0, 0, GL, 0, 0, GW);
+      add(line(P(0, 0, Hp), P(0, GL, Hp)) + line(P(0, 0, Hp), P(GW, 0, Hp)) + line(P(GW, 0, Hp), P(GW, GL, Hp)) + line(P(0, GL, Hp), P(GW, GL, Hp)), { s: '#FFFFFF', w: 3 });
+      ridge = line(P(GW / 2, 0, H + tkm), P(GW / 2, GL, H + tkm));
+      ridgeC = '#3E4C5B';
+      rufD = line(P(GW, 0, Hr), P(GW, GL, Hr)) + line(P(0, GL, Hr), P(GW, GL, Hr));
+    } else if (hs === '1') {
+      const hA = H + rz(GW);
+      if (isOpen) {
+        pillars([[GW - 0.15, GL - 0.15, H], [GW - 0.15, 0.15, H], [0.15, GL - 0.15, hA]]);
+        const cx = GW / 2, cy = GL / 2;
+        box(cx - 0.9, cx + 0.9, cy - 2.1, cy + 2.1, 0.25, 0.95, '#1E5FA8', '#2F74C0', '#4A8BD1');
+        box(cx - 0.75, cx + 0.75, cy - 1.1, cy + 0.9, 0.95, 1.5, '#1E5FA8', '#2F74C0', '#4A8BD1');
+        pillars([[0.15, 0.15, hA]]);
+      } else {
+        add(faceX(0, 0, GL, 0, hA), { f: WALL2, s: K, w: 1.6 });
+        add(poly([P(0, 0, 0), P(GW, 0, 0), P(GW, 0, H), P(0, 0, hA)]), { f: WALL, s: K, w: 1.6 });
+      }
+      if (btype === 'casa') casaOpenings(0, 0, GL, 0, 0, GW);
+      plane([GW, 0, H], [GW, GL, H], [0, 0, hA], [0, GL, hA], false);
+      ridge = line(P(0, 0, hA + tkm), P(0, GL, hA + tkm));
+      rufD = line(P(0, 0, hA + tkm), P(GW, 0, H + tkm));
+      vedD = line(P(GW, 0, H + tkm), P(GW, GL, H + tkm));
+    } else {
+      const topZ = H + rz(GW / 2);
+      if (isOpen) {
+        pillars([[GW - 0.15, GL - 0.15, H], [GW - 0.15, 0.15, H], [0.15, GL - 0.15, H]]);
+        const cx = GW / 2, cy = GL / 2;
+        box(cx - 0.9, cx + 0.9, cy - 2.1, cy + 2.1, 0.25, 0.95, '#1E5FA8', '#2F74C0', '#4A8BD1');
+        box(cx - 0.75, cx + 0.75, cy - 1.1, cy + 0.9, 0.95, 1.5, '#1E5FA8', '#2F74C0', '#4A8BD1');
+        pillars([[0.15, 0.15, H]]);
+      } else {
+        add(faceX(0, 0, GL, 0, H), { f: WALL2, s: K, w: 1.6 });
+        add(faceY(0, 0, GW, 0, H), { f: WALL, s: K, w: 1.6 });
+        add(poly([P(0, 0, H), P(GW, 0, H), P(GW / 2, 0, topZ)]), { f: WALL, s: K, w: 1.6 });
+      }
+      if (hs === 'chale') {
+        add(faceY(0, GW / 2 - 0.45, GW / 2 + 0.45, 0, 2.1), { f: '#6E4B35', s: K, w: 1.4 });
+        if (topZ > 3.6) add(faceY(0, GW / 2 - 0.5, GW / 2 + 0.5, 2.6, 3.3), { f: '#BFD6EA', s: K, w: 1.4 });
+        add(faceY(0, GW * 0.18, GW * 0.18 + 0.9, 0.3, Math.min(0.9, H - 0.05)), { f: '#BFD6EA', s: K, w: 1.2 });
+      } else if (btype === 'casa') casaOpenings(0, 0, GL, 0, 0, GW);
+      else if (btype === 'galpao') {
+        const x0 = 0.28 * GW, x1 = 0.72 * GW, dh = Math.min(4, WH - 0.6);
+        add(faceY(0, x0, x1, 0, dh), { f: '#8E99A4', s: K, w: 1.4 });
+        let fd = '';
+        for (let h = 0.4; h < dh; h += 0.4) fd += line(P(x0, 0, h), P(x1, 0, h));
+        add(faceX(0, 0.08 * GL, 0.92 * GL, WH - 1.4, WH - 0.5), { f: '#BFD6EA', s: K, w: 1.4 });
+        for (let y = 0.08 * GL + 2; y < 0.92 * GL; y += 2) fd += line(P(0, y, WH - 1.4), P(0, y, WH - 0.5));
+        add(fd, { s: K, w: 1, o: 0.45 });
+      } else if (btype === 'comercio') {
+        add(faceY(0, 0.12 * GW, 0.88 * GW, 0.1, 2.5), { f: '#BFD6EA', s: K, w: 1.4 });
+        add(faceY(0, 0.42 * GW, 0.58 * GW, 0, 2.3), { f: '#1F3347', s: K, w: 1.4 });
+        add(line(P(0.27 * GW, 0, 0.1), P(0.27 * GW, 0, 2.5)) + line(P(0.73 * GW, 0, 0.1), P(0.73 * GW, 0, 2.5)), { s: K, w: 1, o: 0.45 });
+        add(faceX(0, 0.35 * GL, 0.65 * GL, 1.0, 2.2), { f: '#BFD6EA', s: K, w: 1.4 });
+        const aw = poly([P(0.06 * GW, 0, 2.9), P(0.94 * GW, 0, 2.9), P(0.94 * GW, -1.1, 2.3), P(0.06 * GW, -1.1, 2.3)]);
+        add(aw, { f: '#FFFFFF' });
+        let st = '';
+        for (let i = 0; i < 8; i += 2) { const t0 = 0.06 + 0.88 * i / 8, t1 = 0.06 + 0.88 * (i + 1) / 8; st += poly([P(t0 * GW, 0, 2.9), P(t1 * GW, 0, 2.9), P(t1 * GW, -1.1, 2.3), P(t0 * GW, -1.1, 2.3)]); }
+        add(st, { f: '#E4572E' });
+        add(aw, { s: K, w: 1.4 });
+      }
+      plane([GW, 0, H], [GW, GL, H], [GW / 2, 0, topZ], [GW / 2, GL, topZ], true);
+      plane([0, 0, H], [0, GL, H], [GW / 2, 0, topZ], [GW / 2, GL, topZ], false);
+      ridge = line(P(GW / 2, 0, topZ + tkm), P(GW / 2, GL, topZ + tkm));
+      rufD = 'M' + f1(P(0, 0, H + tkm).x) + ' ' + f1(P(0, 0, H + tkm).y) + ' L' + f1(P(GW / 2, 0, topZ + tkm).x) + ' ' + f1(P(GW / 2, 0, topZ + tkm).y) + ' L' + f1(P(GW, 0, H + tkm).x) + ' ' + f1(P(GW, 0, H + tkm).y);
+      vedD = line(P(0, 0, H + tkm), P(0, GL, H + tkm));
+    }
+    add(vedD, { s: '#F28C28', w: 3, o: acc && kit.vedacao ? 1 : 0, c: 'fade' });
+    add(rufD, { s: '#2B3440', w: 3.5, o: acc && kit.rufos ? 1 : 0, c: 'fade' });
+    add(ridge, { s: ridgeC, w: 5.5, o: acc && kit.cumeeira ? 1 : 0, c: 'fade' });
     const tf = [tree(GW + 1.1, -1.3), tree(-1.5, GL + 0.5)];
-    const trunkBackD = tb.map((t) => t.trunk).join(''), canopyBackD = tb.map((t) => t.canopy).join('');
-    const trunkFrontD = tf.map((t) => t.trunk).join(''), canopyFrontD = tf.map((t) => t.canopy).join('');
+    add(tf.map((t) => t.t).join(''), { f: '#8A5A3C' });
+    add(tf.map((t) => t.c).join(''), { f: '#5A9D44', s: '#3B7129', w: 1 });
+    if (step === 3) add(line(P(0, -0.9, 0), P(GW, -0.9, 0)) + line(P(-0.9, 0, 0), P(-0.9, GL, 0)), { s: accent, w: 2.5, da: '4 4' });
+    const blank = { d: '', f: 'none', s: 'none', w: 0, o: 0, da: '', c: '' };
+    const Hs = {};
+    for (let i = 0; i < 72; i++) Hs['p' + i] = items[i] || blank;
 
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const measureD = L2(pr(0, -0.9, 0), pr(GW, -0.9, 0)) + L2(pr(-0.9, 0, 0), pr(-0.9, GL, 0));
-    const midW = pr(GW / 2, -0.9, 0), midL = pr(-0.9, GL / 2, 0);
+    const midW = P(GW / 2, -0.9, 0), midL = P(-0.9, GL / 2, 0);
     const tagW = { cls: focus === 'w' ? 'tag on' : 'tag', left: f1(clamp(midL.x - 30, 190, 358 - 136)), top: f1(clamp(midL.y - 8, 6, stageH - 50)) };
     const tagL = { cls: focus === 'l' ? 'tag on' : 'tag', left: f1(clamp(midW.x - 150, 6, 20)), top: f1(clamp(midW.y - 8, 6, stageH - 50)) };
-    const mirrorT = (s.mirror && step !== 6) ? 'translate(358 0) scale(-1 1)' : 'translate(0 0)';
+    const mirrorT = (s.mirror && step !== 3) ? 'translate(358 0) scale(-1 1)' : 'translate(0 0)';
 
-    // Progresso
-    const NAMES = ['Área', 'Telha', 'Conforto', 'Medidas', 'Kit', 'Pronto'];
-    const phase = [0, 1, 2, 2, 3, 4, 4, 5, 6][step];
-    const segs = NAMES.map((n, i) => ({ cls: (i < phase - 1 || step === 8) ? 'seg done' : (i === phase - 1 ? 'seg cur' : 'seg') }));
-    const phaseLabel = step === 0 ? 'Obra · vamos começar' : (step === 8 ? 'Obra concluída' : 'Obra · ' + NAMES[phase - 1]);
+    // ---------- Progresso ----------
+    const NAMES = ['Área', 'Medidas', 'Telha', 'Conforto', 'Kit', 'Pronto'];
+    const phase = [0, 1, 2, 2, 3, 3, 4, 5, 5, 6][step];
+    const segs = NAMES.map((n, i) => ({ cls: (i < phase - 1 || step === 9) ? 'seg done' : (i === phase - 1 ? 'seg cur' : 'seg') }));
+    const phaseLabel = step === 0 ? 'Obra · vamos começar' : (step === 9 ? 'Obra concluída' : 'Obra · ' + NAMES[phase - 1]);
     const phaseCount = phase + '/6';
 
-    // Opções
+    // ---------- Opções ----------
     const AREAS = [
       { id: 'casa', nome: 'Casa', sub: 'O telhado da sua casa', icon: 'M5 15 L16 6 L27 15 M8 13 V26 H24 V13 M13 26 V19 H19 V26' },
       { id: 'gourmet', nome: 'Área gourmet ou garagem', sub: 'Varanda, churrasqueira, carro', icon: 'M4 12 L16 6 L28 12 M7 11 V27 M25 11 V27 M10 24 V20 L12.5 16.5 H19.5 L22 20 V24 Z M12.5 24 V26 M19.5 24 V26' },
       { id: 'galpao', nome: 'Galpão', sub: 'Depósito, oficina, barracão', icon: 'M4 27 V14 Q16 3 28 14 V27 Z M11 27 V19 H21 V27 M11 22.5 H21' },
       { id: 'comercio', nome: 'Comércio', sub: 'Loja, escritório, salão', icon: 'M5 12 H27 L25 6 H7 Z M5 12 Q8 16 11 12 Q14 16 17 12 Q20 16 23 12 Q26 16 27 12 M7 15 V27 H25 V15 M13 27 V20 H19 V27' }
     ];
-    const areas = AREAS.map((a) => ({ ...a, on: area === a.id, cls: area === a.id ? 'opt on' : 'opt', pick: () => set({ area: a.id, w: DIMS[a.id][0], l: DIMS[a.id][1] }) }));
-    const models = TELHAS.map((t) => ({ curto: t.curto, pick: () => set({ telha: t.id, area: area || 'casa', prios: prios, step: 3, color: undefined }) }));
+    const areas = AREAS.map((a) => ({ ...a, on: area === a.id, cls: area === a.id ? 'opt on' : 'opt', pick: () => set({ area: a.id, w: DIMS[a.id][0], l: DIMS[a.id][1], shape: null }) }));
+    const models = TELHAS.map((t) => ({ curto: t.curto, pick: () => set({ telha: t.id, knownTelha: true, area: area || 'casa', step: 2, color: undefined }) }));
     const PRIOS = [
       { id: 'fresca', nome: 'Casa fresquinha', sub: 'Menos calor lá dentro', icon: 'M16 4 V28 M4 16 H28 M7.5 7.5 L24.5 24.5 M24.5 7.5 L7.5 24.5 M12.5 5.5 L16 9 L19.5 5.5 M12.5 26.5 L16 23 L19.5 26.5' },
       { id: 'silencio', nome: 'Silêncio na chuva', sub: 'Sem aquele barulhão', icon: 'M9 18 H23 A5 5 0 0 0 22 8.2 A7 7 0 0 0 9.5 10 A4 4 0 0 0 9 18 Z M11 22 L10 26 M16 22 L15 26 M21 22 L20 26' },
@@ -432,65 +544,67 @@ class Component extends DCLogic {
     const SHAPES = [
       { id: '1', nome: '1 água', sub: 'A chuva cai para um lado só', wall: 'M14 52 V26 L66 34 V52 Z', roof: 'M8 23 L72 33' },
       { id: '2', nome: '2 águas', sub: 'A chuva cai para os dois lados', wall: 'M16 52 V30 L40 15 L64 30 V52 Z', roof: 'M10 33 L40 12 L70 33' },
-      { id: 'outro', nome: 'Outro formato', sub: 'Com mais lados ou cantos? Um especialista te ajuda.', wall: 'M12 52 V32 H68 V52 Z', roof: 'M7 33 L24 17 H56 L73 33' }
+      { id: 'chale', nome: 'Chalé', sub: 'Bem inclinado, quase até o chão', wall: 'M22 52 V44 L40 17 L58 44 V52 Z M36 52 V43 H44 V52', roof: 'M10 50 L40 8 L70 50' },
+      { id: 'plat', nome: 'Platibanda', sub: 'Telhado escondido atrás da mureta', wall: 'M12 52 V20 H68 V52 Z', roof: 'M17 25 L40 31 L63 25' },
+      { id: 'varanda', nome: 'Varanda ao redor', sub: 'Telhado de 4 lados com varanda em volta', wall: 'M24 52 V30 H56 V52 Z M11 52 V41 H14 V52 Z M66 52 V41 H69 V52 Z', roof: 'M5 41 L24 33 M75 41 L56 33 M22 30 L40 16 L58 30' },
+      { id: 'outro', nome: 'Outro formato', sub: 'Mais lados ou cantos? Um especialista te ajuda.', wall: 'M12 52 V32 H68 V52 Z', roof: 'M7 33 L24 17 H56 L73 33' }
     ];
-    const shapes = SHAPES.map((x) => ({ ...x, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => set({ shape: x.id, especialista: false }) }));
+    const shapeList = SHAPES.filter((x) => isCasa || ['1', '2', 'outro'].indexOf(x.id) >= 0);
+    const shapes = shapeList.map((x) => ({ ...x, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' && shapeList.length % 2 === 1 ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => set({ shape: x.id, especialista: false }) }));
     const slopes = SLOPES.map((x) => ({ nome: x.nome, on: x.id === slopeId, cls: x.id === slopeId ? 'slope on' : 'slope', d: 'M4 26 H40 M4 26 L40 ' + (26 - x.k), pick: () => set({ slope: x.id }) }));
+    const FIXO = [
+      { id: 'madeira', nome: 'Madeira', sub: 'Vigas e caibros de madeira', fillD: 'M6 12 H42 V36 H6 Z', fillC: '#C08A55', lineD: 'M10 19 Q24 15 38 19 M10 25 Q24 21 38 25 M10 31 Q24 27 38 31', lineC: '#7A4E28' },
+      { id: 'metalon', nome: 'Metalon', sub: 'Tubos de aço quadrados ou retangulares', fillD: 'M8 8 H40 V40 H8 Z M14 14 V34 H34 V14 Z', fillC: '#8C98A5', lineD: '', lineC: 'none' },
+      { id: 'lsf', nome: 'Light Steel Frame', sub: 'Perfis de aço leve em formato de C', fillD: 'M12 8 H38 V15 H34 V13 H17 V35 H34 V33 H38 V40 H12 Z', fillC: '#C3CCD5', lineD: '', lineC: 'none' },
+      { id: 'naosei', nome: 'Ainda não sei', sub: 'Tudo bem, um especialista confirma com você', fillD: 'M24 6 A18 18 0 1 1 23.9 6 Z', fillC: '#FFFFFF', lineD: 'M18 19 A6 6 0 1 1 26.5 24.4 C25 25.2 24 26.4 24 28.5 M24 34.5 V35', lineC: '#34435A' }
+    ];
+    const fixOpts = FIXO.map((x) => ({ ...x, on: fix === x.id, cls: fix === x.id ? 'opt on' : 'opt', pick: () => set({ fix: x.id }) }));
+    const FIXTIP = { madeira: 'Vamos usar parafuso com rosca para madeira e arruela de vedação.', metalon: 'Vamos usar parafuso autobrocante: ele mesmo fura o aço.', lsf: 'Vamos usar parafuso autobrocante próprio para aço fino.', naosei: 'Sem problema. Separamos o kit e um especialista confirma o parafuso com você antes do envio.' };
 
-    const LIM = { w: [3, 20], l: [2, 30] };
+    const LIM = { w: [3, 30], l: [2, 20] };
     const bump = (dlt) => { const v = focus === 'w' ? w : l; const lim = LIM[focus]; const nv = Math.round(Math.max(lim[0], Math.min(lim[1], v + dlt)) * 10) / 10; set(focus === 'w' ? { w: nv } : { l: nv }); };
 
-    // CTA
+    // ---------- Botão principal ----------
     let ctaTxt = 'Continuar', ctaOff = false, onCta = () => go(step + 1);
     if (step === 0) { ctaTxt = 'Começar obra'; ctaOff = !cepOk; }
     else if (step === 1) { ctaOff = !area; }
     else if (step === 2) {
-      if (!revealed) { ctaTxt = 'Ver minha telha ideal'; ctaOff = prios.length === 0; onCta = () => set({ revealed: true, cardIdx: 0 }); }
-      else { ctaTxt = 'Escolher esta telha'; onCta = () => set({ telha: ordered[cardIdx].id, step: 3, color: undefined }); }
-    }
-    else if (step === 3) { ctaTxt = 'Gostei dessa cor'; }
-    else if (step === 5) {
       ctaOff = !shape;
       if (shape === 'outro') { ctaTxt = 'Falar com especialista'; onCta = () => set({ especialista: true }); }
     }
-    else if (step === 6) { ctaTxt = 'Ver acessórios'; }
-    else if (step === 7) { ctaTxt = 'Ver meu telhado pronto'; }
-    else if (step === 8) { ctaTxt = s.added ? 'Ir para o carrinho' : 'Colocar tudo no carrinho'; onCta = () => set({ added: true }); }
+    else if (step === 3) { onCta = () => go(s.knownTelha ? 5 : 4); }
+    else if (step === 4) {
+      if (!revealed) { ctaTxt = 'Ver minha telha ideal'; ctaOff = prios.length === 0; onCta = () => set({ revealed: true, cardIdx: 0 }); }
+      else { ctaTxt = 'Escolher esta telha'; onCta = () => set({ telha: ordered[cardIdx].id, step: 5, color: undefined }); }
+    }
+    else if (step === 5) { ctaTxt = 'Gostei dessa cor'; }
+    else if (step === 7) { ctaTxt = 'Ver acessórios'; ctaOff = !fix; }
+    else if (step === 8) { ctaTxt = 'Ver meu telhado pronto'; }
+    else if (step === 9) { ctaTxt = s.added ? 'Ir para o carrinho' : 'Colocar tudo no carrinho'; onCta = () => set({ added: true }); }
 
     const onBack = () => {
-      if (step === 2 && revealed) set({ revealed: false });
+      if (step === 4 && revealed) set({ revealed: false });
+      else if (step === 5 && s.knownTelha) go(3);
       else if (step > 0) go(step - 1);
     };
 
     const PALETTE = [accent, '#F29A3F', '#F6C445', '#2E8B57', '#E4572E'];
     const confetti = [];
     for (let i = 0; i < 26; i++) confetti.push({ left: ((i * 37) % 100) + '%', delay: ((i % 9) * 0.11) + 's', color: PALETTE[i % 5], rot: ((i * 47) % 180) + 'deg' });
-
     const sumOpen = s.sumOpen !== undefined ? s.sumOpen : true;
 
     return {
-      accent, onBack, segs, phaseLabel, phaseCount,
-      stageH,
-      notPersp: step !== 6, isPersp: step === 6,
-      houseCls: step === 8 ? 'houseB pop' : 'houseB',
+      accent, onBack, segs, phaseLabel, phaseCount, stageH,
+      notPersp: step !== 3, isPersp: step === 3,
+      houseCls: step === 9 ? 'houseB pop' : 'houseB',
       mirrorT, rotate: () => set({ mirror: !s.mirror }),
-      platTop, platL, platR, grassD,
-      wallL, wallF, gable, door, win1, win2, roofA, roofB, bandF, bandS, ribs, roofOutline,
-      cumD, rufD, vedD, screwD,
-      trunkBackD, canopyBackD, trunkFrontD, canopyFrontD, treesOp: 1,
-      doorFill, featD, awning, awningD,
-      pilBtop: pilB.top, pilBfx: pilB.fx, pilBfy: pilB.fy, pilFtop: pilF.top, pilFfx: pilF.fx, pilFfy: pilF.fy,
-      carTop: car.top, carFx: car.fx, carFy: car.fy,
-      measureD, measureOp: step === 6 ? 1 : 0,
-      is0: step === 0, is1: step === 1, is2a: step === 2 && !revealed, is2b: step === 2 && revealed,
-      is3: step === 3, is4: step === 4, is5: step === 5, is6: step === 6, is7: step === 7, is8: step === 8,
-      cep, onCep, cepOk, fab, dias,
-      roofHex,
-      roofOp, outlineOp: (step >= 1 && roofOp === 0) ? 0.45 : 0,
-      sunOp: step >= 2 && has('fresca') ? 1 : 0, rainOp: step >= 2 && has('silencio') ? 1 : 0,
-      cumOp: acc && kit.cumeeira ? 1 : 0, rufOp: acc && kit.rufos ? 1 : 0, parOp: acc && kit.parafusos ? 1 : 0, vedOp: acc && kit.vedacao ? 1 : 0,
-      tagW, tagL,
-      wTxt: nf(w, 1), lTxt: nf(l, 1),
+      H: Hs, items,
+      is0: step === 0, is1: step === 1, is2: step === 2, is3: step === 3,
+      is4a: step === 4 && !revealed, is4b: step === 4 && revealed,
+      is5: step === 5, is6: step === 6, is7: step === 7, is8: step === 8, is9: step === 9,
+      cep, onCep, cepOk, fab, dias, roofHex,
+      sunOp: step >= 4 && has('fresca') ? 1 : 0, rainOp: step >= 4 && has('silencio') ? 1 : 0,
+      tagW, tagL, wTxt: nf(w, 1), lTxt: nf(l, 1),
       focusW: () => set({ focus: 'w' }), focusL: () => set({ focus: 'l' }),
       areas, showModels: !!s.showModels, toggleModels: () => set({ showModels: !s.showModels }), models,
       prioOpts, cards, dots,
@@ -500,6 +614,7 @@ class Component extends DCLogic {
       showEsp: shape === 'outro',
       espMsg: s.especialista ? 'Pronto! Um especialista vai te chamar no WhatsApp para montar seu telhado junto com você.' : 'Telhados com mais lados precisam de um olhar de perto. Um especialista monta a lista com você, sem custo.',
       byHouse: !knowSize, bySize: knowSize,
+      showSlope: hs !== 'chale', isChale: hs === 'chale',
       focusLabel: focus === 'w' ? 'Largura da obra' : 'Comprimento da obra',
       focusVal: nf(focus === 'w' ? w : l, 1),
       dec: () => bump(-0.5), inc: () => bump(0.5),
@@ -509,15 +624,15 @@ class Component extends DCLogic {
       incKL: () => set({ kLen: Math.min(14, Math.round((kLen + 0.1) * 10) / 10) }),
       decKQ: () => set({ kQty: Math.max(1, kQty - 1) }),
       incKQ: () => set({ kQty: kQty + 1 }),
-      resultTxt: tQty + ' telhas de ' + nf(tLen, 2) + ' m',
-      areaTxt: nf(Math.round(areaM2), 0),
+      resultTxt, areaTxt: nf(Math.round(areaM2), 0),
       toggleSize: () => set({ knowSize: !knowSize }),
-      sizeLink: knowSize ? 'Prefiro informar as medidas da casa' : 'Já sei o tamanho das telhas',
+      sizeLink: knowSize ? 'Prefiro informar as medidas da obra' : 'Já sei o tamanho das telhas',
+      fixOpts, hasFix: !!fix, fixTip: FIXTIP[fk],
       kitItems, kitComplete,
       kitOn: kitItems.filter((k) => k.on),
       sumOpen, toggleSum: () => set({ sumOpen: !sumOpen }), chevCls: sumOpen ? 'chev open' : 'chev',
       sumTelha: tQty + ' × ' + telha.nome,
-      sumTelhaDet: color.nome + ' · ' + comfort.mm + ' · ' + nf(tLen, 2) + ' m cada · ' + nf(Math.round(areaM2), 0) + ' m²',
+      sumTelhaDet: color.nome + ' · ' + comfort.mm + ' · ' + pieces.map((p) => p.qty + ' de ' + nf(p.len, 2) + ' m').join(' + ') + ' · ' + nf(Math.round(areaM2), 0) + ' m²',
       telhasMoney: money(telhasV), freteMoney: money(frete),
       totalMoney: money(total), parcelaMoney: money(total / 10),
       added: !!s.added,
@@ -544,37 +659,13 @@ function optCard(it, extraStyle) {
 
 function view(v, s) {
   handlers = [];
-  const P = (pts, attrs) => `<polygon points="${pts}" ${attrs}></polygon>`;
-  const D = (d, attrs) => `<path d="${d}" ${attrs}></path>`;
-  const K = 'stroke="#0F1E2E" stroke-linejoin="round"';
   const H = v.stageH;
-  const house = `
-<svg width="358" height="${H}" viewBox="0 0 358 ${H}" aria-hidden="true" style="display:block">
-${D('M78 40 a10 10 0 0 1 18 -6 a12 12 0 0 1 22 4 a8 8 0 0 1 2 16 h-40 a7 7 0 0 1 -2 -14 Z M232 26 a8 8 0 0 1 14 -5 a10 10 0 0 1 18 3 a7 7 0 0 1 1 13 h-32 a6 6 0 0 1 -1 -11 Z', 'fill="#FFFFFF" opacity="0.85"')}
+  const houseItems = v.items.map((it) => `<path d="${it.d}" fill="${it.f}" stroke="${it.s}" stroke-width="${it.w}" opacity="${it.o}"${it.da ? ` stroke-dasharray="${it.da}"` : ''}${it.c ? ` class="${it.c}"` : ''} stroke-linecap="round" stroke-linejoin="round"></path>`).join('');
+  const house = `<svg width="358" height="${H}" viewBox="0 0 358 ${H}" aria-hidden="true" style="display:block">
+<path d="M78 40 a10 10 0 0 1 18 -6 a12 12 0 0 1 22 4 a8 8 0 0 1 2 16 h-40 a7 7 0 0 1 -2 -14 Z M232 26 a8 8 0 0 1 14 -5 a10 10 0 0 1 18 3 a7 7 0 0 1 1 13 h-32 a6 6 0 0 1 -1 -11 Z" fill="#FFFFFF" opacity="0.85"></path>
 <circle cx="322" cy="30" r="15" fill="#F6B73C" opacity="${v.sunOp}" class="fade"></circle>
-${D('M30 18 l-4 10 M44 12 l-4 10 M58 20 l-4 10 M38 34 l-4 10 M52 36 l-4 10', `stroke="#4E7BAE" stroke-width="2.5" stroke-linecap="round" opacity="${v.rainOp}" class="fade"`)}
-<g transform="${v.mirrorT}"><g class="${v.houseCls}">
-${P(v.platR, 'fill="#4F853A"')}${P(v.platL, 'fill="#5E9A45"')}${P(v.platTop, 'fill="#8CC56B"')}
-${D(v.grassD, 'stroke="#7AB35A" stroke-width="1.2" fill="none"')}
-${D(v.trunkBackD, 'fill="#8A5A3C"')}${D(v.canopyBackD, 'fill="#4E8F3A" stroke="#3B7129" stroke-width="1"')}
-${P(v.wallL, 'fill="#E7D8C2" stroke-width="1.8" ' + K)}${P(v.wallF, 'fill="#F7EFE4" stroke-width="1.8" ' + K)}${P(v.gable, 'fill="#F7EFE4" stroke-width="1.8" ' + K)}
-${P(v.win1, 'fill="#BFD6EA" stroke-width="1.5" ' + K)}${P(v.win2, 'fill="#BFD6EA" stroke-width="1.5" ' + K)}${P(v.door, `fill="${v.doorFill}" stroke-width="1.5" ` + K)}
-${D(v.featD, 'stroke="#0F1E2E" stroke-opacity="0.45" stroke-width="1" fill="none"')}
-${P(v.awning, 'fill="#FFFFFF"')}${D(v.awningD, 'fill="#E4572E"')}${P(v.awning, 'fill="none" stroke-width="1.5" ' + K)}
-${D(v.pilBfx, 'fill="#E7D8C2" stroke-width="1.2" ' + K)}${D(v.pilBfy, 'fill="#F7EFE4" stroke-width="1.2" ' + K)}
-${D(v.carFx, 'fill="#1E5FA8" stroke-width="1.2" ' + K)}${D(v.carFy, 'fill="#2F74C0" stroke-width="1.2" ' + K)}${D(v.carTop, 'fill="#4A8BD1" stroke-width="1.2" ' + K)}
-${D(v.pilFfx, 'fill="#E7D8C2" stroke-width="1.2" ' + K)}${D(v.pilFfy, 'fill="#F7EFE4" stroke-width="1.2" ' + K)}
-${P(v.roofB, `fill="${v.roofHex}" stroke-width="1.8" class="roof" ` + K)}${P(v.roofB, 'fill="#000000" opacity="0.2"')}
-${P(v.bandF, 'fill="#F2D48A" stroke-width="1.5" ' + K)}${P(v.bandS, 'fill="#F2D48A" stroke-width="1.5" ' + K)}
-${P(v.roofA, `fill="${v.roofHex}" stroke-width="1.8" class="roof" ` + K)}
-${D(v.ribs, 'stroke="#000000" stroke-opacity="0.22" stroke-width="1" fill="none"')}
-${D(v.vedD, `stroke="#F28C28" stroke-width="3" stroke-linecap="round" fill="none" opacity="${v.vedOp}" class="fade"`)}
-${D(v.screwD, `fill="#0F1E2E" opacity="${v.parOp}" class="fade"`)}
-${D(v.rufD, `stroke="#2B3440" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="${v.rufOp}" class="fade"`)}
-${D(v.cumD, `stroke="#2B3440" stroke-width="5.5" stroke-linecap="round" fill="none" opacity="${v.cumOp}" class="fade"`)}
-${D(v.trunkFrontD, 'fill="#8A5A3C"')}${D(v.canopyFrontD, 'fill="#5A9D44" stroke="#3B7129" stroke-width="1"')}
-${D(v.measureD, `stroke="${v.accent}" stroke-width="2.5" stroke-dasharray="4 4" fill="none" opacity="${v.measureOp}"`)}
-</g></g></svg>
+<path d="M30 18 l-4 10 M44 12 l-4 10 M58 20 l-4 10 M38 34 l-4 10 M52 36 l-4 10" stroke="#4E7BAE" stroke-width="2.5" stroke-linecap="round" opacity="${v.rainOp}" class="fade"></path>
+<g transform="${v.mirrorT}"><g class="${v.houseCls}">${houseItems}</g></g></svg>
 ${iff(v.isPersp, `<button class="${v.tagW.cls}" style="left:${v.tagW.left}px;top:${v.tagW.top}px" data-c="${on(v.focusW)}" aria-label="Ajustar largura">Largura ${v.wTxt} m</button><button class="${v.tagL.cls}" style="left:${v.tagL.left}px;top:${v.tagL.top}px" data-c="${on(v.focusL)}" aria-label="Ajustar comprimento">Comprimento ${v.lTxt} m</button>`)}`;
 
   let body = '';
@@ -589,12 +680,31 @@ ${iff(v.cepOk, `<div class="ok"><svg width="22" height="22" viewBox="0 0 24 24" 
 <h1 class="h1">O que você vai cobrir?</h1>
 <div class="grid2">${each(v.areas, (it) => optCard(it, 'min-height:150px'))}</div>
 <button class="link" data-c="${on(v.toggleModels)}">Já sei qual telha quero</button>
-${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;animation:rise .3s both"><span class="odesc" style="text-align:center">Escolha o modelo e pule direto para a cor:</span><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${each(v.models, (m) => `<button class="chip" data-c="${on(m.pick)}">${m.curto}</button>`)}</div></div>`)}
+${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;animation:rise .3s both"><span class="odesc" style="text-align:center">Escolha o modelo. A gente pula a parte das prioridades.</span><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${each(v.models, (m) => `<button class="chip" data-c="${on(m.pick)}">${m.curto}</button>`)}</div></div>`)}
 </div>`;
-  else if (v.is2a) body = `<div class="screen" data-k="s2a">
+  else if (v.is2) body = `<div class="screen" data-k="s2">
+<h1 class="h1">Qual o formato do telhado?</h1><p class="sub">"Água" é cada lado por onde a chuva escorre.</p>
+<div class="grid2">${each(v.shapes, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span>
+<svg width="80" height="56" viewBox="0 0 80 56" aria-hidden="true" style="flex-shrink:0"><path d="${it.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2" stroke-linejoin="round"></path><path d="${it.roof}" fill="none" stroke="${v.roofHex}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="display:flex;flex-direction:column;gap:4px"><span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></div></button>`)}</div>
+${iff(v.showEsp, `<div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 5 H20 V16 H9 L4 20 Z"></path></svg><span>${v.espMsg}</span></div>`)}</div>`;
+  else if (v.is3) {
+    const stp = (lbl, val, dec, inc, a1, a2) => `<div class="stepper"><button class="sbtn" data-c="${on(dec)}" aria-label="${a1}">−</button><div class="mid"><span class="lbl">${lbl}</span><span class="big" style="font-size:28px">${val}</span></div><button class="sbtn" data-c="${on(inc)}" aria-label="${a2}">+</button></div>`;
+    body = `<div class="screen" data-k="s3" style="gap:16px">
+${v.byHouse ? `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Medidas da obra</h1><p class="sub">Toque numa medida no desenho e ajuste aqui embaixo.</p></div>
+${stp(v.focusLabel, v.focusVal + ' m', v.dec, v.inc, 'Diminuir', 'Aumentar')}
+${v.showSlope ? `<div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:15px">Quanto o telhado é inclinado?</span><div class="seg3">${each(v.slopes, (sl) => `<button class="${sl.cls}" data-c="${on(sl.pick)}" aria-pressed="${sl.on}"><svg width="44" height="30" viewBox="0 0 44 30" aria-hidden="true"><path d="${sl.d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${sl.nome}</span></button>`)}</div></div>` : ''}
+${iff(v.isChale, '<div class="note">O chalé já tem o telhado bem inclinado, quase até o chão. A gente considera isso na conta.</div>')}`
+      : `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Tamanho das telhas</h1><p class="sub">Informe direto o comprimento e a quantidade.</p></div>
+${stp('Comprimento de cada telha', v.kLenTxt + ' m', v.decKL, v.incKL, 'Diminuir comprimento', 'Aumentar comprimento')}
+${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', 'Aumentar quantidade')}`}
+<div class="result"><span style="font-size:13px;font-weight:700;opacity:.8">Você vai precisar de</span><span class="big">${v.resultTxt}</span><span style="font-size:14px;opacity:.8">Cobrindo cerca de ${v.areaTxt} m²</span></div>
+<button class="link" data-c="${on(v.toggleSize)}">${v.sizeLink}</button></div>`;
+  }
+  else if (v.is4a) body = `<div class="screen" data-k="s4a">
 <h1 class="h1">O que é mais importante pra você?</h1><p class="sub">Pode escolher mais de um.</p>
 <div class="grid2">${each(v.prioOpts, (it) => optCard(it, 'min-height:150px'))}</div></div>`;
-  else if (v.is2b) body = `<div class="screen" data-k="s2b" style="gap:12px">
+  else if (v.is4b) body = `<div class="screen" data-k="s4b" style="gap:12px">
 <h1 class="h1">Sua telha ideal</h1><p class="sub">Arraste para o lado e veja as alternativas.</p>
 <div class="carousel" data-scroll="1">${each(v.cards, (c) => `<div class="${c.cls}" style="animation-delay:${c.delay}">
 <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge">${c.badge}</span><span style="font-size:12px;font-weight:700;opacity:.75">${c.num}</span></div>
@@ -603,42 +713,30 @@ ${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;anim
 <div style="display:flex;flex-direction:column;gap:9px">${each(c.bars, (b) => `<div style="display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:10px;font-size:13px;font-weight:600"><span>${b.label}</span><div class="bar"><i style="width:${b.w}"></i></div></div>`)}</div>
 <div style="font-size:13px;opacity:.85;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">A partir de <b>${c.preco}</b> por m²</div></div>`)}</div>
 <div style="display:flex;justify-content:center">${each(v.dots, (d) => `<button class="${d.cls}" data-c="${on(d.go)}" aria-label="${d.label}"><i></i></button>`)}</div></div>`;
-  else if (v.is3) body = `<div class="screen" data-k="s3">
+  else if (v.is5) body = `<div class="screen" data-k="s5">
 <h1 class="h1">Escolha a cor</h1><p class="sub">Toque numa cor e veja o telhado mudar lá em cima.</p>
 <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${each(v.colors, (co) => `<button class="${co.cls}" data-c="${on(co.pick)}" aria-pressed="${co.on}"><span class="ring"><span class="fill" style="background:${co.hex}"></span></span><span>${co.nome}</span></button>`)}</div>
 <div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0"><circle cx="12" cy="12" r="4"></circle><path d="M12 2 v2 M12 20 v2 M2 12 h2 M20 12 h2 M4.9 4.9 l1.4 1.4 M17.7 17.7 l1.4 1.4 M4.9 19.1 l1.4 -1.4 M17.7 6.3 l1.4 -1.4"></path></svg><span>Dica: cores claras refletem mais o sol e ajudam a deixar o ambiente mais fresco.</span></div></div>`;
-  else if (v.is4) body = `<div class="screen" data-k="s4">
+  else if (v.is6) body = `<div class="screen" data-k="s6">
 <h1 class="h1">Qual nível de conforto?</h1><p class="sub">Quanto mais grossa a telha, mais fresco e silencioso fica embaixo dela.</p>
 <div style="display:flex;flex-direction:column;gap:12px">${each(v.comforts, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}" style="flex-direction:row;align-items:center;gap:14px">
 <svg width="30" height="60" viewBox="0 0 30 60" aria-hidden="true" style="flex-shrink:0"><rect x="10" y="4" width="10" height="40" rx="5" fill="#EEF3F8" stroke="#34435A" stroke-width="2"></rect><circle cx="15" cy="49" r="8" fill="${v.accent}" stroke="#34435A" stroke-width="2"></circle><rect x="12.5" y="${it.ty}" width="5" height="${it.th}" rx="2.5" fill="${v.accent}"></rect></svg>
 <div style="flex-grow:1;display:flex;flex-direction:column;gap:4px">${iff(it.rec, '<span class="seal">Recomendado</span>')}<span class="otitle">${it.nome} · ${it.mm}</span><span class="odesc">${it.desc}</span></div>
 <span class="extra">${it.extra}</span></button>`)}</div></div>`;
-  else if (v.is5) body = `<div class="screen" data-k="s5">
-<h1 class="h1">Qual o formato do telhado?</h1><p class="sub">"Água" é cada lado por onde a chuva escorre.</p>
-<div class="grid2">${each(v.shapes, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span>
-<svg width="80" height="56" viewBox="0 0 80 56" aria-hidden="true" style="flex-shrink:0"><path d="${it.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2" stroke-linejoin="round"></path><path d="${it.roof}" fill="none" stroke="${v.roofHex}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-<div style="display:flex;flex-direction:column;gap:4px"><span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></div></button>`)}</div>
-${iff(v.showEsp, `<div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4 5 H20 V16 H9 L4 20 Z"></path></svg><span>${v.espMsg}</span></div>`)}</div>`;
-  else if (v.is6) {
-    const stp = (lbl, val, dec, inc, a1, a2) => `<div class="stepper"><button class="sbtn" data-c="${on(dec)}" aria-label="${a1}">−</button><div class="mid"><span class="lbl">${lbl}</span><span class="big" style="font-size:28px">${val}</span></div><button class="sbtn" data-c="${on(inc)}" aria-label="${a2}">+</button></div>`;
-    body = `<div class="screen" data-k="s6" style="gap:16px">
-${v.byHouse ? `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Medidas da obra</h1><p class="sub">Toque numa medida no desenho e ajuste aqui embaixo.</p></div>
-${stp(v.focusLabel, v.focusVal + ' m', v.dec, v.inc, 'Diminuir', 'Aumentar')}
-<div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:15px">Quanto o telhado é inclinado?</span><div class="seg3">${each(v.slopes, (sl) => `<button class="${sl.cls}" data-c="${on(sl.pick)}" aria-pressed="${sl.on}"><svg width="44" height="30" viewBox="0 0 44 30" aria-hidden="true"><path d="${sl.d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${sl.nome}</span></button>`)}</div></div>`
-      : `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Tamanho das telhas</h1><p class="sub">Informe direto o comprimento e a quantidade.</p></div>
-${stp('Comprimento de cada telha', v.kLenTxt + ' m', v.decKL, v.incKL, 'Diminuir comprimento', 'Aumentar comprimento')}
-${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', 'Aumentar quantidade')}`}
-<div class="result"><span style="font-size:13px;font-weight:700;opacity:.8">Você vai precisar de</span><span class="big">${v.resultTxt}</span><span style="font-size:14px;opacity:.8">Cobrindo cerca de ${v.areaTxt} m²</span></div>
-<button class="link" data-c="${on(v.toggleSize)}">${v.sizeLink}</button></div>`;
-  }
-  else if (v.is7) body = `<div class="screen" data-k="s7" style="gap:14px">
+  else if (v.is7) body = `<div class="screen" data-k="s7">
+<h1 class="h1">Onde as telhas vão ser presas?</h1><p class="sub">É a estrutura que fica embaixo do telhado. Veja no desenho lá em cima. Ela define o parafuso certo.</p>
+<div class="grid2">${each(v.fixOpts, (it) => `<button class="${it.cls}" style="min-height:168px" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span>
+<span class="ico2"><svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="${it.fillD}" fill="${it.fillC}" fill-rule="evenodd" stroke="#34435A" stroke-width="1.5" stroke-linejoin="round"></path>${it.lineD ? `<path d="${it.lineD}" fill="none" stroke="${it.lineC}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>` : ''}</svg></span>
+<span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></button>`)}</div>
+${iff(v.hasFix, `<div class="tip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="9"></circle><path d="M12 11 V16 M12 7.5 v.01"></path></svg><span>${v.fixTip}</span></div>`)}</div>`;
+  else if (v.is8) body = `<div class="screen" data-k="s8" style="gap:14px">
 <h1 class="h1">Seu kit de acessórios</h1><p class="sub">Já separamos o que seu telhado precisa, nas quantidades certas.</p>
 ${iff(v.kitComplete, `<div class="complete"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 L19.5 5.5 L24.5 5 L25.5 10 L30 12.5 L28 17 L30 21.5 L25.5 23.5 L24.5 28.5 L19.5 28 L16 31 L12.5 28 L7.5 28.5 L6.5 23.5 L2 21.5 L4 17 L2 12.5 L6.5 10 L7.5 5 L12.5 5.5 Z" fill="#2E8B57"></path><path d="M10.5 16.5 L14.5 20.5 L22 12.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>Kit completo! Nada vai faltar na hora da obra.</span></div>`)}
 <div style="display:flex;flex-direction:column;gap:10px">${each(v.kitItems, (k, i) => `<div style="display:flex;flex-direction:column;gap:8px" data-k="kit${i}">
 <label class="${k.cls}"><input type="checkbox" class="sr" ${k.on ? 'checked' : ''} data-ch="${on(k.toggle)}"><span class="box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg></span>
 <span style="flex-grow:1;display:flex;flex-direction:column;gap:3px"><span class="otitle">${k.nome}</span><span class="odesc">${k.desc}</span><span style="font-size:13px;font-weight:700;color:#34435A">${k.qtyTxt}</span></span><span class="extra" style="font-size:14px">${k.price}</span></label>
 ${iff(k.showAlert, `<div class="warn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5 V13 M12 16.5 v.01"></path></svg><span>${k.alert}</span></div>`)}</div>`)}</div></div>`;
-  else if (v.is8) body = `<div class="screen" data-k="s8" style="gap:14px">
+  else if (v.is9) body = `<div class="screen" data-k="s9" style="gap:14px">
 <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center"><span class="seal" style="align-self:center;background:#E3F3EA;color:#155C39">Obra concluída</span><h1 class="h1">Seu telhado está 100%</h1><p class="sub">Tudo compatível entre si e pronto para entrega.</p></div>
 <div class="sum"><button class="sumhead" data-c="${on(v.toggleSum)}" aria-expanded="${v.sumOpen}"><span>Resumo do pedido</span><svg class="${v.chevCls}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9 L12 15 L18 9"></path></svg></button>
 ${iff(v.sumOpen, `<div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:12px;animation:rise .25s both">
@@ -658,7 +756,7 @@ ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 2
 ${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>
 ${body}</div>
 <div class="ctabar"><button class="cta" ${v.ctaOff ? 'disabled' : ''} data-c="${on(v.onCta)}">${v.ctaTxt}</button></div>
-${iff(v.is8, `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden" data-k="conf">${each(v.confetti, (cf) => `<span class="conf" style="left:${cf.left};animation-delay:${cf.delay};background:${cf.color};transform:rotate(${cf.rot})"></span>`)}</div>`)}
+${iff(v.is9, `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden" data-k="conf">${each(v.confetti, (cf) => `<span class="conf" style="left:${cf.left};animation-delay:${cf.delay};background:${cf.color};transform:rotate(${cf.rot})"></span>`)}</div>`)}
 </div>`;
 }
 
