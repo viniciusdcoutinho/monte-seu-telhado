@@ -26,12 +26,13 @@ button{font-family:inherit;color:inherit}
 .screen{display:flex;flex-direction:column;gap:18px;animation:rise .35s ease-out both}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .iconbtn{width:44px;height:44px;border-radius:14px;border:0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(15,30,46,.1);flex-shrink:0}
-.seg{flex:1;height:8px;border-radius:4px;background:#D3DBE3;transition:background .3s}
+.backbtn{width:36px;height:36px;border-radius:12px;position:relative}.backbtn::after{content:'';position:absolute;inset:-6px}
+.seg{flex:1;height:6px;border-radius:3px;background:#D3DBE3;transition:background .3s}
 .seg.done{background:var(--p)}
 .seg.cur{background:linear-gradient(90deg,var(--p) 50%,#D3DBE3 50%)}
 .stage{margin:0 -4px 20px;border-radius:24px;background:#CFE3F5;position:relative;overflow:hidden;flex-shrink:0;transition:height .35s}
 .stage-in{position:absolute;left:50%;top:0;width:358px;transform-origin:top center}
-.cta{width:100%;height:56px;border:0;border-radius:18px;background:var(--p);color:#fff;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .2s;box-shadow:0 6px 16px var(--pSoft)}
+.cta{width:100%;height:46px;border:0;border-radius:14px;background:var(--p);color:#fff;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s,opacity .2s;box-shadow:0 6px 16px var(--pSoft)}
 .cta:active{transform:scale(.98)}
 .cta:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 .link{background:none;border:0;color:var(--p);font-weight:700;font-size:15px;min-height:44px;padding:0 4px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;align-self:center}
@@ -128,8 +129,8 @@ button{font-family:inherit;color:inherit}
 .conf{position:absolute;top:-20px;width:9px;height:15px;border-radius:2px;animation:fall 2.8s ease-in both;pointer-events:none}
 @keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(620deg);opacity:.3}}
 .toast{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px;border-radius:14px;background:#E3F3EA;color:#155C39;font-weight:700;animation:pop .4s both}
-.ctabar{position:absolute;left:0;right:0;bottom:0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));background:var(--ground);box-shadow:0 -8px 24px rgba(15,30,46,.08)}
-.scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:4px 20px 130px;-webkit-overflow-scrolling:touch}
+.ctabar{position:absolute;left:0;right:0;bottom:0;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--ground);box-shadow:0 -8px 24px rgba(15,30,46,.08)}
+.scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:4px 20px 106px;-webkit-overflow-scrolling:touch}
 button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .ico2{width:64px;height:64px;border-radius:18px;background:#EEF3F8;display:flex;align-items:center;justify-content:center}
@@ -141,22 +142,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-h2{font-family:'Bricolage Grotesque','Figtree',sans-serif;font-weight:700;font-size:22px;line-height:1.15;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .es-sub{font-size:14px;line-height:1.45;color:#46556A;margin:0;text-wrap:pretty}
 .es-lbl2{font-weight:800;font-size:13px;color:#34435A;letter-spacing:.02em;text-transform:uppercase}
-.es-iconbtn{width:44px;height:44px;border-radius:14px;border:0;background:#fff;color:#10263F;text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(15,30,46,.1);flex-shrink:0}
-.es-seg{flex:1;height:8px;border-radius:4px;background:#D3DBE3}
+.es-iconbtn{width:36px;height:36px;border-radius:12px;border:0;background:#fff;color:#10263F;text-decoration:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(15,30,46,.1);flex-shrink:0;position:relative}
+.es-iconbtn::after{content:'';position:absolute;inset:-6px}
+.es-seg{flex:1;height:6px;border-radius:3px;background:#D3DBE3}
 .es-seg.es-done{background:var(--p)}
 .es-seg.es-cur{background:linear-gradient(90deg,var(--p) 50%,#D3DBE3 50%)}
 .es-glass{background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 4px 16px rgba(15,30,46,.16);border:1px solid rgba(255,255,255,.75)}
 .es-statp{position:absolute;left:10px;top:10px;padding:8px 12px;border-radius:14px;font-size:12px;font-weight:800;color:#10263F;max-width:260px;line-height:1.3}
 .es-camb{width:58px;min-height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.8);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:800;color:#34435A;cursor:pointer;box-shadow:0 4px 14px rgba(15,30,46,.16);padding:4px 0}
 .es-camb.es-on{background:#10263F;color:#fff;border-color:#10263F}
-.es-tabs{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);display:flex;gap:4px;padding:4px;border-radius:18px}
-.es-tab{min-height:44px;padding:0 15px;border:0;border-radius:14px;background:transparent;font-weight:800;font-size:14px;color:#34435A;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
+.es-tabs{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:2px;padding:3px;border-radius:15px}
+.es-tab{min-height:34px;padding:0 12px;border:0;border-radius:12px;background:transparent;font-weight:800;font-size:13px;color:#34435A;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s}
 .es-tab.es-on{background:#10263F;color:#fff}
 .es-vphint{position:absolute;left:10px;top:52px;max-width:250px;padding:6px 10px;border-radius:10px;font-size:11px;font-weight:700;color:#10263F;line-height:1.35}
 .es-vpmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-weight:800;color:#10263F;background:linear-gradient(#9CC3EA,#E3EDF5);text-align:center;padding:0 40px}
 .es-spin{width:36px;height:36px;border-radius:50%;border:4px solid rgba(16,38,63,.15);border-top-color:#10263F;animation:es-sp .9s linear infinite}
 @keyframes es-sp{to{transform:rotate(360deg)}}
-.es-panel{flex-grow:1;min-height:0;overflow-y:auto;padding:18px 20px 112px;background:#F4F6F8;border-radius:22px 22px 0 0;margin-top:-14px;position:relative;z-index:2;box-shadow:0 -10px 24px rgba(15,30,46,.10)}
+.es-panel{flex-grow:1;min-height:0;overflow-y:auto;padding:18px 20px 84px;background:#F4F6F8;border-radius:22px 22px 0 0;margin-top:-14px;position:relative;z-index:2;box-shadow:0 -10px 24px rgba(15,30,46,.10)}
 .es-sect{display:flex;flex-direction:column;gap:10px}
 .es-hscroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:3px 20px 5px}
 .es-hscroll::-webkit-scrollbar{display:none}
@@ -208,8 +210,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-hrow{display:flex;flex-direction:column;gap:6px}
 .es-hrow .es-t{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:700}
 .es-note{font-size:13px;color:#46556A;background:#EEF3F8;border-radius:14px;padding:12px 14px;line-height:1.45}
-.es-ctabar{position:absolute;left:0;right:0;bottom:0;padding:12px 20px 24px;background:#F4F6F8;box-shadow:0 -8px 24px rgba(15,30,46,.08);z-index:4}
-.es-cta{width:100%;height:56px;border:0;border-radius:18px;background:var(--p);color:#fff;text-decoration:none;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 16px var(--pSoft)}
+.es-ctabar{position:absolute;left:0;right:0;bottom:0;padding:8px 16px 14px;background:#F4F6F8;box-shadow:0 -8px 24px rgba(15,30,46,.08);z-index:4}
+.es-cta{width:100%;height:46px;border:0;border-radius:14px;background:var(--p);color:#fff;text-decoration:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 16px var(--pSoft)}
 .es-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .es-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .es-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -217,8 +219,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-cta:hover{color:#fff}
 /* Estúdio no app: área do 3D acompanha a altura da tela; botão respeita a borda do celular */
 .es-vp{position:relative;flex-shrink:0;height:clamp(300px,52%,450px);background:linear-gradient(#8FB9E4,#E3EDF5);overflow:hidden}
-.es-ctabar{padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px))}
-.es-panel{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+.es-ctabar{padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+.es-panel{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
 .es-rng{touch-action:pan-y}
 /* Etapa Formato: selo 3D nos cards */
 .b3d{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:10px;background:#EEF3F8;color:var(--p);font-size:11px;font-weight:800;letter-spacing:.03em}
@@ -696,7 +698,7 @@ class Component extends DCLogic {
       { id: 'outro', nome: 'Outro formato', sub: 'Monte em blocos: casa em L, em U ou com pátio', wall: 'M12 52 V32 H68 V52 Z', roof: 'M7 33 L24 17 H56 L73 33' }
     ];
     const shapeList = SHAPES.filter((x) => isCasa || ['1', '2', 'outro'].indexOf(x.id) >= 0);
-    const shapes = shapeList.map((x) => ({ ...x, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' && shapeList.length % 2 === 1 ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => openStudio(x.id) }));
+    const shapes = shapeList.map((x) => ({ ...x, sub: btype === 'galpao' && x.id === 'outro' ? 'Galpão com platibanda, com ou sem escritório' : x.sub, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' && shapeList.length % 2 === 1 ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => openStudio(x.id) }));
     const slopes = SLOPES.map((x) => ({ nome: x.nome, on: x.id === slopeId, cls: x.id === slopeId ? 'slope on' : 'slope', d: 'M4 26 H40 M4 26 L40 ' + (26 - x.k), pick: () => set({ slope: x.id }) }));
     const FIXO = [
       { id: 'madeira', nome: 'Madeira', sub: 'Vigas e caibros de madeira', fillD: 'M6 12 H42 V36 H6 Z', fillC: '#C08A55', lineD: 'M10 19 Q24 15 38 19 M10 25 Q24 21 38 25 M10 31 Q24 27 38 31', lineC: '#7A4E28' },
@@ -1014,9 +1016,9 @@ ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 2
 <button class="link" data-c="${on(restart)}">Recomeçar a simulação</button></div>`;
 
   return `<div class="app" style="--p:${v.accent}">
-<div style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px">
-<button class="iconbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
-<div style="flex-grow:1;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px">
+<button class="iconbtn backbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
+<div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
 <div class="scroll" data-k="scroll"><div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
 ${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>
 ${body}</div>
@@ -1096,6 +1098,17 @@ class Studio extends DCLogic {
       SLOPES: [{ id: 'reto', nome: 'Quase reto', sub: '10%', v: 0.10 }, { id: 'medio', nome: 'Médio', sub: '15%', v: 0.15 }, { id: 'inclinado', nome: 'Inclinado', sub: '25%', v: 0.25 }],
       TELHAS: { trap: { nome: 'Trapezoidal', mm: 30, U: 0.73, vao: 2.6 }, colonial: { nome: 'Colonial', mm: 40, U: 0.55, vao: 1.75 } },
       PD: { '1': { L: 9, S: 6.5 }, '2': { L: 10, S: 8 }, chale: { L: 9, S: 7 }, varanda: { L: 12, S: 10 } },
+      // galpão comercial: pé-direito alto, portões na frente e pátio de concreto
+      PDG: { '1': { L: 16, S: 10 }, '2': { L: 20, S: 12 } }, HG: 6.0,
+      TPLG: {
+        galpao: { nome: 'Galpão', icon: 'M4 7 H36 V30 H4 Z M10 30 V20 H18 V30 M22 30 V20 H30 V30', blocks: [{ t: 'casa', x: 0, y: 0, w: 20, d: 14, lvl: 'sobrado', fall: 'N', ind: true }] },
+        escritorio: { nome: 'Galpão + escritório', icon: 'M4 3 H36 V22 H4 Z M22 22 H36 V31 H22 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 20, d: 14, lvl: 'sobrado', fall: 'N', ind: true }, { t: 'casa', x: 12, y: 14, w: 8, d: 5, lvl: 'alto', fall: 'S' }] }
+      },
+      FTXTG: {
+        '1': ['Galpão de 1 água', 'A chuva cai para um lado só. Ajuste as medidas e a inclinação.'],
+        '2': ['Galpão de 2 águas', 'A chuva cai para os dois lados, a partir da cumeeira no meio.'],
+        outro: ['Galpão com platibanda', "Monte em blocos: o galpão, um escritório na frente e a caixa d'água."]
+      },
       IR: 0.05, T: 0.15, CW: 0.3, PIRMM: 30, U_PIR: 0.73, U_COMUM: 4.5, VAO: 2.6
     };
     return this._kf;
@@ -1103,19 +1116,22 @@ class Studio extends DCLogic {
 
   mdl() {
     const k = this.kfg(), s = this.state || {};
-    const forma = s.forma || this.props.startForma || 'outro';
+    const galpao = this.props.area === 'galpao';
+    const forma0 = s.forma || this.props.startForma || 'outro';
+    const forma = galpao && ['1', '2', 'outro'].indexOf(forma0) < 0 ? '2' : forma0;
     const blocksMode = forma === 'plat' || forma === 'outro';
-    const st0 = this.props.startTpl && this.props.startTpl !== 'auto' && k.TPL[this.props.startTpl] ? this.props.startTpl : null;
-    const tplId = s.tpl || st0 || (forma === 'plat' ? 'garagem' : 'dois');
-    const src = s.blocks || (k.TPL[tplId] || k.TPL.garagem).blocks;
+    const TPLS = galpao ? k.TPLG : k.TPL;
+    const st0 = this.props.startTpl && this.props.startTpl !== 'auto' && TPLS[this.props.startTpl] ? this.props.startTpl : null;
+    const tplId = (s.tpl && TPLS[s.tpl]) ? s.tpl : (st0 || (galpao ? 'galpao' : (forma === 'plat' ? 'garagem' : 'dois')));
+    const src = s.blocks || TPLS[tplId].blocks;
     const blocks = src.map((b) => Object.assign({}, b));
     const sel = blocksMode ? Math.max(0, Math.min(blocks.length - 1, s.sel || 0)) : 0;
-    const pd = k.PD[forma] || k.PD['2'];
+    const pd = (galpao ? k.PDG[forma] : k.PD[forma]) || k.PD['2'];
     const telha = blocksMode ? 'trap' : (s.telha || (forma === 'chale' || forma === 'varanda' ? 'colonial' : 'trap'));
-    const casa = this.clampCasa(forma, s.cL !== undefined ? s.cL : pd.L, s.cS !== undefined ? s.cS : pd.S);
+    const casa = this.clampCasa(forma, s.cL !== undefined ? s.cL : pd.L, s.cS !== undefined ? s.cS : pd.S, galpao);
     return {
-      forma, blocksMode, tplId, blocks, sel, casa, telha,
-      slope: s.slope || 'medio', fall1: s.fall1 || 'N',
+      forma, blocksMode, tplId, blocks, sel, casa, telha, galpao,
+      slope: s.slope || (galpao ? 'reto' : 'medio'), fall1: s.fall1 || 'N',
       mode: s.mode || this.props.startMode || 'montar',
       color: s.color || (telha === 'colonial' ? 'terracota' : 'cinza'),
       city: s.city || 'goiania', frente: s.frente || 'N', epoca: s.epoca || 'hoje',
@@ -1127,7 +1143,8 @@ class Studio extends DCLogic {
 
   isRoof(b) { return b.t === 'casa' || b.t === 'garagem'; }
 
-  clampCasa(forma, L, S) {
+  clampCasa(forma, L, S, galpao) {
+    if (galpao) return { L: Math.max(4, Math.min(30, L)), S: Math.max(4, Math.min(20, S)) };
     const mn = forma === 'varanda' ? 6 : 3, mxS = forma === 'chale' ? 12 : 20;
     return { L: Math.max(mn, Math.min(24, L)), S: Math.max(mn, Math.min(mxS, S)) };
   }
@@ -1225,8 +1242,8 @@ class Studio extends DCLogic {
     const upd = (patch) => { const nbs = plain(); Object.assign(nbs[m.sel], patch); commit(nbs); };
     const bump = (s.camReq || 0) + 1;
     const pitched = !m.blocksMode, PB = pitched ? this.bomPitched(m) : null, TN = k.TELHAS[m.telha] || k.TELHAS.trap;
-    const FT = k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
-    const formas = k.FORMAS.map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
+    const FT = (m.galpao && k.FTXTG[m.forma]) || k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
+    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
     const C = m.casa, ch = m.forma === 'chale';
     const setA = (v) => set(ch ? { cS: v } : { cL: v }), setB = (v) => set(ch ? { cL: v } : { cS: v });
     const vA = ch ? C.S : C.L, vB = ch ? C.L : C.S;
@@ -1251,7 +1268,8 @@ class Studio extends DCLogic {
     const HINT = { montar: pitched ? 'Puxe as setas azuis para mudar o tamanho' : 'Arraste o bloco azul para mover · puxe as setas', pecas: 'Toque numa peça para ver o que ela é', sol: 'Mude a hora e veja a sombra andar' };
 
     // ---------- montar ----------
-    const tpls = Object.keys(k.TPL).map((id) => { const on = !s.blocks && m.tplId === id; return { nome: k.TPL[id].nome, icon: k.TPL[id].icon, on, cls: on ? 'tplb on' : 'tplb', pick: () => set({ tpl: id, blocks: undefined, sel: 0, pick: null }) }; });
+    const TPLS = m.galpao ? k.TPLG : k.TPL;
+    const tpls = Object.keys(TPLS).map((id) => { const on = !s.blocks && m.tplId === id; return { nome: TPLS[id].nome, icon: TPLS[id].icon, on, cls: on ? 'tplb on' : 'tplb', pick: () => set({ tpl: id, blocks: undefined, sel: 0, pick: null }) }; });
     const blks = blocks.map((b, i) => ({ txt: letra(i) + ' · ' + k.NOME[b.t], on: i === m.sel, cls: i === m.sel ? 'chip2 on' : 'chip2', pick: () => set({ sel: i }) }));
     const base = this.isRoof(cb) ? cb : (blocks.find((b) => this.isRoof(b)) || cb);
     const full = blocks.length >= 7;
@@ -1261,7 +1279,7 @@ class Studio extends DCLogic {
       { txt: '+ Bloco', fn: () => addB({ t: 'casa', x: base.x + base.w, y: base.y, w: 4, d: Math.min(base.d, 8), lvl: 'terreo', fall: 'L' }) },
       { txt: "+ Caixa d'água", fn: () => addB({ t: 'caixa', x: base.x + 0.5, y: base.y + 0.5, w: 2.5, d: 2.5 }) },
       { txt: '+ Piscina', fn: () => addB({ t: 'piscina', x: base.x + base.w + 1.5, y: base.y + 1, w: 3, d: 6 }) }
-    ].map((a) => ({ txt: a.txt, pick: a.fn, off: full }));
+    ].filter((a) => !m.galpao || a.txt === '+ Bloco' || a.txt === "+ Caixa d'água").map((a) => ({ txt: a.txt, pick: a.fn, off: full }));
     const FALLS = [
       { id: 'N', nome: 'Fundos', icon: 'M12 19 V5 M6 11 L12 5 L18 11' },
       { id: 'S', nome: 'Frente', icon: 'M12 5 V19 M6 13 L12 19 L18 13' },
@@ -1398,7 +1416,7 @@ class Studio extends DCLogic {
     const W = cv.clientWidth, H = cv.clientHeight;
     if (!W || !H || (W === E.W && H === E.H)) return;
     E.W = W; E.H = H;
-    const OFF = 56;
+    const OFF = 46;
     E.cam.aspect = W / (H + OFF);
     E.cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     E.R.setSize(W, H, false);
@@ -1427,7 +1445,7 @@ class Studio extends DCLogic {
     R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
     R.shadowMap.enabled = true; R.shadowMap.type = T.PCFSoftShadowMap;
     const scene = new T.Scene();
-    const OFF = 56;
+    const OFF = 46;
     const cam = new T.PerspectiveCamera(30, W / (H + OFF), 0.1, 900);
     cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     const E = this._E = { T, R, scene, cam, W, H, tex: {}, geo: {}, mat: {}, pieces: [], flows: [], heatVols: [], handles: [], labels: [], ex: 0, exTarget: 0, dirty: true, visible: true };
@@ -1482,6 +1500,19 @@ class Studio extends DCLogic {
     for (let q = 0; q < 50; q++) { g.fillStyle = 'rgba(60,30,12,' + (0.08 + rnd() * 0.12) + ')'; g.fillRect(rnd() * 128, 0, 1 + rnd() * 2, 256); }
     g.fillStyle = 'rgba(40,20,8,0.5)'; for (let xx = 0; xx < 128; xx += 21) g.fillRect(xx, 0, 1.5, 256);
     X.door = this._tx(c, false);
+    // fachada metálica do galpão: nervuras verticais a cada 0,25 m (1 m por repetição)
+    c = this._cvs(256, 64); g = c.getContext('2d'); g.fillStyle = '#C8CFD5'; g.fillRect(0, 0, 256, 64);
+    for (let xx = 0; xx < 256; xx += 64) { g.fillStyle = '#E3E7EA'; g.fillRect(xx + 8, 0, 18, 64); g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillRect(xx + 6, 0, 2, 64); g.fillStyle = 'rgba(40,52,64,0.3)'; g.fillRect(xx + 26, 0, 4, 64); }
+    X.clad = this._tx(c, true);
+    // portão seccionado: gomos de 0,5 m
+    c = this._cvs(64, 128); g = c.getContext('2d'); g.fillStyle = '#E2E6E9'; g.fillRect(0, 0, 64, 128);
+    for (let yy = 0; yy < 128; yy += 64) { g.fillStyle = 'rgba(30,42,54,0.38)'; g.fillRect(0, yy, 64, 3); g.fillStyle = 'rgba(255,255,255,0.65)'; g.fillRect(0, yy + 3, 64, 2); g.fillStyle = 'rgba(30,42,54,0.1)'; g.fillRect(0, yy + 31, 64, 2); }
+    X.portao = this._tx(c, true);
+    // pátio de concreto com juntas a cada 4 m
+    c = this._cvs(512, 512); g = c.getContext('2d'); g.fillStyle = '#BFBCB5'; g.fillRect(0, 0, 512, 512);
+    noise(g, 512, 512, 30000, (g2, x, y) => { const v = Math.floor(150 + rnd() * 80); g2.fillStyle = 'rgba(' + v + ',' + v + ',' + (v - 5) + ',0.3)'; g2.fillRect(x, y, 1.4, 1.4); });
+    g.fillStyle = 'rgba(80,78,72,0.5)'; g.fillRect(0, 0, 512, 3); g.fillRect(0, 0, 3, 512);
+    X.yard = this._tx(c, true);
     // setas de escoamento
     c = this._cvs(128, 128); g = c.getContext('2d'); g.clearRect(0, 0, 128, 128);
     g.strokeStyle = 'rgba(255,255,255,0.95)'; g.lineWidth = 12; g.lineCap = 'round'; g.lineJoin = 'round';
@@ -1543,6 +1574,13 @@ class Studio extends DCLogic {
       carGlass: std({ color: 0x15212B, metalness: 0.9, roughness: 0.08, envMapIntensity: 1.6 }),
       tire: std({ color: 0x181818, roughness: 0.85 }),
       chrome: std({ color: 0xDDE2E6, metalness: 1, roughness: 0.2 }),
+      clad: std({ color: 0xffffff, map: X.clad, metalness: 0.35, roughness: 0.5, envMapIntensity: 0.8 }),
+      portao: std({ color: 0xffffff, map: X.portao, metalness: 0.3, roughness: 0.45 }),
+      poly: std({ color: 0xEEF4F8, roughness: 0.3, metalness: 0, transparent: true, opacity: 0.92, emissive: 0x8FA9BF, emissiveIntensity: 0.22 }),
+      fascia: std({ color: 0x2F3A45, metalness: 0.45, roughness: 0.42 }),
+      yard: std({ color: 0xffffff, map: X.yard, roughness: 0.95 }),
+      truckBox: std({ color: 0xF1F3F4, metalness: 0.25, roughness: 0.45 }),
+      truckCab: std({ color: 0x1E5FA8, metalness: 0.55, roughness: 0.3, envMapIntensity: 1.2 }),
       blob: new T.MeshBasicMaterial({ map: X.blob, transparent: true, depthWrite: false, opacity: 0.5, color: 0xffffff }),
       blobT: new T.MeshBasicMaterial({ map: X.blobT, transparent: true, depthWrite: false, opacity: 0.42, color: 0xffffff }),
       compass: new T.MeshBasicMaterial({ map: X.compass, transparent: true, depthWrite: false }),
@@ -1554,8 +1592,8 @@ class Studio extends DCLogic {
       heatCool: new T.MeshBasicMaterial({ color: 0x35B5D0, transparent: true, opacity: 0.22, depthWrite: false }),
       heatHot: new T.MeshBasicMaterial({ color: 0xFF5A2B, transparent: true, opacity: 0.32, depthWrite: false })
     };
-    [['wall', 3], ['wallNoAO', 3], ['muro', 3], ['coping', 2.5], ['laje', 2.5], ['ripado', 1.4], ['paver', 1.6], ['sidewalk', 2.5]].forEach((q) => { E.mat[q[0]].userData.uvs = q[1]; });
-    E.ghostable = ['wallNoAO', 'wall', 'coping', 'roof', 'pir', 'liner', 'rufo', 'calha', 'laje', 'glass', 'frame', 'door', 'ripado'];
+    [['wall', 3], ['wallNoAO', 3], ['muro', 3], ['coping', 2.5], ['laje', 2.5], ['ripado', 1.4], ['paver', 1.6], ['sidewalk', 2.5], ['clad', 1], ['portao', 1], ['yard', 4]].forEach((q) => { E.mat[q[0]].userData.uvs = q[1]; });
+    E.ghostable = ['clad', 'portao', 'poly', 'fascia', 'wallNoAO', 'wall', 'coping', 'roof', 'pir', 'liner', 'rufo', 'calha', 'laje', 'glass', 'frame', 'door', 'ripado'];
   }
 
   _mkSky() {
@@ -1721,7 +1759,7 @@ class Studio extends DCLogic {
     E.pieces = []; E.flows = []; E.heatVols = []; E.blockGroups = []; E.frames = []; E.roofMeshes = []; E.house0 = null; E.capInfo = null;
     const col = k.COLORS.find((c) => c.id === m.color) || k.COLORS[1];
     E.mat.roof.color.set(col.hex);
-    E.doorAt = null; E.ripadoAt = null;
+    E.doorAt = null; E.ripadoAt = null; E.gates = null; E.galpao = !!m.galpao;
     if (!m.blocksMode) {
       this._buildPitched(m, Hg);
       Hg.updateMatrixWorld(true);
@@ -1776,6 +1814,13 @@ class Studio extends DCLogic {
       this._box(g, x0, r.H0 - 0.4, z0, x1, r.H0, z1, M.wall, ud);
       this._box(g, x0 + 0.02, 0, z0 + 0.02, x1 - 0.02, 0.025, z1 - 0.02, M.paver, null, true);
       if (b.w >= 2.6 && b.d >= 4.6) this._car(g, (x0 + x1) / 2, (z0 + z1) / 2 + 0.15);
+    } else if (b.ind) {
+      const hb = Math.min(2.5, r.H0 - 1);
+      this._box(g, x0, 0, z0, x1, hb, z1, M.wall, ud);
+      this._box(g, x0, hb, z0, x1, r.H0, z1, M.clad, ud);
+      this._openingsInd(g, b, r.H0, ud, blocks, i);
+      const hv = this._box(g, x0 + 0.25, 0.05, z0 + 0.25, x1 - 0.25, r.H0 - 0.05, z1 - 0.25, M.heatCool, null, true);
+      hv.receiveShadow = false; hv.visible = false; hv.renderOrder = 6; E.heatVols.push(hv);
     } else {
       this._box(g, x0, 0, z0, x1, r.H0, z1, M.wall, ud);
       this._openings(b, i, g, blocks, r);
@@ -1843,6 +1888,57 @@ class Studio extends DCLogic {
         if (sob) this._window(g, sd.s, b, cu, 4.0, wW, 1.2, ud);
       }
     });
+  }
+
+  _openingsInd(g, b, H, ud, blocks, i) {
+    const E = this._E, M = E.mat, W = b.w, D = b.d;
+    const exp = (px, pz) => !blocks || this._exposed(blocks, i, px, pz);
+    const zf = b.y + D + 0.3;
+    const okF = (u0, u1) => { for (let u = u0; u <= u1 + 1e-6; u += 0.5) if (!exp(u, zf)) return false; return true; };
+    const pw = Math.max(3, Math.min(4.2, W * 0.3)), ph = Math.min(4.6, H - 1.3);
+    const want = W >= 14 ? [0.3, 0.62] : [0.4];
+    const gates = [];
+    const fits = (c) => c - pw / 2 > b.x + 0.8 && c + pw / 2 < b.x + W - 2.2 && okF(c - pw / 2 - 0.2, c + pw / 2 + 0.2) && gates.every((q) => Math.abs(q - c) > pw + 1.4);
+    want.forEach((t) => {
+      let c = b.x + W * t;
+      if (!fits(c)) { c = null; for (let q = b.x + 0.8 + pw / 2; q < b.x + W - 2.2 - pw / 2; q += 0.5) if (fits(q)) { c = q; break; } }
+      if (c !== null) gates.push(c);
+    });
+    gates.forEach((c) => {
+      this._sideBox(g, 'S', b, c - pw / 2 - 0.12, c + pw / 2 + 0.12, 0, ph + 0.12, -0.01, 0.05, M.frame, ud);
+      this._sideBox(g, 'S', b, c - pw / 2, c + pw / 2, 0, ph, 0.04, 0.07, M.portao, ud);
+    });
+    let pdx = null;
+    for (let q = b.x + W - 1.3; q > b.x + 1.0; q -= 0.5) if (okF(q - 0.9, q + 0.9) && gates.every((c) => Math.abs(q - c) > pw / 2 + 1.2)) { pdx = q; break; }
+    if (pdx !== null) {
+      this._sideBox(g, 'S', b, pdx - 0.55, pdx + 0.55, 0, 2.3, -0.01, 0.05, M.frame, ud);
+      this._sideBox(g, 'S', b, pdx - 0.47, pdx + 0.47, 0, 2.22, 0.04, 0.07, M.glass, ud);
+      this._sideBox(g, 'S', b, pdx - 0.95, pdx + 0.95, 2.55, 2.66, -0.01, 1.05, M.fascia, ud);
+    }
+    if (okF(b.x + 0.6, b.x + W - 0.6)) this._sideBox(g, 'S', b, b.x + 0.5, b.x + W - 0.5, H - 1.05, H - 0.3, -0.01, 0.06, M.fascia, ud);
+    [['L', b.y, b.y + D, (u) => [b.x + W + 0.3, u]], ['O', b.y, b.y + D, (u) => [b.x - 0.3, u]], ['N', b.x, b.x + W, (u) => [u, b.y - 0.3]]].forEach((sd) => {
+      const u0 = sd[1] + 0.8, u1 = sd[2] - 0.8; if (u1 - u0 < 1.5) return;
+      const pm = sd[3]((u0 + u1) / 2), pa = sd[3](u0 + 0.3), pb2 = sd[3](u1 - 0.3);
+      if (!exp(pm[0], pm[1]) || !exp(pa[0], pa[1]) || !exp(pb2[0], pb2[1])) return;
+      this._sideBox(g, sd[0], b, u0, u1, H - 1.75, H - 0.8, -0.01, 0.04, M.poly, ud);
+      for (let u = u0 + 3; u < u1 - 0.5; u += 3) this._sideBox(g, sd[0], b, u - 0.05, u + 0.05, H - 1.78, H - 0.77, 0.03, 0.065, M.frame, ud);
+    });
+    if (pdx !== null) E.doorAt = { x: pdx, z: b.y + D };
+    E.gates = (E.gates || []).concat(gates.map((c) => ({ x: c, z: b.y + D, w: pw })));
+  }
+
+  // caminhão de entrega encostado no portão (escala real, ~6,6 m)
+  _truck(g, cx, z0) {
+    const E = this._E, T = E.T, M = E.mat;
+    const c = new T.Group(); g.add(c);
+    this._box(c, cx - 1.18, 1.0, z0, cx + 1.18, 3.45, z0 + 4.7, M.truckBox);
+    this._box(c, cx - 0.9, 0.6, z0 + 0.25, cx + 0.9, 1.0, z0 + 6.45, M.frame);
+    this._box(c, cx - 1.1, 0.78, z0 + 4.85, cx + 1.1, 2.8, z0 + 6.6, M.truckCab);
+    this._box(c, cx - 1.0, 1.9, z0 + 6.58, cx + 1.0, 2.6, z0 + 6.64, M.carGlass, null, true);
+    this._box(c, cx - 1.12, 1.95, z0 + 5.1, cx + 1.12, 2.55, z0 + 6.3, M.carGlass, null, true);
+    this._box(c, cx - 0.95, 0.85, z0 + 6.6, cx + 0.95, 1.05, z0 + 6.68, M.chrome, null, true);
+    const wg = new T.CylinderGeometry(0.5, 0.5, 0.34, 22);
+    [[-1.0, 1.0], [1.0, 1.0], [-1.0, 2.1], [1.0, 2.1], [-1.0, 5.75], [1.0, 5.75]].forEach((p) => { const w = new T.Mesh(wg, M.tire); w.rotation.z = Math.PI / 2; w.position.set(cx + p[0], 0.5, z0 + p[1]); w.castShadow = true; c.add(w); });
   }
 
   _blob(g, x0, z0, x1, z1, pad) {
@@ -2015,7 +2111,7 @@ class Studio extends DCLogic {
 
   _buildLot(blocks, Hg) {
     const E = this._E, T = E.T, M = E.mat, bb = E.bb;
-    const lx0 = bb.x0 - 1.6, lx1 = bb.x1 + 1.6, lz0 = bb.z0 - 3, lz1 = bb.z1 + 4.5;
+    const lx0 = bb.x0 - 1.6, lx1 = bb.x1 + 1.6, lz0 = bb.z0 - 3, lz1 = bb.z1 + (E.galpao ? 11 : 4.5);
     E.lot = { lx0, lx1, lz0, lz1 };
     const L = new T.Group(); Hg.add(L); E.lotGroup = L;
     const cx = (lx0 + lx1) / 2;
@@ -2036,14 +2132,25 @@ class Studio extends DCLogic {
     this._box(L, lx1, 0, lz0, lx1 + mt, mh, lz1, M.muro);
     this._box(L, lx0 - mt, 0, lz0 - mt, lx1 + mt, mh, lz0, M.muro);
     [[lx0 - mt - 0.02, lz0 - mt - 0.02, lx0 + 0.02, lz1], [lx1 - 0.02, lz0 - mt - 0.02, lx1 + mt + 0.02, lz1], [lx0 - mt - 0.02, lz0 - mt - 0.02, lx1 + mt + 0.02, lz0 + 0.02]].forEach((q) => this._box(L, q[0], mh, q[1], q[2], mh + 0.04, q[3], M.coping, null, true));
-    // entrada de carro e caminho
-    blocks.forEach((b) => { if (b.t === 'garagem') { this._box(L, b.x + 0.2, 0, b.y + b.d, b.x + b.w - 0.2, 0.03, lz1 + 0.01, M.paver, null, true); } });
-    if (E.doorAt) this._box(L, E.doorAt.x - 0.6, 0, E.doorAt.z, E.doorAt.x + 0.6, 0.03, lz1 + 0.01, M.paver, null, true);
-    // árvores
-    this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
-    this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
-    this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9);
-    this._tree(L, lx0 + 2.6, lz1 + 1.3, 0.8, 13);
+    if (E.galpao) {
+      // pátio de manobra em concreto, faixa de vagas e caminhão no portão
+      this._box(L, lx0, 0, bb.z0 - 0.6, lx1, 0.03, lz1 + 0.01, M.yard, null, true);
+      for (let xq = lx0 + 0.8; xq < lx0 + 0.8 + 2.5 * 4; xq += 2.5) this._box(L, xq, 0.03, lz1 - 5.2, xq + 0.1, 0.036, lz1 - 0.4, M.lane, null, true);
+      const gt = (E.gates || [])[0];
+      if (gt) this._truck(L, gt.x, gt.z + 1.0);
+      this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
+      this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
+      this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9);
+    } else {
+      // entrada de carro e caminho
+      blocks.forEach((b) => { if (b.t === 'garagem') { this._box(L, b.x + 0.2, 0, b.y + b.d, b.x + b.w - 0.2, 0.03, lz1 + 0.01, M.paver, null, true); } });
+      if (E.doorAt) this._box(L, E.doorAt.x - 0.6, 0, E.doorAt.z, E.doorAt.x + 0.6, 0.03, lz1 + 0.01, M.paver, null, true);
+      // árvores
+      this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
+      this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
+      this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9);
+      this._tree(L, lx0 + 2.6, lz1 + 1.3, 0.8, 13);
+    }
     // bússola
     const cp = new T.Mesh(new T.PlaneGeometry(1.6, 1.6), M.compass);
     cp.rotation.x = -Math.PI / 2; cp.position.set(lx0 + 1.0, 0.03, lz1 - 1.1); cp.renderOrder = 2;
@@ -2070,12 +2177,12 @@ class Studio extends DCLogic {
     const sv = this.slopeV(m), cosA = 1 / Math.sqrt(1 + sv * sv);
     const P = { faces: [], sv, L, S };
     if (f === '2' || f === 'chale') {
-      const H = f === 'chale' ? 1.0 : 2.8, half = S / 2, rise = sv * half;
+      const H = f === 'chale' ? 1.0 : (m.galpao ? k.HG : 2.8), half = S / 2, rise = sv * half;
       Object.assign(P, { H, half, rise, ridgeY: H + rise });
       P.faces.push({ id: 'F', phi: 0, sx: 0, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
       P.faces.push({ id: 'B', phi: Math.PI, sx: L, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
     } else if (f === '1') {
-      const H = 2.8, rise = sv * S;
+      const H = m.galpao ? k.HG : 2.8, rise = sv * S;
       Object.assign(P, { H, rise, ridgeY: H + rise });
       if (m.fall1 === 'S') P.faces.push({ id: 'F', phi: 0, sx: 0, sz: 0, y: H + rise, acr: L, run: S, ov: 0.6 });
       else P.faces.push({ id: 'F', phi: Math.PI, sx: L, sz: S, y: H + rise, acr: L, run: S, ov: 0.6 });
@@ -2130,7 +2237,7 @@ class Studio extends DCLogic {
 
   _footWorld(m) { const C = m.casa; return m.forma === 'chale' ? { x0: 0, x1: C.S, z0: 0, z1: C.L } : { x0: 0, x1: C.L, z0: 0, z1: C.S }; }
 
-  _hkOf(m) { return JSON.stringify([m.forma, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1]); }
+  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1]); }
 
   _prism(g, pts, x0, x1, mat, ud) {
     const T = this._E.T;
@@ -2183,18 +2290,22 @@ class Studio extends DCLogic {
       const hv = this._box(G, P.cx0 + 0.25, 0.1, P.cz0 + 0.25, P.cx1 - 0.25, P.Hc - 0.1, P.cz1 - 0.25, M.heatCool, null, true);
       hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
     } else {
-      this._box(G, 0, 0, 0, L, P.H, S, M.wall, ud);
+      const ind = !!m.galpao && f !== 'chale';
+      if (ind) { const hb = Math.min(2.5, P.H - 1); this._box(G, 0, 0, 0, L, hb, S, M.wall, ud); this._box(G, 0, hb, 0, L, P.H, S, M.clad, ud); }
+      else this._box(G, 0, 0, 0, L, P.H, S, M.wall, ud);
+      const WM = ind ? M.clad : M.wallNoAO;
       if (f === '1') {
         const hiFront = m.fall1 !== 'S';
         const pr = hiFront ? [[0, P.H], [S, P.H], [S, P.H + P.rise]] : [[0, P.H], [S, P.H], [0, P.H + P.rise]];
-        this._prism(G, pr, 0, Tw, M.wallNoAO, ud); this._prism(G, pr, L - Tw, L, M.wallNoAO, ud);
-        if (hiFront) this._box(G, 0, P.H, S - Tw, L, P.H + P.rise, S, M.wallNoAO, ud);
-        else this._box(G, 0, P.H, 0, L, P.H + P.rise, Tw, M.wallNoAO, ud);
+        this._prism(G, pr, 0, Tw, WM, ud); this._prism(G, pr, L - Tw, L, WM, ud);
+        if (hiFront) this._box(G, 0, P.H, S - Tw, L, P.H + P.rise, S, WM, ud);
+        else this._box(G, 0, P.H, 0, L, P.H + P.rise, Tw, WM, ud);
       } else {
         const tri = [[0, P.H], [S, P.H], [S / 2, P.H + P.rise]];
-        this._prism(G, tri, 0, Tw, M.wallNoAO, ud); this._prism(G, tri, L - Tw, L, M.wallNoAO, ud);
+        this._prism(G, tri, 0, Tw, WM, ud); this._prism(G, tri, L - Tw, L, WM, ud);
       }
       if (f === 'chale') this._chaleOpenings(G, P, ud);
+      else if (ind) this._openingsInd(G, { x: 0, y: 0, w: L, d: S }, P.H, ud, null, 0);
       else { const pb = { t: 'casa', x: 0, y: 0, w: L, d: S }; this._openings(pb, 0, G, [pb], { H0: P.H }); }
       const hv = this._box(G, 0.25, 0.1, 0.25, L - 0.25, Math.max(0.6, P.H - 0.1), S - 0.25, M.heatCool, null, true);
       hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
@@ -2391,7 +2502,7 @@ class Studio extends DCLogic {
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, size = Math.max(b.x1 - b.x0, b.z1 - b.z0, 7);
     let to;
     if (id === 'rua') {
-      const px = cx + size * 0.35, py = 1.65, pz = l.lz1 + 12.5 + size * 0.9, tx = cx, ty = 2.6, tz = (b.z1 + cz) / 2;
+      const gp = !!E.galpao, px = cx + size * 0.35, py = 1.65, pz = l.lz1 + 12.5 + size * (gp ? 1.15 : 0.9), tx = cx, ty = gp ? 3.8 : 2.6, tz = (b.z1 + cz) / 2;
       const vx = px - tx, vy = py - ty, vz = pz - tz, r = Math.hypot(vx, vy, vz);
       to = { tx, ty, tz, r, th: Math.atan2(vx, vz), ph: Math.acos(vy / r) };
     } else if (id === 'planta') {
@@ -2744,7 +2855,7 @@ class Studio extends DCLogic {
             this._buildHouse(mt, bl); E.hk = this._hkOf(mt); this._applySun(mt); this._gizmo(mt, bl);
           } else {
             const chl = m.forma === 'chale';
-            const mt = Object.assign({}, m, { casa: this.clampCasa(m.forma, chl ? nb.d : nb.w, chl ? nb.w : nb.d) });
+            const mt = Object.assign({}, m, { casa: this.clampCasa(m.forma, chl ? nb.d : nb.w, chl ? nb.w : nb.d, m.galpao) });
             this._buildHouse(mt, mt.blocks); E.hk = this._hkOf(mt); this._applySun(mt); this._gizmo(mt, mt.blocks);
           }
           E.dirty = true;
@@ -2770,7 +2881,7 @@ class Studio extends DCLogic {
           const bl = this.plainBlocks(m.blocks); Object.assign(bl[m.sel], { x: dr.nb.x, y: dr.nb.y, w: dr.nb.w, d: dr.nb.d });
           this.setState({ blocks: bl, tpl: m.tplId });
         } else {
-          const chl = m.forma === 'chale', cc = this.clampCasa(m.forma, chl ? dr.nb.d : dr.nb.w, chl ? dr.nb.w : dr.nb.d);
+          const chl = m.forma === 'chale', cc = this.clampCasa(m.forma, chl ? dr.nb.d : dr.nb.w, chl ? dr.nb.w : dr.nb.d, m.galpao);
           this.setState({ cL: cc.L, cS: cc.S });
         }
       }
@@ -2819,6 +2930,8 @@ class Studio extends DCLogic {
 //  (cada formato abre o Estúdio já montado com aquele modelo)
 // =====================================================================
 let STU = null, studioMounted = false;
+// o que foi montado fica guardado por área (casa ou galpão) e formato
+const studioMemKey = (cs, forma) => (cs.area === 'galpao' ? 'galpao:' : '') + forma;
 
 // classes do Estúdio ganham o prefixo "es-" para não misturar com o CSS do fluxo principal
 const esPfx = (h) => h.replace(/class="([^"]*)"/g, (m, c) => 'class="' + c.trim().split(/\s+/).filter(Boolean).map((t) => 'es-' + t).join(' ') + '"');
@@ -2837,7 +2950,7 @@ const esGrp = (titulo, html) => `<div style="display:flex;flex-direction:column;
 function studioView(v) {
   handlers = [];
   const segs = '<div class="seg done"></div><div class="seg cur"></div>' + '<div class="seg"></div>'.repeat(4);
-  const head = `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px 10px;background:#F4F6F8;position:relative;z-index:3"><button class="iconbtn" data-c="${on(closeStudio)}" aria-label="Voltar para os formatos">${esIco(ES_BACK, 22, 2.4)}</button><div style="flex-grow:1;display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#34435A"><span>Obra · Monte seu telhado</span><span>2/6</span></div><div style="display:flex;gap:4px">${segs}</div></div></div>`;
+  const head = `<div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px;background:#F4F6F8;position:relative;z-index:3"><button class="iconbtn" data-c="${on(closeStudio)}" aria-label="Voltar para os formatos">${esIco(ES_BACK, 20, 2.4)}</button><div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>Obra · Monte seu telhado</span><span>2/6</span></div><div style="display:flex;gap:4px">${segs}</div></div></div>`;
 
   const vp = `<div class="vp" data-k="vp"><canvas data-keep="1" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none" aria-label="Sua casa em 3D. Arraste para girar."></canvas>`
     + `<div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 40%,rgba(0,0,0,0) 60%,rgba(16,38,63,.22) 100%)"></div>`
@@ -2908,9 +3021,10 @@ function openStudio(forma) {
   const cs = C.state || {};
   if (STU && studioMounted) { STU.componentWillUnmount(); studioMounted = false; }
   STU = new Studio();
-  STU.props = { accent: (C.props && C.props.accent) || '#0A4DA2', startForma: forma, startMode: 'montar', startTpl: 'auto' };
+  // galpão: o Estúdio mostra um galpão comercial (portões, pátio e caminhão) em vez da casa
+  STU.props = { accent: (C.props && C.props.accent) || '#0A4DA2', startForma: forma, startMode: 'montar', startTpl: 'auto', area: cs.area === 'galpao' ? 'galpao' : 'casa' };
   const pitched = ['1', '2', 'chale', 'varanda'].indexOf(forma) >= 0;
-  const mem = (cs.studioMem || {})[forma];
+  const mem = (cs.studioMem || {})[studioMemKey(cs, forma)];
   const st = mem ? Object.assign({}, mem) : {};
   // medidas vindas do fluxo: outras áreas (galpão, comércio...) ou medidas mudadas depois de usar o Estúdio
   const btype = cs.area || 'casa';
@@ -2952,7 +3066,7 @@ function applyStudio() {
   const keep = Object.assign({}, ss);
   ['camReq', 'cam', 'pick', 'inside', 'mode', 'glReady', 'glFail', 'xray', 'comum'].forEach((k) => { delete keep[k]; });
   keep.__w = p.w; keep.__l = p.l;
-  p.studioMem = Object.assign({}, cs.studioMem || {}, { [m.forma]: keep });
+  p.studioMem = Object.assign({}, cs.studioMem || {}, { [studioMemKey(cs, m.forma)]: keep });
   p.step = (p.knownTelha || cs.knownTelha) ? 5 : 4;
   if (studioMounted) { STU.componentWillUnmount(); studioMounted = false; }
   C.setState(p);
