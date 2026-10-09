@@ -158,7 +158,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-vpmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-weight:800;color:#10263F;background:linear-gradient(#9CC3EA,#E3EDF5);text-align:center;padding:0 40px}
 .es-spin{width:36px;height:36px;border-radius:50%;border:4px solid rgba(16,38,63,.15);border-top-color:#10263F;animation:es-sp .9s linear infinite}
 @keyframes es-sp{to{transform:rotate(360deg)}}
-.es-panel{flex-grow:1;min-height:0;overflow-y:auto;padding:18px 20px 84px;background:#F4F6F8;border-radius:22px 22px 0 0;margin-top:-14px;position:relative;z-index:2;box-shadow:0 -10px 24px rgba(15,30,46,.10)}
+.es-sheet{flex-grow:1;min-height:0;display:flex;flex-direction:column;background:#F4F6F8;border-radius:22px 22px 0 0;margin-top:-14px;position:relative;z-index:2;box-shadow:0 -10px 24px rgba(15,30,46,.10)}
+.es-sheet.es-peek{flex-grow:0}
+.es-panel{flex-grow:1;min-height:0;overflow-y:auto;padding:2px 20px 84px}
+.es-grab{flex-shrink:0;align-self:center;display:flex;align-items:center;justify-content:center;gap:8px;min-height:24px;padding:4px 22px 2px;border:0;background:transparent;cursor:pointer;font-size:12px;font-weight:800;color:#56657A;touch-action:none}
+.es-grab i{display:block;width:40px;height:5px;border-radius:3px;background:#C3CCD5}
+.es-sheet.es-peek .es-grab{min-height:40px}
+.es-fsb{position:absolute;left:12px;bottom:23px;width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#10263F;padding:0}
 .es-sect{display:flex;flex-direction:column;gap:10px}
 .es-hscroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px;padding:3px 20px 5px}
 .es-hscroll::-webkit-scrollbar{display:none}
@@ -223,6 +229,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-ctabar{padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px))}
 .es-panel{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
 .es-rng{touch-action:pan-y}
+.es-vp.es-half{height:clamp(200px,34%,320px)}
+.es-vp.es-full{height:calc(100% - 142px - env(safe-area-inset-bottom,0px))}
 /* Etapa Formato: selo 3D nos cards */
 .b3d{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:10px;background:#EEF3F8;color:var(--p);font-size:11px;font-weight:800;letter-spacing:.03em}
 </style>
@@ -1150,7 +1158,8 @@ class Studio extends DCLogic {
       city: s.city || 'goiania', frente: s.frente || 'N', epoca: s.epoca || 'hoje',
       hora: s.hora !== undefined ? Number(s.hora) : 15.5,
       xray: !!s.xray, comum: !!s.comum, pick: s.pick || null,
-      camReq: s.camReq || 0, cam: s.cam || 'drone', inside: !!s.inside
+      camReq: s.camReq || 0, cam: s.cam || 'drone', inside: !!s.inside,
+      vp: s.vp === 'half' || s.vp === 'full' ? s.vp : 'normal'
     };
   }
 
@@ -1373,7 +1382,12 @@ class Studio extends DCLogic {
       statTxt: pitched ? formaNome + ' · ' + nf(Math.round(PB.area), 0) + ' m² · ' + PB.tiles + ' telhas' : nRoof + (nRoof === 1 ? ' bloco' : ' blocos') + ' · ' + nf(Math.round(B.area), 0) + ' m² · ' + B.tiles + ' telhas',
       formas, setFormRow: this._refFR, pc, isBlocks: !pitched, isPitched: pitched, montarTitle: FT[0], montarSub: FT[1],
       montarNote: pitched ? 'No 3D, puxe as setas azuis para mudar o tamanho. Arraste para girar e use dois dedos para aproximar.' : 'No 3D, arraste o bloco selecionado para mover e puxe as setas para mudar o tamanho. Arraste fora da casa para girar e use dois dedos para aproximar.',
-      cams, tabs, hintOn: !!s.glReady && !s.inside && !s.touched, hintTxt: HINT[m.mode],
+      cams, tabs, hintOn: !!s.glReady && !s.inside && !s.touched && m.vp !== 'half', hintTxt: HINT[m.mode],
+      // tamanho da área do 3D: metade (mais configurações), normal ou tela cheia
+      vpH: (m.vp === 'half' ? 290 : m.vp === 'full' ? 700 : 430) + 'px', vpCls: m.vp === 'normal' ? 'vp' : 'vp ' + m.vp,
+      isFull: m.vp === 'full', notFull: m.vp !== 'full', sheetCls: m.vp === 'full' ? 'sheet peek' : 'sheet',
+      fullBtn: { icon: m.vp === 'full' ? 'M9 4 V9 H4 M20 9 H15 V4 M15 20 V15 H20 M4 15 H9 V20' : 'M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15', aria: m.vp === 'full' ? 'Sair da tela cheia' : 'Ver a casa em tela cheia', pick: () => set({ vp: m.vp === 'full' ? 'normal' : 'full' }) },
+      grab: { aria: m.vp === 'normal' ? 'Mostrar mais configurações' : m.vp === 'half' ? 'Mostrar mais da casa' : 'Mostrar as configurações', pick: () => set({ vp: m.vp === 'normal' ? 'half' : 'normal' }) },
       isMontar: m.mode === 'montar', isPecas: m.mode === 'pecas', isSol: m.mode === 'sol',
       tpls, blks, adds, cur, colors,
       bom, pecasBig: pitched ? PB.tiles + ' telhas · ' + nf(Math.round(PB.area), 0) + ' m²' : B.tiles + ' telhas · ' + nf(Math.round(B.area), 0) + ' m²',
@@ -1440,8 +1454,8 @@ class Studio extends DCLogic {
     const E = this._E, cv = this._cv; if (!E || !cv) return;
     const W = cv.clientWidth, H = cv.clientHeight;
     if (!W || !H || (W === E.W && H === E.H)) return;
-    E.W = W; E.H = H;
-    const OFF = 46;
+    E.W = W; E.H = H; E.uiK = Math.max(0.55, Math.min(1.4, 430 / H));
+    const OFF = Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
     E.cam.aspect = W / (H + OFF);
     E.cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     E.R.setSize(W, H, false);
@@ -1470,11 +1484,12 @@ class Studio extends DCLogic {
     R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
     R.shadowMap.enabled = true; R.shadowMap.type = T.PCFSoftShadowMap;
     const scene = new T.Scene();
-    const OFF = 46;
+    const OFF = Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
     const cam = new T.PerspectiveCamera(30, W / (H + OFF), 0.1, 900);
     cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     const E = this._E = { T, R, scene, cam, W, H, tex: {}, geo: {}, mat: {}, pieces: [], flows: [], heatVols: [], handles: [], labels: [], ex: 0, exTarget: 0, dirty: true, visible: true };
     E.accent = new T.Color(this.props.accent || '#0A4DA2');
+    E.uiK = Math.max(0.55, Math.min(1.4, 430 / H));
     this._mkTextures(); this._mkMaterials(); this._mkSky(); this._mkLights(); this._mkEnv(); this._mkParticles();
     E.orb = { tx: 4, ty: 1.5, tz: 8, r: 45, th: 0.62, ph: 0.98, vth: 0, vph: 0 };
     E.ray = new T.Raycaster();
@@ -1690,6 +1705,10 @@ class Studio extends DCLogic {
     if (force) { E.camReq = m.camReq; this._camPreset(m.cam, false); }
     else if (m.camReq !== E.camReq) { E.camReq = m.camReq; this._camPreset(m.cam, true); }
     if (m.inside !== E.inside) { E.inside = m.inside; if (m.inside) this._camInside(m); else if (m.mode === 'pecas') { E.exTarget = 1; this._camPreset('drone', true); } }
+    if (m.vp !== E.vp) {
+      const first = E.vp === undefined; E.vp = m.vp;
+      if (!first) { this._resize(); this._gizmo(m, m.blocks); this._labels(m); if (m.inside) this._camInside(m); else this._camPreset(m.cam, true); }
+    }
     this._declutter();
     E.dirty = true;
   }
@@ -2612,7 +2631,7 @@ class Studio extends DCLogic {
     if (lines[1]) { g.fillStyle = (opt && opt.dark) ? 'rgba(255,255,255,0.8)' : '#46556A'; g.font = f2; g.fillText(lines[1], w / 2, 148); }
     const tx = this._tx(c, false);
     const sp = new T.Sprite(new T.SpriteMaterial({ map: tx, depthTest: false, transparent: true, sizeAttenuation: false }));
-    const s = (opt && opt.s) || 0.12;
+    const s = ((opt && opt.s) || 0.12) * (E.uiK || 1);
     sp.scale.set(s * w / 720, s * h / 720, 1); sp.renderOrder = 50; sp.userData.own = true;
     return sp;
   }
@@ -2782,7 +2801,7 @@ class Studio extends DCLogic {
     g.restore();
     if (wide) { g.font = '800 64px Figtree, system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(txt, 138, 84); }
     const sp = new T.Sprite(new T.SpriteMaterial({ map: this._tx(c, false), depthTest: false, transparent: true, sizeAttenuation: false }));
-    const s = 0.044; sp.scale.set(s * w / h, s, 1); sp.renderOrder = 70; sp.userData.own = true;
+    const s = 0.044 * (E.uiK || 1); sp.scale.set(s * w / h, s, 1); sp.renderOrder = 70; sp.userData.own = true;
     return sp;
   }
 
@@ -2981,7 +3000,27 @@ class Studio extends DCLogic {
 //  ESTÚDIO 3D: tela de montagem aberta pelos cards da etapa "Formato"
 //  (cada formato abre o Estúdio já montado com aquele modelo)
 // =====================================================================
-let STU = null, studioMounted = false;
+let STU = null, studioMounted = false, esGrabSkip = false, esGrabBound = false;
+
+// arrastar o puxador da folha: solta perto de metade, normal ou tela cheia
+function esBindGrab() {
+  if (esGrabBound) return; esGrabBound = true;
+  root.addEventListener('pointerdown', (e) => {
+    const g = e.target.closest('.es-grab'); if (!g || !STU) return;
+    const vp = root.querySelector('.es-vp'), app = root.querySelector('.app'); if (!vp || !app) return;
+    const h0 = vp.getBoundingClientRect().height, y0 = e.clientY, appH = app.getBoundingClientRect().height;
+    let moved = false;
+    const mv = (ev) => { const dy = ev.clientY - y0; if (Math.abs(dy) > 6) moved = true; if (moved) vp.style.height = Math.max(180, Math.min(appH - 142, h0 + dy)) + 'px'; };
+    const up = () => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      if (!moved) return;
+      esGrabSkip = true; setTimeout(() => { esGrabSkip = false; }, 400);
+      const r = vp.getBoundingClientRect().height / appH; vp.style.height = '';
+      STU.setState({ vp: r < 0.42 ? 'half' : r > 0.66 ? 'full' : 'normal' });
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+}
 // o que foi montado fica guardado por área (casa ou galpão) e formato
 const studioMemKey = (cs, forma) => (cs.area === 'galpao' ? 'galpao:' : '') + forma;
 
@@ -3004,13 +3043,14 @@ function studioView(v) {
   const segs = '<div class="seg done"></div><div class="seg cur"></div>' + '<div class="seg"></div>'.repeat(4);
   const head = `<div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px;background:#F4F6F8;position:relative;z-index:3"><button class="iconbtn" data-c="${on(closeStudio)}" aria-label="Voltar para os formatos">${esIco(ES_BACK, 20, 2.4)}</button><div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>Obra · Monte seu telhado</span><span>2/6</span></div><div style="display:flex;gap:4px">${segs}</div></div></div>`;
 
-  const vp = `<div class="vp" data-k="vp"><canvas data-keep="1" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none" aria-label="Sua casa em 3D. Arraste para girar."></canvas>`
+  const vp = `<div class="${v.vpCls}" data-k="vp"><canvas data-keep="1" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none" aria-label="Sua casa em 3D. Arraste para girar."></canvas>`
     + `<div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 40%,rgba(0,0,0,0) 60%,rgba(16,38,63,.22) 100%)"></div>`
     + iff(v.loading, `<div class="vpmsg" data-k="ld"><span class="spin"></span><span>Montando sua casa em 3D…</span></div>`)
     + iff(v.failed, `<div class="vpmsg" data-k="fl"><span>O 3D não abriu neste navegador. Você ainda pode ajustar tudo aqui embaixo.</span></div>`)
     + `<div class="glass statp" data-k="st">${v.statTxt}</div>`
     + `<div style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:8px" data-k="cams">${each(v.cams, (c) => `<button class="${c.cls}" data-c="${on(c.pick)}" aria-label="${c.aria}" aria-pressed="${c.on}">${esIco(c.icon, 20, 2)}<span>${c.nome}</span></button>`)}</div>`
     + iff(v.hintOn, `<div class="glass vphint" data-k="hint">${v.hintTxt}</div>`)
+    + `<button class="glass fsb" data-k="fsb" data-c="${on(v.fullBtn.pick)}" aria-label="${v.fullBtn.aria}">${esIco(v.fullBtn.icon, 20, 2.2)}</button>`
     + `<div class="glass tabs" data-k="tabs">${each(v.tabs, (t) => `<button class="${t.cls}" data-c="${on(t.pick)}" aria-pressed="${t.on}">${t.nome}</button>`)}</div></div>`;
 
   let body = '';
@@ -3064,7 +3104,8 @@ ${tog(v.cm, 'Comparar com telha comum', 'Troca o PIR por uma telha sem isolament
 <div class="note">${v.notaSol}</div></div>`;
   }
 
-  const panel = `<div class="panel" data-k="panel">${body}</div>`;
+  // folha de configurações: o puxador muda o tamanho do 3D (toque ou arraste)
+  const panel = `<div class="${v.sheetCls}" data-k="sheet"><button class="grab" data-c="${on(() => { if (esGrabSkip) { esGrabSkip = false; return; } v.grab.pick(); })}" aria-label="${v.grab.aria}"><i></i>${iff(v.isFull, '<span>Mostrar configurações</span>')}</button>${iff(v.notFull, `<div class="panel" data-k="panel">${body}</div>`)}</div>`;
   const cta = `<div class="ctabar"><button class="cta" data-c="${on(applyStudio)}">Usar este telhado</button></div>`;
   return `<div class="app" data-k="studio" style="--p:${v.accent};--pSoft:color-mix(in oklab,${v.accent} 22%,transparent)">${esPfx(head + vp + panel + cta)}</div>`;
 }
@@ -3131,6 +3172,7 @@ function applyStudio() {
 function studioAfterRender() {
   if (!STU) return;
   const cv = root.querySelector('canvas[data-keep]');
+  esBindGrab();
   if (!studioMounted) {
     studioMounted = true;
     STU._cv = cv || null;
