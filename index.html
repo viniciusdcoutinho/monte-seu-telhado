@@ -233,6 +233,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-vp.es-full{height:calc(100% - 142px - env(safe-area-inset-bottom,0px))}
 /* Etapa Formato: selo 3D nos cards */
 .b3d{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:10px;background:#EEF3F8;color:var(--p);font-size:11px;font-weight:800;letter-spacing:.03em}
+/* Vitrine 3D (etapas 4 a 9): a casa do Estúdio no lugar do desenho; o desenho fica por baixo se o 3D não abrir */
+.stage.s3d{background:linear-gradient(#8FB9E4,#E3EDF5)}
+.stage.s3d .stage-in{top:18px}
+.cv3d{position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:pan-y;opacity:0;transition:opacity .45s}
+.stage.on .cv3d{opacity:1}
+.stage.on .stage-in{visibility:hidden}
+.hint3d{position:absolute;left:12px;bottom:15px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.9);font-size:12px;font-weight:700;color:#34435A;pointer-events:none;animation:rise .4s both}
+.shot3d{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#10263F;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(16,38,63,.12)}
 </style>
 </head>
 <body>
@@ -280,9 +288,11 @@ class Component extends DCLogic {
 
     // ---------- Telhas ----------
     const TELHAS = [
-      { id: 'trap', img: 'https://t56141.vtexassets.com/arquivos/ids/162027-1200-auto?v=638824150350300000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, vedacao: 5, preco: 4, base: 119, ribs: 2.2, profile: 'M0 60 H18 L30 30 H52 L64 60 H84 L96 30 H118 L130 60 H150 L162 30 H184 L196 60 H216 L228 30 H250 L262 60' },
+      { id: 'trap', img: 'https://t56141.vtexassets.com/arquivos/ids/162027-1200-auto?v=638824150350300000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Trapezoidal', curto: 'Trapezoidal', desc: 'Resistente e versátil, vai bem em quase todo telhado.', termico: 4, vedacao: 5, preco: 4, base: 119, ribs: 2, profile: 'M0 60 H27 L36 30 H46 L55 60 H118 L127 30 H137 L146 60 H209 L218 30 H228 L237 60 H262' },
       { id: 'colonial', img: 'https://t56141.vtexassets.com/arquivos/ids/165766-1200-auto?v=639217235976000000&width=1200&height=auto&aspect=true', nome: 'Telha Térmica Colonial', curto: 'Colonial', desc: 'Visual de telha de barro, sem o peso.', termico: 4, vedacao: 5, preco: 3, base: 149, ribs: 3.6, profile: 'M0 55 Q16 20 32 55 Q48 20 64 55 Q80 20 96 55 Q112 20 128 55 Q144 20 160 55 Q176 20 192 55 Q208 20 224 55 Q240 20 262 55' },
-      { id: 'ond', img: 'https://t56141.vtexassets.com/arquivos/ids/157344-1200-auto?v=638364229269630000&width=1200&height=auto&aspect=true', nome: 'Telha Residence', curto: 'Residence', desc: 'Linha pensada para telhados de casas.', termico: 3, vedacao: 4, preco: 5, base: 99, ribs: 4.6, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
+      // Telha Residence fora do projeto por enquanto (09/10/2026): é chapa de aço sem núcleo de PIR.
+      // Para voltar com ela, descomente a linha abaixo.
+      // { id: 'ond', img: 'https://t56141.vtexassets.com/arquivos/ids/157344-1200-auto?v=638364229269630000&width=1200&height=auto&aspect=true', nome: 'Telha Residence', curto: 'Residence', desc: 'Linha pensada para telhados de casas.', termico: 3, vedacao: 4, preco: 5, base: 99, ribs: 4.6, profile: 'M0 45 C10 30 20 30 30 45 S50 60 60 45 S80 30 90 45 S110 60 120 45 S140 30 150 45 S170 60 180 45 S200 30 210 45 S230 60 240 45 S256 34 262 40' }
     ];
     const area = this.st('area', null, 'casa');
     const btype = area || 'casa';
@@ -291,7 +301,7 @@ class Component extends DCLogic {
     const has = (k) => prios.indexOf(k) >= 0;
     const score = (t) => (has('fresca') ? t.termico : 0) + (has('goteira') ? t.vedacao : 0) + (has('preco') ? t.preco * 1.3 : 0) + (has('colonial') && t.id === 'colonial' ? 10 : 0) + (t.id === 'trap' ? 0.5 : 0);
     const ordered = TELHAS.slice().sort((a, b) => score(b) - score(a));
-    const cardIdx = s.cardIdx || 0;
+    const cardIdx = Math.min(s.cardIdx || 0, ordered.length - 1);
     const telhaId = s.telha || (start > 0 ? 'trap' : ordered[0].id);
     const telha = TELHAS.find((t) => t.id === telhaId) || TELHAS[0];
 
@@ -682,7 +692,7 @@ class Component extends DCLogic {
       nome: t.nome, desc: t.desc, profile: t.profile, img: t.img,
       cls: i === 0 ? 'gcard ideal' : 'gcard',
       badge: i === 0 ? 'Sua telha ideal' : 'Alternativa',
-      num: (i + 1) + ' de 3',
+      num: (i + 1) + ' de ' + ordered.length,
       delay: (i * 0.12) + 's',
       preco: money(t.base),
       bars: [
@@ -776,7 +786,27 @@ class Component extends DCLogic {
     for (let i = 0; i < 26; i++) confetti.push({ left: ((i * 37) % 100) + '%', delay: ((i % 9) * 0.11) + 's', color: PALETTE[i % 5], rot: ((i * 47) % 180) + 'deg' });
     const sumOpen = s.sumOpen !== undefined ? s.sumOpen : true;
 
+    // ---------- Vitrine 3D: a casa montada no Estúdio aparece nas etapas seguintes ----------
+    // (cor, telha vista no card, espessura do PIR, estrutura e kit acompanham as escolhas)
+    let v3d = null;
+    if (shape && !s.studio && step >= 4 && step <= 9) {
+      const mem3d = (s.studioMem || {})[(btype === 'galpao' ? 'galpao:' : '') + shape] || null;
+      const tv = step === 4 && revealed && !pirMode ? (ordered[cardIdx] || telha).id : telhaId;
+      const cv3 = tv === telhaId ? colorId : (tv === 'colonial' ? 'terracota' : 'grafite');
+      const mm3 = tv === 'colonial' ? 40 : ({ bom: 20, melhor: 30, max: 50 })[s.comfort && s.comfort !== 'col' ? s.comfort : 'melhor'];
+      const vstep = pirMode ? 'pir' : step === 9 ? (pirView ? 'casa' : 'pronto') : step === 4 ? (revealed ? 'telha' : 'casa') : ({ 5: 'cor', 6: 'conforto', 7: 'fix', 8: 'kit' })[step];
+      let blocks3 = mem3d && mem3d.blocks ? mem3d.blocks : undefined;
+      // medidas mudadas na etapa Medidas depois do Estúdio: os blocos acompanham na mesma proporção
+      if (blocks3 && mem3d.__w && mem3d.__l && (w !== mem3d.__w || l !== mem3d.__l)) { const fx = w / mem3d.__w, fz = l / mem3d.__l; blocks3 = blocks3.map((b) => Object.assign({}, b, { x: b.x * fx, w: b.w * fx, y: b.y * fz, d: b.d * fz })); }
+      v3d = {
+        area: btype === 'galpao' ? 'galpao' : 'casa',
+        state: { forma: shape, cL: w, cS: l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, fall1: mem3d ? mem3d.fall1 : undefined, tpl: mem3d ? mem3d.tpl : undefined, blocks: blocks3, telha: tv, color: cv3, mm: mm3, fix: fix || null, kit, vstep },
+        shot: ['Meu telhado Kingspan Isoeste', tQty + ' telhas ' + telha.curto + ' · ' + color.nome, comfort.mm + ' de PIR · ' + nf(Math.round(areaM2), 0) + ' m² de telhado']
+      };
+    }
+
     return {
+      v3d,
       accent, onBack, segs, phaseLabel, phaseCount, stageH,
       notPersp: step !== 3, isPersp: step === 3,
       houseCls: fin ? 'houseB pop' : 'houseB',
@@ -802,7 +832,7 @@ class Component extends DCLogic {
       areas, showModels: !!s.showModels, toggleModels: () => set({ showModels: !s.showModels }), models,
       prioOpts, cards, dots,
       setRef: (el) => { self.car = el; },
-      onCarScroll: (e) => { const i = Math.max(0, Math.min(2, Math.round(e.currentTarget.scrollLeft / 302))); if (i !== ((self.state || {}).cardIdx || 0)) set({ cardIdx: i }); },
+      onCarScroll: (e) => { const i = Math.max(0, Math.min(ordered.length - 1, Math.round(e.currentTarget.scrollLeft / 302))); if (i !== ((self.state || {}).cardIdx || 0)) set({ cardIdx: i }); },
       colors, comforts, shapes,
       showEsp: false, hideCta: step === 2 && !pirView,
       espMsg: s.especialista ? 'Pronto! Um especialista vai te chamar no WhatsApp para montar seu telhado junto com você.' : 'Telhados com mais lados precisam de um olhar de perto. Um especialista monta a lista com você, sem custo.',
@@ -989,7 +1019,7 @@ ${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', '
 <h1 class="h1">O que é mais importante pra você?</h1><p class="sub">Pode escolher mais de um.</p>
 <div class="grid2">${each(v.prioOpts, (it) => optCard(it, 'min-height:150px'))}</div></div>`;
   else if (v.is4b) body = `<div class="screen" data-k="s4b" style="gap:12px">
-<h1 class="h1">Sua telha ideal</h1><p class="sub">Arraste para o lado e veja as alternativas.</p>
+<h1 class="h1">Sua telha ideal</h1><p class="sub">Arraste para o lado e veja a outra opção.</p>
 <div class="carousel" data-scroll="1">${each(v.cards, (c) => `<div class="${c.cls}" style="animation-delay:${c.delay}">
 <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge">${c.badge}</span><span style="font-size:12px;font-weight:700;opacity:.75">${c.num}</span></div>
 <div style="height:150px;border-radius:16px;background:#E9EEF3;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><svg width="262" height="90" viewBox="0 0 262 90" aria-hidden="true"><path d="${c.profile}" fill="none" stroke="#F2D48A" stroke-width="14" stroke-linejoin="round" transform="translate(0 12)"></path><path d="${c.profile}" fill="none" stroke="#6E7B89" stroke-width="6" stroke-linejoin="round"></path></svg><img src="${c.img}" alt="${c.nome}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff"></div>
@@ -1009,7 +1039,7 @@ ${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', '
 <div style="flex-grow:1;display:flex;flex-direction:column;gap:4px">${iff(it.rec, '<span class="seal">Recomendado</span>')}<span class="otitle">${it.nome} · ${it.mm}</span><span class="odesc">${it.desc}</span></div>
 <span class="extra">${it.extra}</span></button>`)}</div></div>`;
   else if (v.is7) body = `<div class="screen" data-k="s7">
-<h1 class="h1">Onde as telhas vão ser presas?</h1><p class="sub">É a estrutura que fica embaixo do telhado. Veja no desenho lá em cima. Ela define o parafuso certo.</p>
+<h1 class="h1">Onde as telhas vão ser presas?</h1><p class="sub">É a estrutura que fica embaixo do telhado (veja lá em cima). Ela define o parafuso certo.</p>
 <div class="grid2">${each(v.fixOpts, (it) => `<button class="${it.cls}" style="min-height:168px" data-c="${on(it.pick)}" aria-pressed="${it.on}"><span class="chk">${CHECK}</span>
 <span class="ico2"><svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="${it.fillD}" fill="${it.fillC}" fill-rule="evenodd" stroke="#34435A" stroke-width="1.5" stroke-linejoin="round"></path>${it.lineD ? `<path d="${it.lineD}" fill="none" stroke="${it.lineC}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>` : ''}</svg></span>
 <span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></button>`)}</div>
@@ -1038,8 +1068,8 @@ ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 2
 <div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px">
 <button class="iconbtn backbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
 <div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
-<div class="scroll" data-k="scroll"><div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
-${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>
+<div class="scroll" data-k="scroll">${v.v3d ? stage3d(v, house) : `<div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
+${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>`}
 ${body}</div>
 ${iff(!v.hideCta, `<div class="ctabar"><button class="cta" ${v.ctaOff ? 'disabled' : ''} data-c="${on(v.onCta)}">${v.ctaTxt}</button></div>`)}
 ${iff(v.is9, `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden" data-k="conf">${each(v.confetti, (cf) => `<span class="conf" style="left:${cf.left};animation-delay:${cf.delay};background:${cf.color};transform:rotate(${cf.rot})"></span>`)}</div>`)}
@@ -1115,7 +1145,11 @@ class Studio extends DCLogic {
         outro: ['Monte sua casa com blocos', 'Combine blocos para formar L, U ou pátio. Cada bloco tem platibanda e calha.']
       },
       SLOPES: [{ id: 'reto', nome: 'Quase reto', sub: '10%', v: 0.10 }, { id: 'medio', nome: 'Médio', sub: '15%', v: 0.15 }, { id: 'inclinado', nome: 'Inclinado', sub: '25%', v: 0.25 }],
-      TELHAS: { trap: { nome: 'Trapezoidal', mm: 30, U: 0.73, vao: 2.6 }, colonial: { nome: 'Colonial', mm: 40, U: 0.55, vao: 1.75 } },
+      // Residence (ond): fora do projeto por enquanto (09/10/2026), é chapa de aço sem núcleo de PIR.
+      // O perfil continua aqui só para o caso de ela voltar ao fluxo.
+      TELHAS: { trap: { nome: 'Trapezoidal', mm: 30, U: 0.73, vao: 2.6 }, colonial: { nome: 'Colonial', mm: 40, U: 0.55, vao: 1.75 }, ond: { nome: 'Residence', mm: 30, U: null, vao: 1.15 } },
+      // vão entre apoios da trapezoidal por espessura (ficha técnica, versão com forro)
+      VAOTRAP: { 20: 2.3, 30: 2.6, 50: 3.0 },
       PD: { '1': { L: 9, S: 6.5 }, '2': { L: 10, S: 8 }, chale: { L: 9, S: 7 }, varanda: { L: 12, S: 10 } },
       // galpão comercial: pé-direito alto, portões na frente e pátio de concreto
       PDG: { '1': { L: 16, S: 10 }, '2': { L: 20, S: 12 } }, HG: 6.0, HCW: 1.0,
@@ -1128,13 +1162,20 @@ class Studio extends DCLogic {
         '2': ['Galpão de 2 águas', 'A chuva cai para os dois lados, a partir da cumeeira no meio.'],
         outro: ['Galpão com platibanda', "Monte em blocos: o galpão, um escritório na frente e a caixa d'água."]
       },
-      IR: 0.05, T: 0.15, CW: 0.3, PIRMM: 30, U_PIR: 0.73, U_COMUM: 4.5, VAO: 2.6
+      IR: 0.05, T: 0.15, CW: 0.3, PIRMM: 30, U_PIR: 0.73, U_COMUM: 4.5, VAO: 2.6,
+      // Linha "Formato do telhado" no topo do painel Montar: escondida em 09/10/2026, porque o cliente
+      // já escolhe o formato na etapa anterior. Para voltar com ela, troque para true.
+      MOSTRAR_FORMATOS: false
     };
     return this._kf;
   }
 
+  // vitrine: a mesma casa, só para ver (sem alças), acompanhando as etapas do fluxo
+  isViewer() { const v = this.props.viewer; return !!v && v !== '0' && v !== 'false'; }
+
   mdl() {
-    const k = this.kfg(), s = this.state || {};
+    const k = this.kfg(), viewer = this.isViewer();
+    const s = viewer && this.props.vState ? Object.assign({}, this.state || {}, this.props.vState) : (this.state || {});
     const galpao = this.props.area === 'galpao';
     const forma0 = s.forma || this.props.startForma || 'outro';
     const forma = galpao && ['1', '2', 'outro'].indexOf(forma0) < 0 ? '2' : forma0;
@@ -1146,20 +1187,23 @@ class Studio extends DCLogic {
     const blocks = src.map((b) => Object.assign({}, b));
     const sel = blocksMode ? Math.max(0, Math.min(blocks.length - 1, s.sel || 0)) : 0;
     const pd = (galpao ? k.PDG[forma] : k.PD[forma]) || k.PD['2'];
-    const telha = blocksMode ? 'trap' : (s.telha || (forma === 'chale' || forma === 'varanda' ? 'colonial' : 'trap'));
-    const casa = this.clampCasa(forma, s.cL !== undefined ? s.cL : pd.L, s.cS !== undefined ? s.cS : pd.S, galpao);
+    const telha = viewer && k.TELHAS[s.telha] ? s.telha : (blocksMode ? 'trap' : (s.telha || (forma === 'chale' || forma === 'varanda' ? 'colonial' : 'trap')));
+    const cL0 = s.cL !== undefined ? s.cL : pd.L, cS0 = s.cS !== undefined ? s.cS : pd.S;
+    const casa = viewer ? this.clampView(forma, cL0, cS0) : this.clampCasa(forma, cL0, cS0, galpao);
+    const vstep = viewer ? (s.vstep || 'casa') : null;
     const hc = forma === 'chale' ? this.chaleH(casa.S, s.hC) : null;
     return {
       forma, blocksMode, tplId, blocks, sel, casa, telha, galpao,
       hC: hc ? hc.h : null, hClo: hc ? hc.lo : null, hChi: hc ? hc.hi : null,
       slope: s.slope || (galpao ? 'reto' : 'medio'), fall1: s.fall1 || 'N',
-      mode: s.mode || this.props.startMode || 'montar',
+      viewer, vstep, mm: viewer && s.mm ? Number(s.mm) : null, fix: viewer ? (s.fix || null) : null, kit: viewer ? (s.kit || null) : null,
+      mode: viewer ? 'ver' : (s.mode || this.props.startMode || 'montar'),
       color: s.color || (telha === 'colonial' ? 'terracota' : 'cinza'),
       city: s.city || 'goiania', frente: s.frente || 'N', epoca: s.epoca || 'hoje',
       hora: s.hora !== undefined ? Number(s.hora) : 15.5,
       xray: !!s.xray, comum: !!s.comum, pick: s.pick || null,
-      camReq: s.camReq || 0, cam: s.cam || 'drone', inside: !!s.inside,
-      vp: s.vp === 'half' || s.vp === 'full' ? s.vp : 'normal'
+      camReq: s.camReq || 0, cam: s.cam || 'drone', inside: viewer ? (vstep === 'conforto' || vstep === 'pir') : !!s.inside,
+      vp: !viewer && (s.vp === 'half' || s.vp === 'full') ? s.vp : 'normal'
     };
   }
 
@@ -1171,6 +1215,12 @@ class Studio extends DCLogic {
     const lo = r1(k.HCW + 0.6 * half), hi = r1(k.HCW + 2.0 * half);
     const v = raw !== undefined && raw !== null ? raw : k.HCW + half;
     return { h: r1(Math.max(lo, Math.min(hi, v))), lo, hi };
+  }
+
+  // vitrine: segue as medidas da etapa Medidas (até 30 × 20 m)
+  clampView(forma, L, S) {
+    const mn = forma === 'varanda' ? 6 : 3;
+    return { L: Math.max(mn, Math.min(30, L)), S: Math.max(forma === 'varanda' ? 6 : 2, Math.min(20, S)) };
   }
 
   clampCasa(forma, L, S, galpao) {
@@ -1265,6 +1315,14 @@ class Studio extends DCLogic {
       setTimeout(() => { const on = el.querySelector('[aria-pressed="true"]'); if (!on) return; const a = el.getBoundingClientRect(), b = on.getBoundingClientRect(); el.scrollLeft += (b.left + b.width / 2) - (a.left + a.width / 2); }, 60);
     };
     if (!this._refCv) this._refCv = (el) => { if (el && el !== self._cv) { self._cv = el; setTimeout(() => self._tryInit(), 0); } };
+    if (m.viewer) {
+      return {
+        isViewer: true, notViewer: false, accent, setCanvas: this._refCv,
+        loading: !s.glReady && !s.glFail, failed: !!s.glFail, vHint: !!s.glReady && !s.touched && !s.glFail,
+        vTurn: () => this.turn(Math.PI / 2),
+        vShotOn: !!s.glReady && !s.glFail && m.vstep === 'pronto', vShot: () => this.shareShot(this.props.vShot || [])
+      };
+    }
     const blocks = m.blocks, cb = blocks[m.sel];
     const B = this.bomCalc(blocks);
     const nRoof = blocks.filter((b) => this.isRoof(b)).length;
@@ -1377,10 +1435,11 @@ class Studio extends DCLogic {
     const xrOn = !!s.xray, cmOn = !!s.comum;
 
     return {
+      isViewer: false, notViewer: true,
       accent, setCanvas: this._refCv,
       loading: !s.glReady && !s.glFail, failed: !!s.glFail,
       statTxt: pitched ? formaNome + ' · ' + nf(Math.round(PB.area), 0) + ' m² · ' + PB.tiles + ' telhas' : nRoof + (nRoof === 1 ? ' bloco' : ' blocos') + ' · ' + nf(Math.round(B.area), 0) + ' m² · ' + B.tiles + ' telhas',
-      formas, setFormRow: this._refFR, pc, isBlocks: !pitched, isPitched: pitched, montarTitle: FT[0], montarSub: FT[1],
+      formas, showFormas: !!k.MOSTRAR_FORMATOS, setFormRow: this._refFR, pc, isBlocks: !pitched, isPitched: pitched, montarTitle: FT[0], montarSub: FT[1],
       montarNote: pitched ? 'No 3D, puxe as setas azuis para mudar o tamanho. Arraste para girar e use dois dedos para aproximar.' : 'No 3D, arraste o bloco selecionado para mover e puxe as setas para mudar o tamanho. Arraste fora da casa para girar e use dois dedos para aproximar.',
       cams, tabs, hintOn: !!s.glReady && !s.inside && !s.touched && m.vp !== 'half', hintTxt: HINT[m.mode],
       // tamanho da área do 3D: metade (mais configurações), normal ou tela cheia
@@ -1415,10 +1474,10 @@ class Studio extends DCLogic {
   // =====================================================================
   componentDidMount() { this._alive = true; setTimeout(() => this._tryInit(), 0); }
   componentDidUpdate() { if (this._E && this._E.ready) this._sync(false); }
-  componentWillUnmount() { this._alive = false; this._teardown(); }
+  componentWillUnmount() { this._alive = false; clearTimeout(this._waitT); this._teardown(); }
 
   _tryInit() {
-    if (this._E || !this._cv || this._failed) return;
+    if (this._E || !this._cv || this._failed || this._alive === false) return;
     const T = window.THREE;
     if (!T) {
       this._waitN = (this._waitN || 0) + 1;
@@ -1455,7 +1514,7 @@ class Studio extends DCLogic {
     const W = cv.clientWidth, H = cv.clientHeight;
     if (!W || !H || (W === E.W && H === E.H)) return;
     E.W = W; E.H = H; E.uiK = Math.max(0.55, Math.min(1.4, 430 / H));
-    const OFF = Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
+    const OFF = this.isViewer() ? 0 : Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
     E.cam.aspect = W / (H + OFF);
     E.cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     E.R.setSize(W, H, false);
@@ -1476,7 +1535,7 @@ class Studio extends DCLogic {
   // =====================================================================
   _init(T) {
     const cv = this._cv;
-    const W = cv.clientWidth || 390, H = cv.clientHeight || 430;
+    const W = cv.clientWidth || 390, H = cv.clientHeight || 430, isV = this.isViewer();
     const R = new T.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     R.setSize(W, H, false);
@@ -1484,7 +1543,7 @@ class Studio extends DCLogic {
     R.toneMapping = T.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
     R.shadowMap.enabled = true; R.shadowMap.type = T.PCFSoftShadowMap;
     const scene = new T.Scene();
-    const OFF = Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
+    const OFF = isV ? 0 : Math.round(Math.max(28, Math.min(52, 46 * H / 430)));
     const cam = new T.PerspectiveCamera(30, W / (H + OFF), 0.1, 900);
     cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     const E = this._E = { T, R, scene, cam, W, H, tex: {}, geo: {}, mat: {}, pieces: [], flows: [], heatVols: [], handles: [], labels: [], ex: 0, exTarget: 0, dirty: true, visible: true };
@@ -1621,6 +1680,13 @@ class Studio extends DCLogic {
       yard: std({ color: 0xffffff, map: X.yard, roughness: 0.95 }),
       truckBox: std({ color: 0xF1F3F4, metalness: 0.25, roughness: 0.45 }),
       truckCab: std({ color: 0x1E5FA8, metalness: 0.55, roughness: 0.3, envMapIntensity: 1.2 }),
+      // vitrine: parafusos, fita de vedação e estrutura conforme a fixação escolhida
+      screw: std({ color: E.accent.clone(), metalness: 0.3, roughness: 0.35, emissive: E.accent.clone(), emissiveIntensity: 0.35 }),
+      fita: std({ color: 0xF28C28, roughness: 0.6, emissive: 0xF28C28, emissiveIntensity: 0.25 }),
+      tercaMadeira: std({ color: 0xA06C3A, roughness: 0.8, emissive: 0x3A2210, emissiveIntensity: 0.25 }),
+      tercaLsf: std({ color: 0xD3DAE0, metalness: 0.7, roughness: 0.3, emissive: 0x2A3440, emissiveIntensity: 0.18 }),
+      tercaMet: std({ color: 0x6F7C88, metalness: 0.6, roughness: 0.38, emissive: 0x1C2630, emissiveIntensity: 0.2 }),
+      tercaNs: std({ color: 0x9AA5B1, roughness: 0.6, transparent: true, opacity: 0.8 }),
       blob: new T.MeshBasicMaterial({ map: X.blob, transparent: true, depthWrite: false, opacity: 0.5, color: 0xffffff }),
       blobT: new T.MeshBasicMaterial({ map: X.blobT, transparent: true, depthWrite: false, opacity: 0.42, color: 0xffffff }),
       compass: new T.MeshBasicMaterial({ map: X.compass, transparent: true, depthWrite: false }),
@@ -1667,12 +1733,16 @@ class Studio extends DCLogic {
     const E = this._E, T = E.T;
     const pm = new T.PMREMGenerator(E.R);
     const es = new T.Scene();
-    es.add(new T.Mesh(new T.SphereGeometry(20, 32, 16), E.skyMat));
+    // luz ambiente de um céu menos saturado: as cores do telhado ficam fiéis (o grafite não puxa para o azul)
+    const tint = (c, w) => new T.Color(c).lerp(new T.Color(w), 0.6);
+    const U = { top: { value: tint(0x4C8AD4, 0xFFFFFF) }, hor: { value: tint(0xDDE9F4, 0xF2F2F0) }, gnd: { value: tint(0xB9C6B0, 0xB0B0A8) }, sunDir: { value: E.skyU.sunDir.value.clone() }, sunCol: { value: E.skyU.sunCol.value.clone() } };
+    const em = new T.ShaderMaterial({ uniforms: U, side: T.BackSide, depthWrite: false, vertexShader: E.skyMat.vertexShader, fragmentShader: E.skyMat.fragmentShader });
+    es.add(new T.Mesh(new T.SphereGeometry(20, 32, 16), em));
     const gnd = new T.Mesh(new T.CircleGeometry(19, 32), new T.MeshBasicMaterial({ color: 0x7F8E66 }));
     gnd.rotation.x = -Math.PI / 2; gnd.position.y = -2; es.add(gnd);
     E.envRT = pm.fromScene(es, 0.03);
     E.scene.environment = E.envRT.texture;
-    pm.dispose();
+    pm.dispose(); em.dispose();
   }
 
   _mkParticles() {
@@ -1702,12 +1772,13 @@ class Studio extends DCLogic {
     if (force || rebuilt || m.pick !== E.pick || m.inside !== E.inside || m.mode !== E.lblMode) { E.pick = m.pick; E.lblMode = m.mode; this._applyPick(m); this._labels(m); }
     const xk = (m.mode === 'sol' && m.xray) + '|' + m.comum;
     if (force || rebuilt || xk !== E.xk) { E.xk = xk; this._applyXray(m); }
+    if (m.viewer) { if (force) this._camPreset('drone', false); this._viewSync(m, force, rebuilt); this._declutter(); E.dirty = true; return; }
     if (force) { E.camReq = m.camReq; this._camPreset(m.cam, false); }
     else if (m.camReq !== E.camReq) { E.camReq = m.camReq; this._camPreset(m.cam, true); }
-    if (m.inside !== E.inside) { E.inside = m.inside; if (m.inside) this._camInside(m); else if (m.mode === 'pecas') { E.exTarget = 1; this._camPreset('drone', true); } }
+    if (m.inside !== E.inside) { E.inside = m.inside; if (m.inside) this._camInside(m, true); else if (m.mode === 'pecas') { E.exTarget = 1; this._camPreset('drone', true); } }
     if (m.vp !== E.vp) {
       const first = E.vp === undefined; E.vp = m.vp;
-      if (!first) { this._resize(); this._gizmo(m, m.blocks); this._labels(m); if (m.inside) this._camInside(m); else this._camPreset(m.cam, true); }
+      if (!first) { this._resize(); this._gizmo(m, m.blocks); this._labels(m); if (m.inside) this._camInside(m, true); else this._camPreset(m.cam, true); }
     }
     this._declutter();
     E.dirty = true;
@@ -1744,6 +1815,9 @@ class Studio extends DCLogic {
       o.th += o.vth; o.ph = Math.max(0.02, Math.min(1.47, o.ph + o.vph));
       o.vth *= 0.9; o.vph *= 0.9; busy = true;
     }
+    // vitrine: a casa pronta gira devagar; as peças do kit pulsam
+    if (E.spin && !E.dragging && !E.tw && !E.lowPower && performance.now() > (E.spinHold || 0)) { o.th += dt * 0.16; busy = true; }
+    if (E.vstep === 'kit' && E.hlMats && E.hlMats.size && !E.lowPower) { const pk = 0.3 + 0.28 * (0.5 + 0.5 * Math.sin(performance.now() / 360)); E.hlMats.forEach((h) => { h.emissiveIntensity = pk; }); busy = true; }
     const sp = Math.sin(o.ph);
     E.cam.position.set(o.tx + o.r * sp * Math.sin(o.th), o.ty + o.r * Math.cos(o.ph), o.tz + o.r * sp * Math.cos(o.th));
     E.cam.lookAt(o.tx, o.ty, o.tz);
@@ -1799,8 +1873,9 @@ class Studio extends DCLogic {
     const E = this._E, T = E.T, k = this.kfg();
     if (E.house) { E.scene.remove(E.house); this._dispose(E.house); }
     const Hg = new T.Group(); E.house = Hg; E.scene.add(Hg);
-    [E.hlMats, E.dimMats].forEach((mp) => { if (mp) { mp.forEach((x) => x.dispose()); mp.clear(); } });
+    [E.hlMats, E.dimMats, E.ghMats].forEach((mp) => { if (mp) { mp.forEach((x) => x.dispose()); mp.clear(); } });
     E.pieces = []; E.flows = []; E.heatVols = []; E.blockGroups = []; E.frames = []; E.roofMeshes = []; E.house0 = null; E.capInfo = null;
+    E.viewer = !!m.viewer; E.kitBits = []; E.tkind = m.telha || 'trap'; E.thkB = m.blocksMode ? (m.mm || k.PIRMM) / 1000 : this.thk(m); E.vaoB = this.vaoOf(m);
     const col = k.COLORS.find((c) => c.id === m.color) || k.COLORS[1];
     E.mat.roof.color.set(col.hex);
     E.doorAt = null; E.ripadoAt = null; E.gates = null; E.galpao = !!m.galpao;
@@ -1996,27 +2071,41 @@ class Studio extends DCLogic {
     g.add(t2);
   }
 
-  _tile(w, L, thk, kind, cut) {
+  // lap: a telha tem vizinha à direita (na trapezoidal, a aba do 3º trapézio encaixa por cima dela)
+  _tile(w, L, thk, kind, cut, lap) {
     const E = this._E, T = E.T, M = E.mat;
-    const key = (kind || 'trap') + '|' + w.toFixed(3) + '|' + L.toFixed(3) + '|' + thk;
+    const key = (kind || 'trap') + '|' + w.toFixed(3) + '|' + L.toFixed(3) + '|' + thk + (lap ? '|L' : '');
     let gs = E.geo[key];
     if (!gs) {
-      const pitch = 0.25, rh = 0.038, tw = 0.035, bw = 0.095, sh = 0.005;
-      let pts = [[0, 0]];
-      if (kind === 'colonial') {
-        const per = 0.25, amp = 0.06, nS = Math.max(2, Math.round(w / per * 10));
+      const sh = 0.005;
+      const dd = (a) => a.filter((p, q) => q === 0 || Math.abs(p[0] - a[q - 1][0]) > 1e-6 || Math.abs(p[1] - a[q - 1][1]) > 1e-6);
+      let pts = [[0, 0]], cpts = null;
+      if (kind === 'colonial' || kind === 'ond') {
+        const per = kind === 'ond' ? 0.2 : 0.25, amp = kind === 'ond' ? 0.022 : 0.06, nS = Math.max(2, Math.round(w / per * 10));
         for (let q = 1; q <= nS; q++) { const x = w * q / nS; pts.push([x, amp * (0.5 - 0.5 * Math.cos(2 * Math.PI * x / per))]); }
       } else {
-        for (let c = pitch / 2; c < w; c += pitch) { const a = c - bw / 2, d2 = c + bw / 2; if (a < 0.012 || d2 > w - 0.012) continue; pts.push([a, 0], [c - tw / 2, rh], [c + tw / 2, rh], [d2, 0]); }
+        // Isotelha trapezoidal: 3 trapézios por telha, a cada 50 cm. Os dois primeiros têm o PIR por baixo;
+        // o terceiro é a aba de aço que encaixa por cima do primeiro trapézio da telha vizinha.
+        // Entre eles, frisos baixos de reforço.
+        const RH = 0.038, TW = 0.03, BW = 0.1, SP = 0.5, FR = 0.004, FW = 0.012, FS = 0.065;
+        const crown = (c) => { pts.push([c - BW / 2, 0], [c - TW / 2, RH], [c + TW / 2, RH], [c + BW / 2, 0]); };
+        const frisos = (x0, x1) => { const n = Math.floor((x1 - x0) / FS); for (let q = 1; q < n; q++) { const xc = x0 + (x1 - x0) * q / n; pts.push([xc - FW / 2, 0], [xc, FR], [xc + FW / 2, 0]); } };
+        if (w >= BW + 0.02) {
+          let c = BW / 2; crown(c);
+          while (c + SP + BW / 2 <= w + 1e-6) { frisos(c + BW / 2, c + SP - BW / 2); c += SP; crown(c); }
+          frisos(c + BW / 2, w);
+        }
         pts.push([w, 0]);
+        cpts = dd(pts);
+        if (lap) { const e = sh + 0.003; pts.push([w, e], [w + BW / 2 - TW / 2 - e * 0.5, RH + e], [w + BW / 2 + TW / 2 + e * 0.5, RH + e], [w + BW + e, e]); }
       }
-      pts = pts.filter((p, q) => q === 0 || Math.abs(p[0] - pts[q - 1][0]) > 1e-6 || Math.abs(p[1] - pts[q - 1][1]) > 1e-6);
+      pts = dd(pts); cpts = cpts || pts;
       const sheet = new T.Shape(); sheet.moveTo(pts[0][0], pts[0][1]);
       for (let q = 1; q < pts.length; q++) sheet.lineTo(pts[q][0], pts[q][1]);
       for (let q = pts.length - 1; q >= 0; q--) sheet.lineTo(pts[q][0], pts[q][1] + sh);
       sheet.closePath();
       const core = new T.Shape(); core.moveTo(0, -thk); core.lineTo(w, -thk);
-      for (let q = pts.length - 1; q >= 0; q--) core.lineTo(pts[q][0], pts[q][1]);
+      for (let q = cpts.length - 1; q >= 0; q--) core.lineTo(cpts[q][0], cpts[q][1]);
       core.closePath();
       const opt = { depth: L, bevelEnabled: false, steps: 1, curveSegments: 1 };
       gs = { sheet: new T.ExtrudeGeometry(sheet, opt), core: new T.ExtrudeGeometry(core, opt), liner: new T.BoxGeometry(w, 0.004, L) };
@@ -2040,7 +2129,7 @@ class Studio extends DCLogic {
 
   _buildRoof(b, i, g, r) {
     const E = this._E, T = E.T, M = E.mat, k = this.kfg();
-    const th = Math.atan(k.IR), thk = k.PIRMM / 1000, CW = k.CW;
+    const th = Math.atan(k.IR), thk = E.thkB || k.PIRMM / 1000, CW = k.CW;
     let phi, sx, sz;
     if (b.fall === 'S') { phi = 0; sx = r.ix0; sz = r.iz0; }
     else if (b.fall === 'N') { phi = Math.PI; sx = r.ix1; sz = r.iz1; }
@@ -2054,7 +2143,7 @@ class Studio extends DCLogic {
     const L = r.run - CW + 0.1, n = Math.ceil(r.acr / 1.0 - 1e-9);
     for (let t = 0; t < n; t++) {
       const w = Math.min(1.0, r.acr - t * 1.0);
-      const tile = this._tile(w, L, thk);
+      const tile = this._tile(w, L, thk, E.tkind, null, t < n - 1);
       tile.position.set(t * 1.0, 0, 0);
       tile.userData = { block: i, kind: 'telha', len: L, w, ex: { dy: 2.3, dx: (t - (n - 1) / 2) * 0.16, delay: 0.05 + 0.3 * t / Math.max(1, n) } };
       F.add(tile); E.pieces.push(tile); E.roofMeshes.push(tile.children[0]);
@@ -2062,7 +2151,7 @@ class Studio extends DCLogic {
     const yb = -thk - 0.004;
     // rufos (topo e laterais)
     const rf = new T.Group(); rf.userData = { block: i, kind: 'rufo', ex: { dy: 3.5, delay: 0.42 } }; F.add(rf); E.pieces.push(rf);
-    const tk = 0.007, legH = 0.16, legW = 0.13, rh = 0.045;
+    const tk = 0.007, legH = 0.16, legW = 0.13, rh = this.ribH(E.tkind);
     this._box(rf, 0, yb, -tk, r.acr, legH, 0, M.rufo);
     this._box(rf, 0, rh, 0, r.acr, rh + tk, legW, M.rufo);
     this._box(rf, -tk, yb, 0, 0, legH, r.run - CW, M.rufo);
@@ -2079,14 +2168,17 @@ class Studio extends DCLogic {
     this._box(ca, r.acr - ct, cy0, cz0, r.acr, cy1, cz1, M.calha);
     // terças e pontaletes (estrutura)
     const tg = new T.Group(); tg.userData = { block: i, kind: 'terca' }; F.add(tg);
-    const zs = []; const zEnd = r.run - CW - 0.15; const nT = Math.ceil((zEnd - 0.15) / k.VAO) + 1;
+    const zs = []; const zEnd = r.run - CW - 0.15; const nT = Math.ceil((zEnd - 0.15) / (E.vaoB || k.VAO)) + 1;
     for (let q = 0; q < nT; q++) zs.push(0.15 + (zEnd - 0.15) * (nT === 1 ? 0 : q / (nT - 1)));
+    const tw2 = E.viewer ? 0.045 : 0.025;
     zs.forEach((zc) => {
-      this._box(tg, 0.02, yb - 0.1, zc - 0.025, r.acr - 0.02, yb, zc + 0.025, M.terca);
+      this._box(tg, 0.02, yb - 0.1, zc - tw2, r.acr - 0.02, yb, zc + tw2, M.terca);
       const worldY = r.yHigh - zc * Math.sin(th) - 0.1;
       const hh = Math.max(0.05, worldY - (r.H0 + 0.06));
       for (let xq = 0.4; xq < r.acr; xq += 1.6) this._box(tg, xq - 0.025, yb - 0.1 - hh, zc - 0.025, xq + 0.025, yb - 0.1, zc + 0.025, M.terca);
     });
+    const stB = []; for (let t = 0; t < n; t++) stB.push({ x: t * 1.0, w: Math.min(1.0, r.acr - t * 1.0), z0: 0, z1: L });
+    this._kitBits(F, stB, zs, E.tkind, rh, null);
     // setas de escoamento (modo Montar)
     const tx = E.tex.chev.clone(); tx.needsUpdate = true; tx.wrapS = tx.wrapT = T.RepeatWrapping;
     const flen = Math.max(0.5, r.run - CW - 0.5);
@@ -2212,9 +2304,16 @@ class Studio extends DCLogic {
     return s.v;
   }
 
-  thk(m) { const k = this.kfg(); return (k.TELHAS[m.telha] || k.TELHAS.trap).mm / 1000; }
+  thk(m) { const k = this.kfg(); return (m.mm || (k.TELHAS[m.telha] || k.TELHAS.trap).mm) / 1000; }
 
-  vaoOf(m) { const k = this.kfg(); return m.blocksMode ? k.VAO : (k.TELHAS[m.telha] || k.TELHAS.trap).vao; }
+  vaoOf(m) {
+    const k = this.kfg();
+    if (m.viewer && (m.telha || 'trap') === 'trap') return k.VAOTRAP[m.mm || k.PIRMM] || k.VAO;
+    return m.blocksMode && !m.viewer ? k.VAO : (k.TELHAS[m.telha] || k.TELHAS.trap).vao;
+  }
+
+  // altura da nervura/onda (para rufos e peças por cima da telha)
+  ribH(t) { return t === 'colonial' ? 0.06 : t === 'ond' ? 0.028 : 0.045; }
 
   facesFor(m) {
     const k = this.kfg(), f = m.forma, L = m.casa.L, S = m.casa.S;
@@ -2281,7 +2380,7 @@ class Studio extends DCLogic {
 
   _footWorld(m) { const C = m.casa; return m.forma === 'chale' ? { x0: 0, x1: C.S, z0: 0, z1: C.L } : { x0: 0, x1: C.L, z0: 0, z1: C.S }; }
 
-  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1, m.hC]); }
+  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1, m.hC, m.mm || 0]); }
 
   _prism(g, pts, x0, x1, mat, ud) {
     const T = this._E.T;
@@ -2395,12 +2494,12 @@ class Studio extends DCLogic {
     fc.strips.forEach((st, t) => {
       const len = st.len / cosA;
       const cut = hip ? (vx) => Math.max(0, (fc.zh(st.x + vx) - st.zs) / cosA) : null;
-      const tile = this._tile(st.w, len, thk, m.telha, cut);
+      const tile = this._tile(st.w, len, thk, m.telha, cut, t < n - 1);
       tile.position.set(st.x, 0, st.zs / cosA);
       tile.userData = { block: 0, kind: 'telha', len, w: st.w, ex: { dy: fc.ring ? 1.5 : 2.3, dx: (t - (n - 1) / 2) * 0.12, delay: 0.05 + 0.3 * t / Math.max(1, n) } };
       F.add(tile); E.pieces.push(tile); E.roofMeshes.push(tile.children[0]);
     });
-    const yb = -thk - 0.004, tk = 0.007, rh = m.telha === 'colonial' ? 0.06 : 0.045;
+    const yb = -thk - 0.004, tk = 0.007, rh = this.ribH(m.telha);
     if (!fc.hipL && !fc.hipR) {
       const rl = (fc.run + fc.ov) / cosA;
       const rf = new T.Group(); rf.userData = { block: 0, kind: 'rufo', ex: { dy: 3.1, delay: 0.42 } }; F.add(rf); E.pieces.push(rf);
@@ -2408,7 +2507,10 @@ class Studio extends DCLogic {
       this._box(rf, 0, rh, 0, 0.12, rh + tk, rl, M.rufo);
       this._box(rf, fc.acr, yb - 0.16, 0, fc.acr + tk, rh + tk, rl, M.rufo);
       this._box(rf, fc.acr - 0.12, rh, 0, fc.acr, rh + tk, rl, M.rufo);
-      if (m.forma === '1') { this._box(rf, -tk, yb - 0.32, -tk, fc.acr + tk, rh + tk, 0, M.rufo); this._box(rf, 0, rh, 0, fc.acr, rh + tk, 0.16, M.rufo); }
+      if (m.forma === '1') {
+        const rt = new T.Group(); rt.userData = { block: 0, kind: 'rufo', sub: 'topo', ex: { dy: 3.4, delay: 0.46 } }; F.add(rt); E.pieces.push(rt);
+        this._box(rt, -tk, yb - 0.32, -tk, fc.acr + tk, rh + tk, 0, M.rufo); this._box(rt, 0, rh, 0, fc.acr, rh + tk, 0.16, M.rufo);
+      }
     }
     // setas de escoamento: mostram para onde cada água leva a chuva (modo Montar)
     const zb = fc.run / cosA - 0.35, poly = [];
@@ -2425,23 +2527,53 @@ class Studio extends DCLogic {
       const tx = E.tex.chev.clone(); tx.needsUpdate = true; tx.wrapS = tx.wrapT = T.RepeatWrapping; tx.repeat.set(1 / 1.4, 1 / 1.3);
       const fm = new T.MeshBasicMaterial({ map: tx, transparent: true, opacity: 0.45, depthWrite: false });
       const fl = new T.Mesh(new T.ShapeGeometry(sh), fm);
-      fl.rotation.x = -Math.PI / 2; fl.position.y = (m.telha === 'colonial' ? 0.075 : 0.06); fl.renderOrder = 3;
+      fl.rotation.x = -Math.PI / 2; fl.position.y = this.ribH(m.telha) + 0.015; fl.renderOrder = 3;
       fl.userData.own = true; fl.userData.block = 0; fl.visible = E.mode === 'montar';
       F.add(fl); E.flows.push(fl);
     }
     const tg = new T.Group(); tg.userData = { block: 0, kind: 'terca' }; F.add(tg);
-    const nT = Math.max(2, Math.ceil(fc.run / this.vaoOf(m)) + 1);
+    const nT = Math.max(2, Math.ceil(fc.run / this.vaoOf(m)) + 1), tzs = [];
     for (let q = 0; q < nT; q++) {
       const zh = 0.15 + (fc.run - 0.3) * q / (nT - 1);
       const xc = (fc.hipL || fc.hipR) ? Math.max(0, fc.run - zh) : 0;
       const x0 = Math.max(0.02, xc), x1 = Math.min(fc.acr - 0.02, fc.acr - xc);
-      if (x1 - x0 > 0.2) this._box(tg, x0, yb - 0.1, zh / cosA - 0.025, x1, yb, zh / cosA + 0.025, M.terca);
+      const tw2 = E.viewer ? 0.045 : 0.025, th2 = E.viewer ? 0.15 : 0.1;
+      if (x1 - x0 > 0.2) { this._box(tg, x0, yb - th2, zh / cosA - tw2, x1, yb, zh / cosA + tw2, M.terca); tzs.push(zh / cosA); }
     }
+    const stF = fc.strips.map((st) => ({ x: st.x, w: st.w, z0: st.zs / cosA, z1: (st.zs + st.len) / cosA }));
+    this._kitBits(F, stF, tzs, m.telha, rh, hip ? (x, z) => z * cosA >= fc.zh(x) + 0.12 && x > 0.05 && x < fc.acr - 0.05 : null);
+  }
+
+  // vitrine (etapa Kit): parafusos nas cristas sobre cada terça e fita nas emendas entre telhas.
+  // Desenhados maiores que o real para aparecer na tela do celular.
+  _kitBits(F, strips, tz, kind, rh, ok) {
+    const E = this._E, T = E.T;
+    if (!E.viewer) return;
+    const crest = kind === 'ond' ? [0.3, 0.7] : kind === 'colonial' ? [0.375, 0.875] : [0.05, 0.55], pts = [];
+    strips.forEach((st) => tz.forEach((z) => {
+      if (z < st.z0 + 0.1 || z > st.z1 - 0.06) return;
+      crest.forEach((c) => { const x = st.x + c; if (c > st.w - 0.06 || (ok && !ok(x, z))) return; pts.push([x, z]); });
+    }));
+    if (pts.length) {
+      if (!E.geo.screw) { E.geo.screw = new T.CylinderGeometry(0.055, 0.055, 0.03, 12); E.geo.screw.userData.keep = true; }
+      const im = new T.InstancedMesh(E.geo.screw, E.mat.screw, pts.length), mx = new T.Matrix4();
+      pts.forEach((p, q) => { mx.makeTranslation(p[0], rh + 0.02, p[1]); im.setMatrixAt(q, mx); });
+      im.instanceMatrix.needsUpdate = true; im.castShadow = false; im.userData = { kind: 'parafuso' }; im.visible = false;
+      F.add(im); E.kitBits.push(im);
+    }
+    const fg = new T.Group(); fg.userData = { kind: 'fita' }; fg.visible = false; F.add(fg); E.kitBits.push(fg);
+    strips.forEach((st, q) => {
+      if (q === 0) return;
+      const z0 = Math.max(st.z0, strips[q - 1].z0) + 0.06, z1 = Math.min(st.z1, strips[q - 1].z1) - 0.06;
+      // trapezoidal: a emenda fica no trapézio da aba; colonial: no vale da onda
+      const tr = kind !== 'colonial' && kind !== 'ond', fx = tr ? st.x + 0.05 : st.x, fy = tr ? 0.052 : rh * 0.55;
+      if (z1 - z0 > 0.2) this._box(fg, fx - 0.035, fy, z0, fx + 0.035, fy + 0.012, z1, E.mat.fita, null, true);
+    });
   }
 
   _caps(G, P, m, thk) {
     const E = this._E, T = E.T, sv = P.sv, f = m.forma;
-    const rh = m.telha === 'colonial' ? 0.06 : 0.045, lift = thk + 0.004 + rh + 0.012;
+    const rh = this.ribH(m.telha), lift = thk + 0.004 + rh + 0.012;
     const V = (x, y, z) => new T.Vector3(x, y, z);
     if (f === '2' || f === 'chale') {
       const cg = new T.Group(); cg.userData = { block: 0, kind: 'cumeeira', ex: { dy: 3.7, delay: 0.5 } }; G.add(cg); E.pieces.push(cg);
@@ -2499,7 +2631,7 @@ class Studio extends DCLogic {
     const tiles = F.children.filter((c) => c.userData && c.userData.kind === 'telha');
     if (!tiles.length) return null;
     const t = tiles[Math.floor((tiles.length - 1) / 2)];
-    const ex = t.userData.ex || {}, b = t.userData.base || t.position;
+    const ex = m.viewer ? {} : (t.userData.ex || {}), b = t.userData.base || t.position;
     return { F, t, x: b.x + (ex.dx || 0), y: b.y + (ex.dy || 0), z: b.z + (ex.dz || 0) + (t.userData.len || 1), w: t.userData.w || 1 };
   }
 
@@ -2564,19 +2696,189 @@ class Studio extends DCLogic {
     E.orb.vth = 0; E.orb.vph = 0; E.dirty = true;
   }
 
-  _camInside(m) {
+  _camInside(m, animate) {
     const E = this._E, T = E.T, it = this._insideTile(m); if (!it) return;
-    E.exTarget = 1;
+    const kc = m.viewer ? 0.6 : 1;
+    if (!m.viewer) E.exTarget = 1;
     const F = it.F; F.updateMatrixWorld(true);
-    const tp = new T.Vector3(it.x + it.w * 0.42, it.y - 0.01, it.z);
+    // vitrine: mira no meio da telha (os 3 trapézios cabem na tela)
+    const tp = new T.Vector3(it.x + (m.viewer ? Math.min(it.w, 1) * 0.55 : it.w * 0.42), it.y - 0.01, it.z);
     const wp = F.localToWorld(tp.clone());
     const fw = F.localToWorld(tp.clone().add(new T.Vector3(0, 0, 1))).sub(wp).normalize();
     const sd = F.localToWorld(tp.clone().add(new T.Vector3(1, 0, 0))).sub(wp).normalize();
-    const pos = wp.clone().add(fw.multiplyScalar(2.3)).add(sd.multiplyScalar(0.7)).add(new T.Vector3(0, 0.72, 0));
+    const pos = wp.clone().add(fw.multiplyScalar(2.3 * kc)).add(sd.multiplyScalar(0.7 * kc)).add(new T.Vector3(0, 0.72 * kc, 0));
     const v = pos.clone().sub(wp), r = v.length();
     const to = { tx: wp.x, ty: wp.y, tz: wp.z, r, th: Math.atan2(v.x, v.z), ph: Math.acos(Math.max(-1, Math.min(1, v.y / r))) };
+    this._camTo(to, animate !== false, 1.4);
+  }
+
+  _camTo(to, animate, dur) {
+    const E = this._E;
     let dth = to.th - E.orb.th; dth = Math.atan2(Math.sin(dth), Math.cos(dth)); to.th = E.orb.th + dth;
-    E.tw = { from: Object.assign({}, E.orb), to, t: 0, dur: 1.4 };
+    if (animate) E.tw = { from: Object.assign({}, E.orb), to, t: 0, dur: dur || 1.0 };
+    else { E.tw = null; Object.assign(E.orb, to); }
+    E.orb.vth = 0; E.orb.vph = 0; E.dirty = true;
+  }
+
+  // =====================================================================
+  //  VITRINE: câmera, materiais e peças de cada etapa do fluxo
+  // =====================================================================
+  _viewSync(m, force, rebuilt) {
+    const E = this._E, vs = m.vstep;
+    this._viewLook(m);
+    this._fixLabel(m, rebuilt);
+    if (force || vs !== E.vstep || m.inside !== E.inside) {
+      const animate = !force && E.vstep !== undefined;
+      E.vstep = vs; E.inside = m.inside; E.exTarget = 0;
+      E.spin = vs === 'pronto';
+      if (m.inside) this._camInside(m, animate);
+      else this._camView(m, animate);
+    }
+  }
+
+  _camView(m, animate) {
+    const E = this._E, b = E.bb; if (!b) return;
+    if (m.vstep === 'telha') { this._camRoof(m, animate); return; }
+    const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, size = Math.max(b.x1 - b.x0, b.z1 - b.z0, 7);
+    const vs = m.vstep, rf = this._fitR(size);
+    const to = vs === 'fix' ? { tx: cx, ty: (E.roofTop || 4) * 0.62, tz: cz, r: rf * 0.98, th: 0.62, ph: 0.72 }
+      : vs === 'kit' ? { tx: cx, ty: (E.roofTop || 4) * 0.45, tz: cz, r: rf * 1.0, th: 0.62, ph: 0.9 }
+      : { tx: cx, ty: 1.3, tz: cz, r: rf * 1.08, th: 0.62, ph: 0.98 };
+    this._camTo(to, animate, 1.1);
+  }
+
+  // perto do beiral, para ver o perfil da telha
+  _camRoof(m, animate) {
+    const E = this._E, T = E.T;
+    let F;
+    if (m.blocksMode) F = (E.frames || []).filter((f) => !!f).sort((a, c) => c.userData.acr * c.userData.run - a.userData.acr * a.userData.run)[0];
+    else F = this._bestFace(0.62);
+    if (!F) { this._camView(Object.assign({}, m, { vstep: 'casa' }), animate); return; }
+    F.updateMatrixWorld(true);
+    const acr = F.userData.acr, run = F.userData.run;
+    const p = F.localToWorld(new T.Vector3(acr * 0.66, 0, run * 0.82));
+    const o = F.localToWorld(new T.Vector3(0, 0, 0)), d = F.localToWorld(new T.Vector3(0, 0, 1)).sub(o); d.y = 0;
+    const th = d.lengthSq() > 1e-6 ? Math.atan2(d.x, d.z) + 0.5 : 0.62;
+    const r = Math.max(7.5, Math.min(13, Math.max(acr, run) * 0.95));
+    this._camTo({ tx: p.x, ty: p.y, tz: p.z, r, th, ph: m.blocksMode ? 0.62 : 1.0 }, animate, 1.1);
+  }
+
+  _subOf(o) { let n = o; while (n) { if (n.userData && n.userData.sub) return n.userData.sub; if (n.userData && n.userData.kind) return null; n = n.parent; } return null; }
+
+  // a qual item do kit da etapa Kit cada peça do 3D pertence
+  _kitIdOf(n, m) {
+    const kd = this._kindOf(n);
+    if (kd === 'parafuso') return 'parafusos';
+    if (kd === 'fita') return 'vedacao';
+    if (m.blocksMode) return kd === 'calha' ? 'cumeeira' : kd === 'rufo' ? 'rufos' : null;
+    if (m.forma === '1') return kd === 'rufo' ? (this._subOf(n) === 'topo' ? 'cumeeira' : 'rufos') : null;
+    if (kd === 'cumeeira' || kd === 'espigao') return 'cumeeira';
+    return kd === 'rufo' ? 'rufos' : null;
+  }
+
+  _viewLook(m) {
+    const E = this._E, M = E.mat; if (!E.house) return;
+    const vs = m.vstep, kit = m.kit || {}, inside = m.inside;
+    const fixMat = { madeira: M.tercaMadeira, metalon: M.tercaMet, lsf: M.tercaLsf }[m.fix] || M.tercaNs;
+    E.hlMats = E.hlMats || new Map(); E.ghMats = E.ghMats || new Map();
+    const hl = (mt) => { let h = E.hlMats.get(mt); if (!h) { h = mt.clone(); h.emissive = E.accent.clone(); h.emissiveIntensity = 0.5; E.hlMats.set(mt, h); } return h; };
+    const gh = (mt) => { let h = E.ghMats.get(mt); if (!h) { h = mt.clone(); h.transparent = true; h.opacity = 0.2; h.depthWrite = false; E.ghMats.set(mt, h); } return h; };
+    const roofKinds = { telha: 1, rufo: 1, calha: 1, capa: 1, cumeeira: 1, espigao: 1 };
+    // item desmarcado no kit sai do 3D
+    E.pieces.forEach((pc) => { const id = this._kitIdOf(pc, m); if (id && !inside) pc.visible = kit[id] !== false; });
+    (E.kitBits || []).forEach((b) => { const id = b.userData.kind === 'parafuso' ? 'parafusos' : 'vedacao'; b.visible = vs === 'kit' && !inside && kit[id] !== false; });
+    E.house.traverse((n) => {
+      if (!n.isMesh) return;
+      if (!n.userData.mat0) n.userData.mat0 = n.material;
+      const kd = this._kindOf(n);
+      if (kd === 'terca') { n.material = m.fix || vs === 'fix' ? fixMat : n.userData.mat0; return; }
+      if (vs === 'fix' && roofKinds[kd]) { n.material = gh(n.userData.mat0); return; }
+      if (vs === 'kit') {
+        const id = this._kitIdOf(n, m);
+        if (id && id !== 'parafusos' && id !== 'vedacao' && kit[id] !== false) { n.material = hl(n.userData.mat0); return; }
+      }
+      n.material = n.userData.mat0;
+    });
+    E.dirty = true;
+  }
+
+  // etiqueta da estrutura na etapa Fixação
+  _fixLabel(m, rebuilt) {
+    const E = this._E, T = E.T;
+    const key = m.vstep === 'fix' && !m.inside ? (m.fix || 'ns') + '|' + E.hk : '';
+    if (!rebuilt && key === E.fixKey) return;
+    E.fixKey = key;
+    if (E.fixLbl) {
+      const l = E.fixLbl, i = E.labels.indexOf(l); E.fixLbl = null;
+      if (i >= 0) { E.labels.splice(i, 1); if (l.parent) l.parent.remove(l); l.material.map.dispose(); l.material.dispose(); }
+    }
+    if (!key) return;
+    const F = m.blocksMode ? (E.frames || []).find((f) => !!f) : this._bestFace(0.62);
+    if (!F) return;
+    const NM = { madeira: 'Terças de madeira', metalon: 'Terças de metalon', lsf: 'Perfis de Light Steel Frame' };
+    const nf = (n) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const lines = [NM[m.fix] || 'Estrutura do telhado'];
+    if (m.telha !== 'ond') lines.push('apoios a cada ' + nf(this.vaoOf(m)) + ' m');
+    const sp = this._label(lines, { s: 0.105, dark: true });
+    sp.position.set(F.userData.acr * 0.5, 1.1, (F.userData.run || 4) * 0.5);
+    F.add(sp); E.labels.push(sp); E.fixLbl = sp;
+    this._applyExplode();
+  }
+
+  // gira a câmera (botão "Girar a casa")
+  turn(dth) {
+    const E = this._E; if (!E) return;
+    E.spinHold = performance.now() + 6000;
+    const o = E.tw ? E.tw.to : E.orb;
+    this._camTo(Object.assign({}, o, { th: o.th + dth }), true, 0.8);
+  }
+
+  // foto: compartilha (WhatsApp e outros apps) no celular ou baixa no computador
+  shareShot(lines) {
+    const c = this.snapshot(lines || []); if (!c) return;
+    const url = c.toDataURL('image/jpeg', 0.92), bin = atob(url.split(',')[1]), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'image/jpeg' }), name = 'meu-telhado-kingspan.jpg';
+    let file = null;
+    try { file = new File([blob], name, { type: 'image/jpeg' }); } catch (e) { file = null; }
+    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'Meu telhado Kingspan Isoeste', text: 'Meu telhado montado no simulador da Kingspan Isoeste.' }).catch(() => {});
+      return;
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+
+  // foto do telhado (para salvar ou mandar no WhatsApp): casa em 1080 px + faixa com o resumo
+  snapshot(lines) {
+    const E = this._E; if (!E || !E.R) return null;
+    const T = E.T, R = E.R, W0 = E.W, H0 = E.H, pr = R.getPixelRatio();
+    const W = 1080, H = Math.round(W * H0 / W0), band = lines && lines.length ? 70 + lines.length * 50 : 0;
+    const c = this._cvs(W, H + band), g = c.getContext('2d');
+    try {
+      R.setPixelRatio(1); R.setSize(W, H, false);
+      E.cam.clearViewOffset(); E.cam.aspect = W / H; E.cam.updateProjectionMatrix();
+      E.labels.forEach((l) => { l.visible = false; });
+      R.render(E.scene, E.cam);
+      g.drawImage(R.domElement, 0, 0, W, H);
+    } finally {
+      R.setPixelRatio(pr); R.setSize(W0, H0, false);
+      const OFF = this.isViewer() ? 0 : Math.round(Math.max(28, Math.min(52, 46 * H0 / 430)));
+      E.cam.aspect = W0 / (H0 + OFF); E.cam.setViewOffset(W0, H0 + OFF, 0, OFF, W0, H0);
+      this._applyExplode(); R.render(E.scene, E.cam); E.dirty = true;
+    }
+    if (band) {
+      g.fillStyle = '#FFFFFF'; g.fillRect(0, H, W, band);
+      g.fillStyle = '#' + E.accent.getHexString(); g.fillRect(0, H, W, 8);
+      g.textBaseline = 'middle';
+      lines.forEach((t, q) => {
+        g.font = q === 0 ? '800 44px Figtree, system-ui, sans-serif' : '600 34px Figtree, system-ui, sans-serif';
+        g.fillStyle = q === 0 ? '#10263F' : '#46556A';
+        g.fillText(String(t), 48, H + 52 + q * 50, W - 96);
+      });
+    }
+    return c;
   }
 
   // ---------- vista explodida ----------
@@ -2589,7 +2891,8 @@ class Studio extends DCLogic {
       t = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       pc.position.set(b.x + (e.dx || 0) * t, b.y + (e.dy || 0) * t, b.z + (e.dz || 0) * t);
     });
-    E.labels.forEach((l) => { l.material.opacity = Math.max(0, Math.min(1, (ex - 0.75) / 0.25)); l.visible = ex > 0.75; });
+    const lo = E.viewer ? 1 : Math.max(0, Math.min(1, (ex - 0.75) / 0.25));
+    E.labels.forEach((l) => { l.material.opacity = lo; l.visible = lo > 0; });
   }
 
   // ---------- destaque de peça e etiquetas ----------
@@ -2673,31 +2976,42 @@ class Studio extends DCLogic {
 
   _labels(m) {
     const E = this._E, T = E.T, k = this.kfg();
-    const hide = m.mode === 'pecas' && m.inside;
+    const hide = (m.mode === 'pecas' || m.viewer) && m.inside;
     const itH = hide ? this._insideTile(m) : null;
+    (E.insHid || []).forEach((c) => { c.visible = true; }); E.insHid = [];
     (E.frames || []).forEach((f) => { if (f) f.children.forEach((c) => { c.visible = true; }); });
     E.pieces.forEach((pc) => { const kd = pc.userData.kind; if (kd === 'calha' || kd === 'rufo' || kd === 'capa' || kd === 'cumeeira' || kd === 'espigao') pc.visible = !hide; });
     E.flows.forEach((f) => { f.visible = m.mode === 'montar'; });
     if (m.blocksMode) {
       let fi = m.sel; if (!E.frames[fi]) fi = E.frames.findIndex((f) => !!f);
       (E.blockGroups || []).forEach((bg, j) => { if (bg) bg.visible = !hide || j === fi; });
+      // vitrine: a telha fica no lugar, então paredes e mureta do bloco também saem da frente
+      if (hide && m.viewer && itH && E.blockGroups[fi]) E.blockGroups[fi].children.forEach((c) => { if (c !== itH.F && c.visible) { c.visible = false; E.insHid.push(c); } });
     } else if (E.house0) {
-      E.house0.children.forEach((c) => { c.visible = !hide || (itH && c === itH.F); });
+      E.house0.children.forEach((c) => { if (E.heatVols.indexOf(c) >= 0) return; c.visible = !hide || (itH && c === itH.F); });
     }
     if (itH) itH.F.children.forEach((c) => { c.visible = c === itH.t; });
     if (E.lotGroup) E.lotGroup.visible = !hide;
+    if (E.house) E.house.children.forEach((c) => { if (c !== E.house0 && c !== E.lotGroup && (E.blockGroups || []).indexOf(c) < 0) c.visible = !hide; });
     E.labels.forEach((l) => { if (l.parent) l.parent.remove(l); l.material.map.dispose(); l.material.dispose(); });
     E.labels = [];
     if (!E.house) return;
     const nf = (n, d) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
-    if (m.mode === 'pecas' && m.inside) {
+    if (hide) {
       const it = this._insideTile(m);
       if (it) {
-        const F = it.F, mm = m.blocksMode ? k.PIRMM : (k.TELHAS[m.telha] || k.TELHAS.trap).mm;
-        const add = (txt, p) => { const sp = this._label(txt, { s: 0.14, dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
-        add(['Aço pré-pintado'], new T.Vector3(it.x + it.w * 0.5, it.y + 0.21, it.z + 0.05));
-        add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x - 0.1, it.y - 0.02, it.z + 0.05));
-        add(['Forro metálico'], new T.Vector3(it.x + it.w * 0.5, it.y - 0.19, it.z + 0.05));
+        const F = it.F, mm = m.mm || (m.blocksMode ? k.PIRMM : (k.TELHAS[m.telha] || k.TELHAS.trap).mm);
+        const th = mm / 1000, vw = !!m.viewer;
+        const add = (txt, p) => { const sp = this._label(txt, { s: vw ? 0.12 : 0.14, dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
+        if (vw) {
+          add(['Aço pré-pintado'], new T.Vector3(it.x + it.w * 0.62, it.y + 0.075, it.z + 0.02));
+          add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x + it.w * 0.2, it.y - th * 0.5, it.z + 0.02));
+          add(['Forro metálico'], new T.Vector3(it.x + it.w * 0.62, it.y - th - 0.05, it.z + 0.02));
+        } else {
+          add(['Aço pré-pintado'], new T.Vector3(it.x + it.w * 0.5, it.y + 0.21, it.z + 0.05));
+          add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x - 0.1, it.y - 0.02, it.z + 0.05));
+          add(['Forro metálico'], new T.Vector3(it.x + it.w * 0.5, it.y - 0.19, it.z + 0.05));
+        }
       }
       this._applyExplode(); return;
     }
@@ -2847,13 +3161,13 @@ class Studio extends DCLogic {
     const E = this._E, cv = this._cv, T = E.T;
     E.ptrs = new Map();
     cv.addEventListener('webglcontextlost', (e) => { e.preventDefault(); if (this._alive && !E.dead && this._E === E) { this._failed = true; this.setState({ glFail: true }); } });
-    const pos = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, cx: e.clientX, cy: e.clientY }; };
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height, cx: e.clientX, cy: e.clientY, pt: e.pointerType }; };
     const snap = (v) => Math.round(v * 2) / 2;
     cv.addEventListener('pointerdown', (e) => {
       if (!this._E) return;
       try { cv.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ }
       const p = pos(e); E.ptrs.set(e.pointerId, p);
-      E.tw = null; E.orb.vth = 0; E.orb.vph = 0;
+      E.tw = null; E.orb.vth = 0; E.orb.vph = 0; E.spinHold = performance.now() + 5000;
       if (E.ptrs.size === 2) { const a = [...E.ptrs.values()]; E.pinch = { d: Math.hypot(a[0].cx - a[1].cx, a[0].cy - a[1].cy), r: E.orb.r }; E.drag = null; return; }
       E.down = { p, moved: false };
       const m = this.mdl();
@@ -2880,7 +3194,7 @@ class Studio extends DCLogic {
       if (!E.down.moved) return;
       const dr = E.drag;
       if (dr.kind === 'orbit') {
-        const dx = p.cx - dr.last.cx, dy = p.cy - dr.last.cy;
+        const dx = p.cx - dr.last.cx, dy = E.viewer && p.pt !== 'mouse' ? 0 : p.cy - dr.last.cy;
         E.orb.th -= dx * 0.0085; E.orb.ph = Math.max(0.02, Math.min(1.47, E.orb.ph - dy * 0.0065));
         E.orb.vth = -dx * 0.0085; E.orb.vph = -dy * 0.0065; dr.last = p; E.dirty = true;
       } else if (dr.kind === 'move') {
@@ -3073,8 +3387,11 @@ ${iff(pc.is1, esGrp('Para onde a água escorre?', `<div class="grid2">${each(pc.
 ${esGrp('Modelo da telha', `<div class="grid2">${each(pc.telhas, esBtn2)}</div>`)}
 ${iff(pc.isChale, '<div class="note">No chalé a parede lateral tem 1 m e o telhado desce quase até o chão. A altura até a cumeeira define a inclinação e o comprimento das telhas. A empena, o triângulo da frente, fica virada para a rua.</div>')}</div>`;
     }
+    // Linha "Formato do telhado": escondida em 09/10/2026, porque o cliente já escolhe o formato na etapa anterior.
+    // O código continua aqui. Para voltar com ela, troque MOSTRAR_FORMATOS para true no kfg() do Estúdio.
+    const formaRow = iff(v.showFormas, `<div class="sect"><span class="lbl2">Formato do telhado</span><div class="hscroll" data-k="frow">${each(v.formas, (fo) => `<button class="${fo.cls}" data-c="${on(fo.pick)}" aria-pressed="${fo.on}"><svg width="60" height="42" viewBox="0 0 80 56" aria-hidden="true"><path d="${fo.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2.4" stroke-linejoin="round"></path><path d="${fo.roof}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${fo.nome}</span></button>`)}</div></div>`);
     body = `<div style="display:flex;flex-direction:column;gap:18px" data-k="pm">
-<div class="sect"><span class="lbl2">Formato do telhado</span><div class="hscroll" data-k="frow">${each(v.formas, (fo) => `<button class="${fo.cls}" data-c="${on(fo.pick)}" aria-pressed="${fo.on}"><svg width="60" height="42" viewBox="0 0 80 56" aria-hidden="true"><path d="${fo.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2.4" stroke-linejoin="round"></path><path d="${fo.roof}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${fo.nome}</span></button>`)}</div></div>
+${formaRow}
 <div class="sect"><h2 class="h2">${v.montarTitle}</h2><p class="sub">${v.montarSub}</p></div>
 ${modelo}
 <div class="sect"><span class="lbl2">Cor do telhado</span><div class="grid6">${each(v.colors, (co) => `<button class="${co.cls}" data-c="${on(co.pick)}" aria-pressed="${co.on}" aria-label="${co.nome}"><span class="ring"><span class="fill" style="background:${co.hex}"></span></span><span>${co.curto}</span></button>`)}</div></div>
@@ -3189,14 +3506,66 @@ function studioAfterRender() {
 // baixa o three.js com antecedência, enquanto a pessoa responde as primeiras perguntas
 function preloadThree() { if (!window.THREE && !window.__threeLoading) Studio.prototype._loadThree.call(null); }
 
+// =====================================================================
+//  VITRINE 3D: a casa (ou o galpão) montada no Estúdio aparece nas etapas
+//  seguintes no lugar do desenho: muda de cor, mostra a telha por dentro,
+//  a estrutura e o kit. Se o 3D não abrir, o desenho continua lá.
+// =====================================================================
+let VW = null, vwMounted = false, vwArea = null, vwShot = null;
+const VW_H = 236;
+const ICO_ROT = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg>';
+const ICO_ARR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8 L3 12 L7 16 M17 8 L21 12 L17 16 M3 12 H21"></path></svg>';
+const ICO_CAM = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8 H7.5 L9 5.5 H15 L16.5 8 H20 V19 H4 Z"></path><circle cx="12" cy="13" r="3.4"></circle></svg>';
+
+function stage3d(v, house) {
+  const p = v.v3d, st = VW && vwArea === p.area ? (VW.state || {}) : {};
+  const ready = vwMounted && !!st.glReady && !st.glFail;
+  vwShot = p.shot;
+  const rot = ready ? () => { if (VW) VW.turn(Math.PI / 2); } : v.rotate;
+  return `<div class="stage s3d${ready ? ' on' : ''}" style="height:${VW_H}px" data-k="stage3d"><div class="stage-in">${house}</div>`
+    + `<canvas class="cv3d" data-keep="1" aria-label="Sua casa em 3D. Arraste para os lados para girar."></canvas>`
+    + iff(ready && !st.touched, `<div class="hint3d" data-k="h3d">${ICO_ARR}Arraste para girar</div>`)
+    + `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(rot)}" aria-label="Girar a casa">${ICO_ROT}</button>`
+    + iff(ready && v.is9, `<button class="shot3d" data-k="shot" data-c="${on(shareShot)}" aria-label="Salvar ou compartilhar a foto do seu telhado">${ICO_CAM}<span>Salvar foto</span></button>`)
+    + `</div>`;
+}
+
+function vwUnmount() {
+  if (VW && vwMounted) VW.componentWillUnmount();
+  vwMounted = false;
+  if (VW) { VW._cv = null; VW.state = Object.assign({}, VW.state, { glReady: false }); }
+}
+
+// liga, atualiza ou desliga o 3D depois de cada desenho da tela
+function viewerAfterRender(v) {
+  const p = v && v.v3d, cv = p ? root.querySelector('canvas.cv3d') : null;
+  if (!p || !cv) { vwUnmount(); return; }
+  if (!VW || vwArea !== p.area) {
+    vwUnmount();
+    VW = new Studio(); vwArea = p.area;
+    VW.props = { viewer: true, area: p.area, accent: (C.props && C.props.accent) || '#0A4DA2', startMode: 'montar', startTpl: 'auto' };
+    VW.state = {};
+  }
+  const keep = VW.state || {};
+  VW.state = Object.assign({ glReady: keep.glReady, glFail: keep.glFail, touched: keep.touched }, p.state);
+  if (!vwMounted || cv !== VW._cv) {
+    if (vwMounted) VW.componentWillUnmount();
+    vwMounted = true; VW._E = null; VW._failed = false; VW._waitN = 0; VW._cv = cv; VW.state.glReady = false;
+    VW.componentDidMount();
+  } else VW.componentDidUpdate();
+}
+
+// foto da casa pronta: compartilha (WhatsApp e outros apps) no celular ou baixa no computador
+function shareShot() { if (VW && VW._E) VW.shareShot(vwShot || []); }
+
 const root = document.getElementById('app');
 let lastStep = null, queued = false;
 function scheduleRender() { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } }
 function render() {
   const inStudio = !!(C.state.studio && STU);
-  let html;
+  let html, v = null;
   if (inStudio) html = studioView(STU.renderVals());
-  else { const v = C.renderVals(); html = view(v, C.state); }
+  else { v = C.renderVals(); html = view(v, C.state); }
   const t = document.createElement('template');
   t.innerHTML = html.trim();
   const next = t.content.firstElementChild;
@@ -3205,6 +3574,7 @@ function render() {
   const st = C.state;
   const step = (st.step || 0) + '|' + (st.pirMode || '') + '|' + (st.pirIdx || 0) + '|' + (st.pirAns ? 1 : 0);
   if (step !== lastStep) { const sc = root.querySelector('.scroll'); if (sc) sc.scrollTop = 0; lastStep = step; }
+  viewerAfterRender(v);
   if (inStudio) studioAfterRender();
   else if (studioMounted) { STU.componentWillUnmount(); studioMounted = false; }
   fitStage();
@@ -3241,7 +3611,7 @@ root.addEventListener('change', (e) => {
 root.addEventListener('scroll', (e) => {
   const el = e.target;
   if (el && el.classList && el.classList.contains('carousel')) {
-    const i = Math.max(0, Math.min(2, Math.round(el.scrollLeft / 302)));
+    const i = Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollLeft / 302)));
     if (i !== (C.state.cardIdx || 0)) C.setState({ cardIdx: i });
   }
 }, true);
