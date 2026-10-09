@@ -177,6 +177,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-mstp{border:2px solid #DAE1E8;border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:4px;align-items:center}
 .es-mstp .es-l{font-size:12px;font-weight:700;color:#56657A}
 .es-mrow{display:flex;align-items:center;gap:6px;width:100%;justify-content:space-between}
+.es-hint2{font-size:12px;font-weight:700;color:#56657A;text-align:center;line-height:1.3}
 .es-mval{font-family:'Bricolage Grotesque','Figtree',sans-serif;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .es-sbtn{width:44px;height:44px;border-radius:14px;border:0;background:#EEF3F8;color:var(--p);font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .es-fbtn{border:2px solid #DAE1E8;background:#fff;border-radius:14px;min-height:58px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:700;color:#34435A;cursor:pointer}
@@ -329,7 +330,11 @@ class Component extends DCLogic {
       { id: 'inclinado', nome: 'Bem inclinado', v: 0.25, k: 18 }
     ];
     const slopeId = s.slope || 'medio';
-    const sv = hs === 'chale' ? 1.0 : SLOPES.find((x) => x.id === slopeId).v;
+    // chalé: parede lateral de 1 m; a altura até a cumeeira define a inclinação (entre 31° e 63°)
+    const r1m = (v) => Math.round(v * 10) / 10;
+    const hcLo = r1m(1.0 + 0.6 * GW / 2), hcHi = r1m(1.0 + 2.0 * GW / 2);
+    const hC = r1m(Math.max(hcLo, Math.min(hcHi, s.hC !== undefined ? s.hC : 1.0 + GW / 2)));
+    const sv = hs === 'chale' ? (hC - 1.0) / (GW / 2) : SLOPES.find((x) => x.id === slopeId).v;
     const focus = s.focus || 'w';
     const knowSize = !!s.knowSize;
     const kLen = s.kLen !== undefined ? s.kLen : 5.2;
@@ -344,7 +349,7 @@ class Component extends DCLogic {
     const cosA = 1 / Math.sqrt(1 + sv * sv);
     const up10 = (x) => Math.ceil(x * 10 - 1e-6) / 10;
     let pieces;
-    const studioOk = !!s.studioPieces && s.studioKey === JSON.stringify([SH, w, l, slopeId]);
+    const studioOk = !!s.studioPieces && s.studioKey === JSON.stringify([SH, w, l, slopeId].concat(hs === 'chale' ? [hC] : []));
     if (knowSize) pieces = [{ qty: kQty, len: kLen }];
     else if (studioOk) pieces = s.studioPieces.map((p) => ({ qty: p.qty, len: p.len }));
     else if (hs === '1') pieces = [{ qty: Math.ceil(GL - 1e-6), len: up10((GW + 0.6) / cosA) }];
@@ -600,6 +605,7 @@ class Component extends DCLogic {
     if (step === 3) {
       add(line(P(-0.9, 0, 0), P(-0.9, GL, 0)), { s: CW, w: focus === 'w' ? 4 : 2.5, da: '4 4' });
       add(line(P(0, -0.9, 0), P(GW, -0.9, 0)), { s: CL, w: focus === 'l' ? 4 : 2.5, da: '4 4' });
+      if (hs === 'chale') add(line(P(GW / 2, -0.9, 0), P(GW / 2, -0.9, hC)), { s: '#2E8B57', w: focus === 'hC' ? 4 : 2.5, da: '4 4' });
     }
     const blank = { d: '', f: 'none', s: 'none', w: 0, o: 0, da: '', c: '' };
     const Hs = {};
@@ -709,14 +715,14 @@ class Component extends DCLogic {
     const fixOpts = FIXO.map((x) => ({ ...x, on: fix === x.id, cls: fix === x.id ? 'opt on' : 'opt', pick: () => set({ fix: x.id }) }));
     const FIXTIP = { madeira: 'Vamos usar parafuso com rosca para madeira e arruela de vedação.', metalon: 'Vamos usar parafuso autobrocante: ele mesmo fura o aço.', lsf: 'Vamos usar parafuso autobrocante próprio para aço fino.', naosei: 'Sem problema. Separamos o kit e um especialista confirma o parafuso com você antes do envio.' };
 
-    const LIM = { w: [3, 30], l: [2, 20] };
+    const LIM = { w: [3, 30], l: [2, 20], hC: [hcLo, hcHi] };
     const bump = (dlt) => { const v = focus === 'w' ? w : l; const lim = LIM[focus]; const nv = Math.round(Math.max(lim[0], Math.min(lim[1], v + dlt)) * 10) / 10; set(focus === 'w' ? { w: nv } : { l: nv }); };
     // medidas digitáveis: guarda o texto enquanto digita e só aplica valor válido; ao sair do campo, ajusta ao limite
     const parseM = (t) => parseFloat(String(t).replace(',', '.'));
     const clampM = (k, v) => Math.round(Math.max(LIM[k][0], Math.min(LIM[k][1], v)) * 10) / 10;
     const typeIn = (k, raw) => { const v = parseM(raw); const p = { focus: k }; p[k + 'Raw'] = raw; if (!isNaN(v) && v >= LIM[k][0] && v <= LIM[k][1]) p[k] = Math.round(v * 10) / 10; set(p); };
     const commit = (k) => { const v = parseM(s[k + 'Raw']); const p = {}; p[k + 'Raw'] = undefined; if (!isNaN(v)) p[k] = clampM(k, v); set(p); };
-    const bumpD = (k, d) => { const p = { focus: k }; p[k + 'Raw'] = undefined; p[k] = clampM(k, (k === 'w' ? w : l) + d); set(p); };
+    const bumpD = (k, d) => { const p = { focus: k }; p[k + 'Raw'] = undefined; p[k] = clampM(k, ({ w, l, hC })[k] + d); set(p); };
     const focusIn = (k) => { set({ focus: k }); setTimeout(() => { const el = document.getElementById('in-' + k); if (el) { el.focus(); el.select(); } }, 60); };
 
     // ---------- Botão principal ----------
@@ -771,6 +777,10 @@ class Component extends DCLogic {
       focW: focus === 'w', focL: focus === 'l',
       onInW: (e) => typeIn('w', e.target.value), onInL: (e) => typeIn('l', e.target.value),
       onChW: () => commit('w'), onChL: () => commit('l'),
+      hIn: s.hCRaw !== undefined ? s.hCRaw : nf(hC, 1), onInH: (e) => typeIn('hC', e.target.value), onChH: () => commit('hC'),
+      decH: () => bumpD('hC', -0.1), incH: () => bumpD('hC', 0.1), focH: focus === 'hC', dimHCls: focus === 'hC' ? 'stepper dim act' : 'stepper dim',
+      hInfo: 'metros · do chão ao topo · inclinação de ' + Math.round(Math.atan(sv) * 180 / Math.PI) + '°',
+      nMedidas: hs === 'chale' ? 'três medidas' : 'duas medidas',
       decW: () => bumpD('w', -0.5), incW: () => bumpD('w', 0.5), decL: () => bumpD('l', -0.5), incL: () => bumpD('l', 0.5),
       mirrorT, rotate: () => set({ mirror: !s.mirror }),
       H: Hs, items,
@@ -955,11 +965,12 @@ ${iff(v.showEsp, `<div class="tip"><svg width="22" height="22" viewBox="0 0 24 2
   else if (v.is3) {
     const stp = (lbl, val, dec, inc, a1, a2) => `<div class="stepper"><button class="sbtn" data-c="${on(dec)}" aria-label="${a1}">−</button><div class="mid"><span class="lbl">${lbl}</span><span class="big" style="font-size:28px">${val}</span></div><button class="sbtn" data-c="${on(inc)}" aria-label="${a2}">+</button></div>`;
     body = `<div class="screen" data-k="s3" style="gap:16px">
-${v.byHouse ? `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Medidas da obra</h1><p class="sub">Informe as <b>duas medidas</b> da área que vai ser coberta. Use − e + ou toque no número para digitar.</p></div>
+${v.byHouse ? `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Medidas da obra</h1><p class="sub">Informe as <b>${v.nMedidas}</b> da área que vai ser coberta. Use − e + ou toque no número para digitar.</p></div>
 ${dimStp('w', '#0A4DA2', 'Largura', 'metros · de um lado ao outro, no sentido da cumeeira', v.wIn, v.onInW, v.onChW, v.decW, v.incW, v.focW)}
 ${dimStp('l', '#D9661F', 'Comprimento', 'metros · no sentido em que a água da chuva escorre', v.lIn, v.onInL, v.onChL, v.decL, v.incL, v.focL)}
+${iff(v.isChale, dimStp('hC', '#2E8B57', 'Altura até a cumeeira', v.hInfo, v.hIn, v.onInH, v.onChH, v.decH, v.incH, v.focH))}
 ${v.showSlope ? `<div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:15px">Quanto o telhado é inclinado?</span><div class="seg3">${each(v.slopes, (sl) => `<button class="${sl.cls}" data-c="${on(sl.pick)}" aria-pressed="${sl.on}"><svg width="44" height="30" viewBox="0 0 44 30" aria-hidden="true"><path d="${sl.d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${sl.nome}</span></button>`)}</div></div>` : ''}
-${iff(v.isChale, '<div class="note">O chalé já tem o telhado bem inclinado, quase até o chão. A gente considera isso na conta.</div>')}`
+${iff(v.isChale, '<div class="note">No chalé a parede lateral tem 1 m. A altura até a cumeeira define a inclinação e o comprimento das telhas.</div>')}`
       : `<div style="display:flex;flex-direction:column;gap:6px"><h1 class="h1">Tamanho das telhas</h1><p class="sub">Informe direto o comprimento e a quantidade.</p></div>
 ${stp('Comprimento de cada telha', v.kLenTxt + ' m', v.decKL, v.incKL, 'Diminuir comprimento', 'Aumentar comprimento')}
 ${stp('Quantidade de telhas', v.kQty, v.decKQ, v.incKQ, 'Diminuir quantidade', 'Aumentar quantidade')}`}
@@ -1099,7 +1110,7 @@ class Studio extends DCLogic {
       TELHAS: { trap: { nome: 'Trapezoidal', mm: 30, U: 0.73, vao: 2.6 }, colonial: { nome: 'Colonial', mm: 40, U: 0.55, vao: 1.75 } },
       PD: { '1': { L: 9, S: 6.5 }, '2': { L: 10, S: 8 }, chale: { L: 9, S: 7 }, varanda: { L: 12, S: 10 } },
       // galpão comercial: pé-direito alto, portões na frente e pátio de concreto
-      PDG: { '1': { L: 16, S: 10 }, '2': { L: 20, S: 12 } }, HG: 6.0,
+      PDG: { '1': { L: 16, S: 10 }, '2': { L: 20, S: 12 } }, HG: 6.0, HCW: 1.0,
       TPLG: {
         galpao: { nome: 'Galpão', icon: 'M4 7 H36 V30 H4 Z M10 30 V20 H18 V30 M22 30 V20 H30 V30', blocks: [{ t: 'casa', x: 0, y: 0, w: 20, d: 14, lvl: 'sobrado', fall: 'N', ind: true }] },
         escritorio: { nome: 'Galpão + escritório', icon: 'M4 3 H36 V22 H4 Z M22 22 H36 V31 H22 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 20, d: 14, lvl: 'sobrado', fall: 'N', ind: true }, { t: 'casa', x: 12, y: 14, w: 8, d: 5, lvl: 'alto', fall: 'S' }] }
@@ -1129,8 +1140,10 @@ class Studio extends DCLogic {
     const pd = (galpao ? k.PDG[forma] : k.PD[forma]) || k.PD['2'];
     const telha = blocksMode ? 'trap' : (s.telha || (forma === 'chale' || forma === 'varanda' ? 'colonial' : 'trap'));
     const casa = this.clampCasa(forma, s.cL !== undefined ? s.cL : pd.L, s.cS !== undefined ? s.cS : pd.S, galpao);
+    const hc = forma === 'chale' ? this.chaleH(casa.S, s.hC) : null;
     return {
       forma, blocksMode, tplId, blocks, sel, casa, telha, galpao,
+      hC: hc ? hc.h : null, hClo: hc ? hc.lo : null, hChi: hc ? hc.hi : null,
       slope: s.slope || (galpao ? 'reto' : 'medio'), fall1: s.fall1 || 'N',
       mode: s.mode || this.props.startMode || 'montar',
       color: s.color || (telha === 'colonial' ? 'terracota' : 'cinza'),
@@ -1142,6 +1155,14 @@ class Studio extends DCLogic {
   }
 
   isRoof(b) { return b.t === 'casa' || b.t === 'garagem'; }
+
+  // chalé: altura do chão até a cumeeira, entre 31° e 63° de inclinação (sem valor, fica a 45°)
+  chaleH(S, raw) {
+    const k = this.kfg(), half = S / 2, r1 = (v) => Math.round(v * 10) / 10;
+    const lo = r1(k.HCW + 0.6 * half), hi = r1(k.HCW + 2.0 * half);
+    const v = raw !== undefined && raw !== null ? raw : k.HCW + half;
+    return { h: r1(Math.max(lo, Math.min(hi, v))), lo, hi };
+  }
 
   clampCasa(forma, L, S, galpao) {
     if (galpao) return { L: Math.max(4, Math.min(30, L)), S: Math.max(4, Math.min(20, S)) };
@@ -1228,6 +1249,7 @@ class Studio extends DCLogic {
     const letra = (i) => String.fromCharCode(65 + i);
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const r05 = (v) => Math.round(v * 2) / 2;
+    const r1 = (v) => Math.round(v * 10) / 10;
     if (!this._refFR) this._refFR = (el) => {
       if (!el || el === self._frEl) return;
       self._frEl = el;
@@ -1243,7 +1265,7 @@ class Studio extends DCLogic {
     const bump = (s.camReq || 0) + 1;
     const pitched = !m.blocksMode, PB = pitched ? this.bomPitched(m) : null, TN = k.TELHAS[m.telha] || k.TELHAS.trap;
     const FT = (m.galpao && k.FTXTG[m.forma]) || k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
-    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
+    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, hC: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
     const C = m.casa, ch = m.forma === 'chale';
     const setA = (v) => set(ch ? { cS: v } : { cL: v }), setB = (v) => set(ch ? { cL: v } : { cS: v });
     const vA = ch ? C.S : C.L, vB = ch ? C.L : C.S;
@@ -1251,6 +1273,8 @@ class Studio extends DCLogic {
       aLbl: 'Frente', bLbl: 'Profundidade', aTxt: nf(vA, 1) + ' m', bTxt: nf(vB, 1) + ' m',
       decA: () => setA(r05(vA - 0.5)), incA: () => setA(r05(vA + 0.5)), decB: () => setB(r05(vB - 0.5)), incB: () => setB(r05(vB + 0.5)),
       isChale: ch, notChale: !ch, is1: m.forma === '1',
+      hTxt: ch ? nf(m.hC, 1) + ' m' : '', decH: () => set({ hC: r1(m.hC - 0.1) }), incH: () => set({ hC: r1(m.hC + 0.1) }),
+      hInfo: ch ? 'Inclinação de ' + Math.round(Math.atan(this.slopeV(m)) * 180 / Math.PI) + '° · telhas de ' + nf(Math.max.apply(null, Object.keys(PB.lens).map(Number)), 2) + ' m' : '',
       slopes: k.SLOPES.map((x) => ({ nome: x.nome, sub: x.sub, on: m.slope === x.id, cls: m.slope === x.id ? 'fbtn on' : 'fbtn', pick: () => set({ slope: x.id }) })),
       telhas: [['trap', 'Trapezoidal', 'Nervuras retas'], ['colonial', 'Colonial', 'Visual de telha de barro']].map((x) => ({ nome: x[1], sub: x[2], on: m.telha === x[0], cls: m.telha === x[0] ? 'fbtn on' : 'fbtn', pick: () => set({ telha: x[0], color: undefined }) })),
       falls1: [['N', 'Fundos', 'M12 19 V5 M6 11 L12 5 L18 11'], ['S', 'Frente', 'M12 5 V19 M6 13 L12 19 L18 13']].map((x) => ({ nome: x[1], icon: x[2], on: m.fall1 === x[0], cls: m.fall1 === x[0] ? 'fbtn on' : 'fbtn', pick: () => set({ fall1: x[0] }) }))
@@ -1265,7 +1289,7 @@ class Studio extends DCLogic {
       { id: 'planta', nome: 'Planta', icon: 'M4 4 H20 V20 H4 Z M4 12 H11 V20 M11 4 V8 M15 12 H20' }
     ];
     const cams = CAMS.map((c) => ({ nome: c.nome, icon: c.icon, aria: 'Ver de ' + c.nome.toLowerCase(), on: m.cam === c.id, cls: m.cam === c.id ? 'camb on' : 'camb', pick: () => set({ cam: c.id, camReq: bump, inside: false }) }));
-    const HINT = { montar: pitched ? 'Puxe as setas azuis para mudar o tamanho' : 'Arraste o bloco azul para mover · puxe as setas', pecas: 'Toque numa peça para ver o que ela é', sol: 'Mude a hora e veja a sombra andar' };
+    const HINT = { montar: pitched ? (m.forma === 'chale' ? 'Puxe as setas azuis para mudar o tamanho e a altura' : 'Puxe as setas azuis para mudar o tamanho') : 'Arraste o bloco azul para mover · puxe as setas', pecas: 'Toque numa peça para ver o que ela é', sol: 'Mude a hora e veja a sombra andar' };
 
     // ---------- montar ----------
     const TPLS = m.galpao ? k.TPLG : k.TPL;
@@ -2163,7 +2187,7 @@ class Studio extends DCLogic {
   //  O chalé é girado 90° para a empena ficar de frente para a rua.
   // =====================================================================
   slopeV(m) {
-    if (m.forma === 'chale') return 1.0;
+    if (m.forma === 'chale') { const k = this.kfg(), hc = m.hC !== null && m.hC !== undefined ? m.hC : this.chaleH(m.casa.S).h; return (hc - k.HCW) / (m.casa.S / 2); }
     const k = this.kfg(), s = k.SLOPES.find((x) => x.id === m.slope) || k.SLOPES[1];
     return s.v;
   }
@@ -2177,7 +2201,7 @@ class Studio extends DCLogic {
     const sv = this.slopeV(m), cosA = 1 / Math.sqrt(1 + sv * sv);
     const P = { faces: [], sv, L, S };
     if (f === '2' || f === 'chale') {
-      const H = f === 'chale' ? 1.0 : (m.galpao ? k.HG : 2.8), half = S / 2, rise = sv * half;
+      const H = f === 'chale' ? k.HCW : (m.galpao ? k.HG : 2.8), half = S / 2, rise = sv * half;
       Object.assign(P, { H, half, rise, ridgeY: H + rise });
       P.faces.push({ id: 'F', phi: 0, sx: 0, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
       P.faces.push({ id: 'B', phi: Math.PI, sx: L, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
@@ -2237,7 +2261,7 @@ class Studio extends DCLogic {
 
   _footWorld(m) { const C = m.casa; return m.forma === 'chale' ? { x0: 0, x1: C.S, z0: 0, z1: C.L } : { x0: 0, x1: C.L, z0: 0, z1: C.S }; }
 
-  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1]); }
+  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1, m.hC]); }
 
   _prism(g, pts, x0, x1, mat, ud) {
     const T = this._E.T;
@@ -2774,7 +2798,9 @@ class Studio extends DCLogic {
       const cx2 = (w.x0 + w.x1) / 2, cz2 = (w.z0 + w.z1) / 2, W2 = w.x1 - w.x0, D2 = w.z1 - w.z0;
       const fp2 = new T.Mesh(new T.PlaneGeometry(W2 + 0.9, D2 + 0.9), E.mat.selFill);
       fp2.rotation.x = -Math.PI / 2; fp2.position.set(cx2, 0.02, cz2); fp2.renderOrder = 2; G2.add(fp2);
-      [['L', w.x1 + 1.6, 0.6, cz2, nfm(W2), false], ['S', cx2, 0.6, w.z1 + 1.6, nfm(D2), true]].forEach((h) => { const sp = this._handleSprite(h[4], h[5]); sp.position.set(h[1], h[2], h[3]); sp.userData.handle = h[0]; G2.add(sp); E.handles.push(sp); });
+      const hl = [['L', w.x1 + 1.6, 0.6, cz2, nfm(W2), false], ['S', cx2, 0.6, w.z1 + 1.6, nfm(D2), true]];
+      if (m.forma === 'chale' && m.hC) hl.push(['H', cx2, m.hC + 0.9, w.z1 + 0.4, nfm(m.hC), true]);
+      hl.forEach((h) => { const sp = this._handleSprite(h[4], h[5]); sp.position.set(h[1], h[2], h[3]); sp.userData.handle = h[0]; G2.add(sp); E.handles.push(sp); });
       E.dirty = true; return;
     }
     if (m.mode !== 'montar' || !blocks[m.sel]) return;
@@ -2817,7 +2843,10 @@ class Studio extends DCLogic {
         const h = this._hit(p, true);
         const fw0 = m.blocksMode ? null : this._footWorld(m);
         const b0 = m.blocksMode ? Object.assign({}, m.blocks[m.sel]) : { x: fw0.x0, y: fw0.z0, w: fw0.x1 - fw0.x0, d: fw0.z1 - fw0.z0 };
-        if (h && h.handle) { const py = h.y || 0, g0 = this._ground(p, py); if (g0) E.drag = { kind: 'resize', side: h.handle, py, start: g0, b0, last: p, nb: null }; }
+        if (h && h.handle === 'H') {
+          const hs2 = E.handles.find((q) => q.userData.handle === 'H'), hp = hs2 ? hs2.getWorldPosition(new T.Vector3()) : null, g0 = hp ? this._vplane(p, hp) : null;
+          if (g0) E.drag = { kind: 'height', pt: hp, y0: g0.y, h0: m.hC, last: p, nh: null };
+        } else if (h && h.handle) { const py = h.y || 0, g0 = this._ground(p, py); if (g0) E.drag = { kind: 'resize', side: h.handle, py, start: g0, b0, last: p, nb: null }; }
         else if (m.blocksMode && h && h.block === m.sel) { const py = h.y || 0, g0 = this._ground(p, py); if (g0) E.drag = { kind: 'move', py, start: g0, b0: Object.assign({}, m.blocks[m.sel]), last: p, dx: 0, dz: 0 }; }
       }
       E.dragging = true;
@@ -2838,6 +2867,14 @@ class Studio extends DCLogic {
         const g = this._ground(p, dr.py); if (!g) return;
         const dx = snap(g.x - dr.start.x), dz = snap(g.z - dr.start.z);
         if (dx !== dr.dx || dz !== dr.dz) { dr.dx = dx; dr.dz = dz; const bg = E.blockGroups[this.mdl().sel]; if (bg) bg.position.set(dx, 0, dz); if (E.giz) E.giz.position.set(dx, 0, dz); E.dirty = true; }
+      } else if (dr.kind === 'height') {
+        const g = this._vplane(p, dr.pt); if (!g) return;
+        const m = this.mdl(), hc = this.chaleH(m.casa.S, dr.h0 + (g.y - dr.y0));
+        if (hc.h !== dr.nh) {
+          dr.nh = hc.h;
+          const mt = Object.assign({}, m, { hC: hc.h });
+          this._buildHouse(mt, mt.blocks); E.hk = this._hkOf(mt); this._applySun(mt); this._gizmo(mt, mt.blocks); E.dirty = true;
+        }
       } else if (dr.kind === 'resize') {
         const g = this._ground(p, dr.py); if (!g) return;
         const b0 = dr.b0, nb = Object.assign({}, b0);
@@ -2855,7 +2892,8 @@ class Studio extends DCLogic {
             this._buildHouse(mt, bl); E.hk = this._hkOf(mt); this._applySun(mt); this._gizmo(mt, bl);
           } else {
             const chl = m.forma === 'chale';
-            const mt = Object.assign({}, m, { casa: this.clampCasa(m.forma, chl ? nb.d : nb.w, chl ? nb.w : nb.d, m.galpao) });
+            const cc0 = this.clampCasa(m.forma, chl ? nb.d : nb.w, chl ? nb.w : nb.d, m.galpao);
+            const mt = Object.assign({}, m, { casa: cc0 }, chl ? { hC: this.chaleH(cc0.S, (this.state || {}).hC).h } : {});
             this._buildHouse(mt, mt.blocks); E.hk = this._hkOf(mt); this._applySun(mt); this._gizmo(mt, mt.blocks);
           }
           E.dirty = true;
@@ -2876,6 +2914,8 @@ class Studio extends DCLogic {
       if (dr && dr.kind === 'move' && (dr.dx || dr.dz)) {
         const bl = this.plainBlocks(m.blocks); bl[m.sel].x += dr.dx; bl[m.sel].y += dr.dz;
         this.setState({ blocks: bl, tpl: m.tplId });
+      } else if (dr && dr.kind === 'height' && dr.nh !== null) {
+        this.setState({ hC: dr.nh });
       } else if (dr && dr.kind === 'resize' && dr.nb) {
         if (m.blocksMode) {
           const bl = this.plainBlocks(m.blocks); Object.assign(bl[m.sel], { x: dr.nb.x, y: dr.nb.y, w: dr.nb.w, d: dr.nb.d });
@@ -2904,6 +2944,17 @@ class Studio extends DCLogic {
     const hs = E.ray.intersectObjects(E.house.children, true).filter((h) => h.object.visible && !(h.object.material && h.object.material.opacity < 0.2));
     for (const h of hs) { const blk = this._blockOf(h.object); if (blk !== null) return { block: blk, kind: this._kindOf(h.object), y: h.point.y }; }
     return null;
+  }
+
+  // plano vertical voltado para a câmera, passando pelo ponto (para arrastar a altura)
+  _vplane(p, pt) {
+    const E = this._E, T = E.T;
+    E.ray.setFromCamera(this._ndc(p), E.cam);
+    const n = new T.Vector3(); E.cam.getWorldDirection(n); n.y = 0;
+    if (n.lengthSq() < 1e-6) return null;
+    n.normalize();
+    const out = new T.Vector3();
+    return E.ray.ray.intersectPlane(new T.Plane().setFromNormalAndCoplanarPoint(n, pt), out) ? out : null;
   }
 
   _ground(p, y) {
@@ -2975,10 +3026,11 @@ ${iff(c.isRoof, `<div style="display:flex;flex-direction:column;gap:14px">${esGr
     } else {
       const pc = v.pc;
       modelo = `<div class="card" data-k="pt"><div class="grid2">${esStp(pc.aLbl, pc.aTxt, pc.decA, pc.incA, 'a frente')}${esStp(pc.bLbl, pc.bTxt, pc.decB, pc.incB, 'a profundidade')}</div>
+${iff(pc.isChale, `<div class="mstp"><span class="l">Altura até a cumeeira</span><div class="mrow"><button class="sbtn" data-c="${on(pc.decH)}" aria-label="Diminuir a altura">−</button><span class="mval">${pc.hTxt}</span><button class="sbtn" data-c="${on(pc.incH)}" aria-label="Aumentar a altura">+</button></div><span class="hint2">${pc.hInfo}</span></div>`)}
 ${iff(pc.notChale, esGrp('Inclinação do telhado', `<div class="grid3">${each(pc.slopes, esBtn2)}</div>`))}
 ${iff(pc.is1, esGrp('Para onde a água escorre?', `<div class="grid2">${each(pc.falls1, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}">${esIco(it.icon, 22, 2.4)}<span>${it.nome}</span></button>`)}</div>`))}
 ${esGrp('Modelo da telha', `<div class="grid2">${each(pc.telhas, esBtn2)}</div>`)}
-${iff(pc.isChale, '<div class="note">No chalé o telhado tem inclinação de 100% (45°) e desce quase até o chão. A empena, o triângulo da frente, fica virada para a rua.</div>')}</div>`;
+${iff(pc.isChale, '<div class="note">No chalé a parede lateral tem 1 m e o telhado desce quase até o chão. A altura até a cumeeira define a inclinação e o comprimento das telhas. A empena, o triângulo da frente, fica virada para a rua.</div>')}</div>`;
     }
     body = `<div style="display:flex;flex-direction:column;gap:18px" data-k="pm">
 <div class="sect"><span class="lbl2">Formato do telhado</span><div class="hscroll" data-k="frow">${each(v.formas, (fo) => `<button class="${fo.cls}" data-c="${on(fo.pick)}" aria-pressed="${fo.on}"><svg width="60" height="42" viewBox="0 0 80 56" aria-hidden="true"><path d="${fo.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2.4" stroke-linejoin="round"></path><path d="${fo.roof}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>${fo.nome}</span></button>`)}</div></div>
@@ -3031,6 +3083,7 @@ function openStudio(forma) {
   const fromFlow = mem ? (cs.w !== mem.__w || cs.l !== mem.__l) : btype !== 'casa';
   if (pitched && fromFlow && cs.w !== undefined && cs.l !== undefined) { st.cL = cs.w; st.cS = cs.l; }
   if (pitched && !mem && cs.slope && forma !== 'chale') st.slope = cs.slope;
+  if (forma === 'chale' && cs.hC !== undefined) st.hC = cs.hC;
   STU.state = st;
   C.setState({ shape: forma, especialista: false, studio: forma });
 }
@@ -3050,6 +3103,7 @@ function applyStudio() {
     // largura = sentido da cumeeira, comprimento = sentido em que a água escorre (como na etapa Medidas)
     p.w = r1(m.casa.L); p.l = r1(m.casa.S);
     if (m.forma !== 'chale') p.slope = m.slope;
+    else { p.hC = m.hC; p.hCRaw = undefined; }
     p.telha = m.telha;
     if (ss.telha) p.knownTelha = true;
     lens = STU.bomPitched(m).lens;
@@ -3062,7 +3116,7 @@ function applyStudio() {
   p.w = Math.max(3, Math.min(30, p.w)); p.l = Math.max(2, Math.min(20, p.l));
   // a lista de telhas do Estúdio vale enquanto formato e medidas não mudarem na etapa Medidas
   p.studioPieces = Object.keys(lens).map(Number).sort((a, b) => b - a).map((len) => ({ qty: lens[len], len }));
-  p.studioKey = JSON.stringify([p.shape, p.w, p.l, p.slope || cs.slope || 'medio']);
+  p.studioKey = JSON.stringify([p.shape, p.w, p.l, p.slope || cs.slope || 'medio'].concat(m.forma === 'chale' ? [p.hC] : []));
   const keep = Object.assign({}, ss);
   ['camReq', 'cam', 'pick', 'inside', 'mode', 'glReady', 'glFail', 'xray', 'comum'].forEach((k) => { delete keep[k]; });
   keep.__w = p.w; keep.__l = p.l;
