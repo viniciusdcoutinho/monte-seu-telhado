@@ -1389,8 +1389,9 @@ class Studio extends DCLogic {
       qPirTxt: nf(Math.round(heat.qP), 0) + ' W/m² · ' + kw(heat.QP), qComTxt: nf(Math.round(heat.qC), 0) + ' W/m² · ' + kw(heat.QC),
       wPir: Math.max(2, heat.qP / qmax * 100).toFixed(1) + '%', wCom: (heat.qC > 0 ? 100 : 2) + '%',
       ganhoTxt: heat.qC > 0.5 ? 'O PIR barra cerca de ' + Math.round(heat.red * 100) + '% desse calor: ' + kw(heat.QC - heat.QP) + ' a menos entrando pelo telhado agora.' : 'Sem sol forte agora. Mova a hora para ver o efeito do calor.',
-      xr: { on: xrOn, cls: xrOn ? 'tog on' : 'tog', pick: () => set({ xray: !xrOn }) },
-      cm: { on: cmOn, cls: cmOn ? 'tog on' : 'tog', pick: () => set({ comum: !cmOn, xray: true }) },
+      // ao ligar o raio-x ou a comparação, a câmera vai para a Rua: casa de frente, com o calor entrando
+      xr: { on: xrOn, cls: xrOn ? 'tog on' : 'tog', pick: () => set(xrOn ? { xray: false } : { xray: true, cam: 'rua', camReq: bump, inside: false }) },
+      cm: { on: cmOn, cls: cmOn ? 'tog on' : 'tog', pick: () => set(cmOn ? { comum: false } : { comum: true, xray: true, cam: 'rua', camReq: bump, inside: false }) },
       notaSol: 'Sol calculado para ' + sun.city.nome + '. Calor estimado com U = ' + nf(UPIR, 2) + ' W/m²K (PIR ' + MM + ' mm, ficha técnica) contra U ≈ ' + nf(k.U_COMUM, 1) + ' W/m²K de uma telha sem isolamento (estimativa). Conta simplificada, só para comparar.'
     };
   }
