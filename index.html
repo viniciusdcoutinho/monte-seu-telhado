@@ -1518,6 +1518,7 @@ class Studio extends DCLogic {
     E.cam.aspect = W / (H + OFF);
     E.cam.setViewOffset(W, H + OFF, 0, OFF, W, H);
     E.R.setSize(W, H, false);
+    if (E.labels && E.labels.length) { E.labels.forEach((l) => this._lblScale(l)); this._declutter(); }
     E.dirty = true;
   }
 
@@ -1821,6 +1822,7 @@ class Studio extends DCLogic {
     const sp = Math.sin(o.ph);
     E.cam.position.set(o.tx + o.r * sp * Math.sin(o.th), o.ty + o.r * Math.cos(o.ph), o.tz + o.r * sp * Math.cos(o.th));
     E.cam.lookAt(o.tx, o.ty, o.tz);
+    if (E.anch && (busy || E.dragging || E.pinch)) this._layoutAnchored(E.cam);
     if (E.giz) { const low = o.ph > 1.25; if (E.giz.visible === low) { E.giz.visible = !low; E.dirty = true; } }
     if (E.ex !== E.exTarget) {
       const d = E.exTarget - E.ex, st = dt * 0.9;
@@ -1875,7 +1877,8 @@ class Studio extends DCLogic {
     const Hg = new T.Group(); E.house = Hg; E.scene.add(Hg);
     [E.hlMats, E.dimMats, E.ghMats].forEach((mp) => { if (mp) { mp.forEach((x) => x.dispose()); mp.clear(); } });
     E.pieces = []; E.flows = []; E.heatVols = []; E.blockGroups = []; E.frames = []; E.roofMeshes = []; E.house0 = null; E.capInfo = null;
-    E.viewer = !!m.viewer; E.kitBits = []; E.tkind = m.telha || 'trap'; E.thkB = m.blocksMode ? (m.mm || k.PIRMM) / 1000 : this.thk(m); E.vaoB = this.vaoOf(m);
+    E.viewer = !!m.viewer; E.kitBits = []; E.tkind = m.telha || 'trap';
+    if (m.telha === 'colonial') { const ar = m.blocksMode ? this.bomCalc(blocks).area : this.bomPitched(m).area; E.colLod = ar < 130 ? 0 : ar < 320 ? 1 : 2; } E.thkB = m.blocksMode ? (m.mm || k.PIRMM) / 1000 : this.thk(m); E.vaoB = this.vaoOf(m);
     const col = k.COLORS.find((c) => c.id === m.color) || k.COLORS[1];
     E.mat.roof.color.set(col.hex);
     E.doorAt = null; E.ripadoAt = null; E.gates = null; E.galpao = !!m.galpao;
@@ -2072,10 +2075,12 @@ class Studio extends DCLogic {
   }
 
   // lap: a telha tem vizinha à direita (na trapezoidal, a aba do 3º trapézio encaixa por cima dela)
-  _tile(w, L, thk, kind, cut, lap) {
+  _tile(w, L, thk, kind, cut, lap, ph) {
     const E = this._E, T = E.T, M = E.mat;
-    const key = (kind || 'trap') + '|' + w.toFixed(3) + '|' + L.toFixed(3) + '|' + thk + (lap ? '|L' : '');
+    const col = kind === 'colonial', ph0 = col ? Math.round((ph || 0) * 1000) / 1000 : 0;
+    const key = (kind || 'trap') + '|' + w.toFixed(3) + '|' + L.toFixed(3) + '|' + thk + (lap ? '|L' : '') + (col ? '|' + ph0 + '|' + (E.colLod || 0) : '');
     let gs = E.geo[key];
+    if (!gs && col) { gs = this._colonialGeos(w, L, thk, lap, ph0); E.geo[key] = gs; }
     if (!gs) {
       const sh = 0.005;
       const dd = (a) => a.filter((p, q) => q === 0 || Math.abs(p[0] - a[q - 1][0]) > 1e-6 || Math.abs(p[1] - a[q - 1][1]) > 1e-6);
@@ -2119,12 +2124,78 @@ class Studio extends DCLogic {
       if (cut) {
         geo = geo.clone(); geo.userData = {};
         const ps = geo.attributes.position;
-        for (let q = 0; q < ps.count; q++) if (ps.getZ(q) < 1e-4) ps.setZ(q, Math.min(L - 0.003, cut(ps.getX(q))));
+        for (let q = 0; q < ps.count; q++) { const zc = Math.min(L - 0.003, cut(ps.getX(q))); if (ps.getZ(q) < zc) ps.setZ(q, zc); }
         ps.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingBox(); geo.computeBoundingSphere();
       }
       const me = new T.Mesh(geo, p[1]); me.castShadow = true; me.receiveShadow = true; grp.add(me);
     });
     return grp;
+  }
+
+  // ---------- Isotelha Colonial ----------
+  // 6 ondas por telha, a cada 20 cm: 5 com PIR por baixo e a 6ª, de aço, encaixada sobre a primeira onda da vizinha.
+  // Ao longo da telha, módulos de 35 cm com degrau, como telha de barro sobreposta. (Medidas estimadas pela foto do produto.)
+  colK() { return { P: 0.2, A: 0.058, EX: 0.72, SH: 0.005, LM: 0.35, ST: 0.016, ND: 0.028 }; }
+
+  // altura da face de cima do aço na posição (x, z) da telha; ph = início da telha ao longo da água
+  colY(x, z, ph) {
+    const c = this.colK(), t = (((x / c.P) % 1) + 1) % 1;
+    const u = ((((z + (ph || 0)) / c.LM) % 1) + 1) % 1, e = 1 - c.ND / c.LM;
+    const st = u <= e ? c.ST * u / e : c.ST * (0.5 + 0.5 * Math.cos(Math.PI * (u - e) / (1 - e)));
+    return c.A * Math.pow(0.5 - 0.5 * Math.cos(2 * Math.PI * t), c.EX) + st;
+  }
+
+  _colonialGeos(w, L, thk, lap, ph) {
+    // telhado grande: menos detalhe na malha (o celular desenha tudo duas vezes, por causa da sombra)
+    const E = this._E, T = E.T, c = this.colK(), lod = E.colLod || 0, NPP = [12, 10, 8][lod];
+    const NOSE = [[1, 0.6, 0.25], [1, 0.4], [1]][lod];
+    const xs = [], nx = Math.max(2, Math.round(w / c.P * NPP));
+    for (let i = 0; i <= nx; i++) xs.push(w * i / nx);
+    const xl = xs.slice();
+    if (lap) for (let i = 1; i <= NPP; i++) xl.push(w + c.P * i / NPP);
+    const zset = new Set([0, L]);
+    for (let m = Math.floor(ph / c.LM); ; m++) {
+      const zb = m * c.LM - ph; if (zb > L) break;
+      [zb].concat(NOSE.map((f) => zb + c.LM - c.ND * f)).forEach((z) => { if (z > 1e-4 && z < L - 1e-4) zset.add(z); });
+    }
+    const zl = [...zset].sort((a, b) => a - b);
+    const e = c.SH + 0.003;
+    const top = (x, z) => this.colY(x, z, ph) + c.SH + (x > w ? e * Math.min(1, (x - w) / 0.02) : 0);
+    const bot = (x, z) => this.colY(x, z, ph);
+    const mk = () => ({ p: [], i: [] });
+    const quad = (G, a, b, d, f) => { const o = G.p.length / 3; G.p.push(...a, ...b, ...d, ...f); G.i.push(o, o + 1, o + 3, o + 1, o + 2, o + 3); };
+    const geo = (G) => { const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(G.p, 3)); g.setIndex(G.i); g.computeVertexNormals(); g.userData.keep = true; return g; };
+    // aço: malha da face de cima (normais suaves) + bordas de 5 mm
+    const S = mk(), nX = xl.length;
+    zl.forEach((z) => xl.forEach((x) => S.p.push(x, top(x, z), z)));
+    for (let j = 0; j < zl.length - 1; j++) for (let i = 0; i < nX - 1; i++) { const a = j * nX + i, b = a + 1, cc = a + nX, d = cc + 1; S.i.push(a, cc, b, b, cc, d); }
+    const SE = mk();
+    for (let i = 0; i < nX - 1; i++) {
+      const x0 = xl[i], x1 = xl[i + 1];
+      quad(SE, [x0, bot(x0, L), L], [x1, bot(x1, L), L], [x1, top(x1, L), L], [x0, top(x0, L), L]);
+      quad(SE, [x1, bot(x1, 0), 0], [x0, bot(x0, 0), 0], [x0, top(x0, 0), 0], [x1, top(x1, 0), 0]);
+    }
+    // núcleo de PIR: pontas (corte) e laterais; a base fica coberta pelo forro
+    const C = mk();
+    for (let i = 0; i < xs.length - 1; i++) {
+      const x0 = xs[i], x1 = xs[i + 1];
+      quad(C, [x0, -thk, L], [x1, -thk, L], [x1, bot(x1, L), L], [x0, bot(x0, L), L]);
+      quad(C, [x1, -thk, 0], [x0, -thk, 0], [x0, bot(x0, 0), 0], [x1, bot(x1, 0), 0]);
+    }
+    for (let j = 0; j < zl.length - 1; j++) {
+      const z0 = zl[j], z1 = zl[j + 1];
+      quad(C, [0, -thk, z0], [0, -thk, z1], [0, bot(0, z1), z1], [0, bot(0, z0), z0]);
+      quad(C, [w, -thk, z1], [w, -thk, z0], [w, bot(w, z0), z0], [w, bot(w, z1), z1]);
+    }
+    // a malha de cima e as bordas viram uma peça só (mesmo material)
+    const sheet = geo(S), edges = geo(SE), sp = sheet.attributes.position.array, ep = edges.attributes.position.array;
+    const all = new Float32Array(sp.length + ep.length); all.set(sp); all.set(ep, sp.length);
+    const nrm = new Float32Array(all.length); nrm.set(sheet.attributes.normal.array); nrm.set(edges.attributes.normal.array, sp.length);
+    const idx = Array.from(sheet.index.array).concat(Array.from(edges.index.array, (v) => v + sp.length / 3));
+    const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.BufferAttribute(all, 3)); sg.setAttribute('normal', new T.BufferAttribute(nrm, 3)); sg.setIndex(idx); sg.userData.keep = true;
+    sheet.dispose(); edges.dispose();
+    const liner = new T.BoxGeometry(w, 0.004, L); liner.translate(w / 2, -thk - 0.002, L / 2); liner.userData.keep = true;
+    return { sheet: sg, core: geo(C), liner };
   }
 
   _buildRoof(b, i, g, r) {
@@ -2313,7 +2384,7 @@ class Studio extends DCLogic {
   }
 
   // altura da nervura/onda (para rufos e peças por cima da telha)
-  ribH(t) { return t === 'colonial' ? 0.06 : t === 'ond' ? 0.028 : 0.045; }
+  ribH(t) { return t === 'colonial' ? 0.075 : t === 'ond' ? 0.028 : 0.045; }
 
   facesFor(m) {
     const k = this.kfg(), f = m.forma, L = m.casa.L, S = m.casa.S;
@@ -2494,7 +2565,7 @@ class Studio extends DCLogic {
     fc.strips.forEach((st, t) => {
       const len = st.len / cosA;
       const cut = hip ? (vx) => Math.max(0, (fc.zh(st.x + vx) - st.zs) / cosA) : null;
-      const tile = this._tile(st.w, len, thk, m.telha, cut, t < n - 1);
+      const tile = this._tile(st.w, len, thk, m.telha, cut, t < n - 1, st.zs / cosA);
       tile.position.set(st.x, 0, st.zs / cosA);
       tile.userData = { block: 0, kind: 'telha', len, w: st.w, ex: { dy: fc.ring ? 1.5 : 2.3, dx: (t - (n - 1) / 2) * 0.12, delay: 0.05 + 0.3 * t / Math.max(1, n) } };
       F.add(tile); E.pieces.push(tile); E.roofMeshes.push(tile.children[0]);
@@ -2549,7 +2620,7 @@ class Studio extends DCLogic {
   _kitBits(F, strips, tz, kind, rh, ok) {
     const E = this._E, T = E.T;
     if (!E.viewer) return;
-    const crest = kind === 'ond' ? [0.3, 0.7] : kind === 'colonial' ? [0.375, 0.875] : [0.05, 0.55], pts = [];
+    const crest = kind === 'ond' ? [0.3, 0.7] : kind === 'colonial' ? [0.3, 0.7] : [0.05, 0.55], pts = [];
     strips.forEach((st) => tz.forEach((z) => {
       if (z < st.z0 + 0.1 || z > st.z1 - 0.06) return;
       crest.forEach((c) => { const x = st.x + c; if (c > st.w - 0.06 || (ok && !ok(x, z))) return; pts.push([x, z]); });
@@ -2566,7 +2637,8 @@ class Studio extends DCLogic {
       if (q === 0) return;
       const z0 = Math.max(st.z0, strips[q - 1].z0) + 0.06, z1 = Math.min(st.z1, strips[q - 1].z1) - 0.06;
       // trapezoidal: a emenda fica no trapézio da aba; colonial: no vale da onda
-      const tr = kind !== 'colonial' && kind !== 'ond', fx = tr ? st.x + 0.05 : st.x, fy = tr ? 0.052 : rh * 0.55;
+      const tr = kind !== 'colonial' && kind !== 'ond', cl = kind === 'colonial';
+      const fx = tr ? st.x + 0.05 : cl ? st.x + 0.1 : st.x, fy = tr ? 0.052 : cl ? 0.074 : rh * 0.55;
       if (z1 - z0 > 0.2) this._box(fg, fx - 0.035, fy, z0, fx + 0.035, fy + 0.012, z1, E.mat.fita, null, true);
     });
   }
@@ -2819,7 +2891,7 @@ class Studio extends DCLogic {
     const nf = (n) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const lines = [NM[m.fix] || 'Estrutura do telhado'];
     if (m.telha !== 'ond') lines.push('apoios a cada ' + nf(this.vaoOf(m)) + ' m');
-    const sp = this._label(lines, { s: 0.105, dark: true });
+    const sp = this._label(lines, { dark: true });
     sp.position.set(F.userData.acr * 0.5, 1.1, (F.userData.run || 4) * 0.5);
     F.add(sp); E.labels.push(sp); E.fixLbl = sp;
     this._applyExplode();
@@ -2892,7 +2964,10 @@ class Studio extends DCLogic {
       pc.position.set(b.x + (e.dx || 0) * t, b.y + (e.dy || 0) * t, b.z + (e.dz || 0) * t);
     });
     const lo = E.viewer ? 1 : Math.max(0, Math.min(1, (ex - 0.75) / 0.25));
-    E.labels.forEach((l) => { l.material.opacity = lo; l.visible = lo > 0; });
+    E.labels.forEach((l) => {
+      l.material.opacity = lo; l.visible = lo > 0;
+      ['lead', 'dot'].forEach((kk) => { const o = l.userData[kk]; if (o) { o.material.opacity = lo; o.visible = lo > 0; } });
+    });
   }
 
   // ---------- destaque de peça e etiquetas ----------
@@ -2918,25 +2993,82 @@ class Studio extends DCLogic {
     E.dirty = true;
   }
 
+  // Etiqueta nítida: desenhada no tamanho em que aparece na tela (px CSS × densidade da tela × 2),
+  // em vez de uma imagem grande encolhida, e mantida nesse tamanho qualquer que seja a altura do 3D.
   _label(lines, opt) {
-    const E = this._E, T = E.T;
-    const f1 = '800 58px Figtree, system-ui, sans-serif', f2 = '600 46px Figtree, system-ui, sans-serif';
+    const E = this._E, T = E.T, o = opt || {}, k = o.k || 1, dark = !!o.dark;
+    const S = Math.min(6, Math.max(2, ((E.R && E.R.getPixelRatio()) || window.devicePixelRatio || 1) * 2));
+    const F1 = 12.5 * k, F2 = 10.5 * k, PX = 9 * k, PY = 5.5 * k, LH1 = F1 * 1.25, LH2 = F2 * 1.3;
+    const fam = 'Figtree, system-ui, -apple-system, "Segoe UI", sans-serif';
+    const f1 = '800 ' + (F1 * S).toFixed(1) + 'px ' + fam, f2 = '600 ' + (F2 * S).toFixed(1) + 'px ' + fam;
     const mc = (this._mctx = this._mctx || this._cvs(8, 8).getContext('2d'));
     mc.font = f1; let tw = mc.measureText(lines[0]).width;
     if (lines[1]) { mc.font = f2; tw = Math.max(tw, mc.measureText(lines[1]).width); }
-    const c = this._cvs(Math.min(1200, Math.max(220, Math.ceil(tw + 88))), lines.length > 1 ? 210 : 130), g = c.getContext('2d');
-    const w = c.width, h = c.height, r = 34;
-    g.fillStyle = (opt && opt.dark) ? 'rgba(16,38,63,0.92)' : 'rgba(255,255,255,0.95)';
+    const wc = Math.ceil(tw / S + 2 * PX), hc = Math.ceil(2 * PY + LH1 + (lines[1] ? LH2 : 0));
+    const c = this._cvs(Math.ceil(wc * S), Math.ceil(hc * S)), g = c.getContext('2d');
+    const w = c.width, h = c.height, r = Math.min(h / 2, 8 * k * S);
+    g.fillStyle = dark ? 'rgba(16,38,63,0.94)' : 'rgba(255,255,255,0.96)';
     g.beginPath(); g.moveTo(r, 0); g.lineTo(w - r, 0); g.quadraticCurveTo(w, 0, w, r); g.lineTo(w, h - r); g.quadraticCurveTo(w, h, w - r, h); g.lineTo(r, h); g.quadraticCurveTo(0, h, 0, h - r); g.lineTo(0, r); g.quadraticCurveTo(0, 0, r, 0); g.fill();
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillStyle = (opt && opt.dark) ? '#FFFFFF' : '#10263F'; g.font = f1;
-    g.fillText(lines[0], w / 2, lines.length > 1 ? 66 : h / 2);
-    if (lines[1]) { g.fillStyle = (opt && opt.dark) ? 'rgba(255,255,255,0.8)' : '#46556A'; g.font = f2; g.fillText(lines[1], w / 2, 148); }
-    const tx = this._tx(c, false);
-    const sp = new T.Sprite(new T.SpriteMaterial({ map: tx, depthTest: false, transparent: true, sizeAttenuation: false }));
-    const s = ((opt && opt.s) || 0.12) * (E.uiK || 1);
-    sp.scale.set(s * w / 720, s * h / 720, 1); sp.renderOrder = 50; sp.userData.own = true;
+    g.fillStyle = dark ? '#FFFFFF' : '#10263F'; g.font = f1;
+    g.fillText(lines[0], w / 2, (PY + LH1 / 2 + 0.5) * S);
+    if (lines[1]) { g.fillStyle = dark ? 'rgba(255,255,255,0.84)' : '#46556A'; g.font = f2; g.fillText(lines[1], w / 2, (PY + LH1 + LH2 / 2) * S); }
+    const tx = this._tx(c, false); tx.generateMipmaps = false; tx.minFilter = T.LinearFilter; tx.magFilter = T.LinearFilter;
+    const sp = new T.Sprite(new T.SpriteMaterial({ map: tx, depthTest: false, transparent: true, sizeAttenuation: false, toneMapped: false }));
+    sp.userData.px = [wc, hc]; this._lblScale(sp);
+    sp.renderOrder = 50; sp.userData.own = true;
+    // a fonte Figtree pode chegar depois do 3D: quando chegar, as etiquetas são redesenhadas com ela
+    if (!E.fontWait && document.fonts && document.fonts.check && !document.fonts.check('800 12px Figtree')) {
+      E.fontWait = true;
+      document.fonts.load('800 12px Figtree').then(() => {
+        if (this._E !== E || E.dead) return;
+        const m = this.mdl(); E.fixKey = null; this._labels(m);
+        if (m.viewer) this._fixLabel(m, true);
+        this._declutter(); E.dirty = true;
+      }).catch(() => {});
+    }
     return sp;
+  }
+
+  // tamanho da etiqueta em pixels -> escala do sprite (sizeAttenuation desligado)
+  _lblScale(sp) {
+    const E = this._E, px = sp.userData.px; if (!px || !E || !E.cam) return;
+    const kk = 2 / (E.cam.projectionMatrix.elements[5] * (E.H || 400));
+    sp.scale.set(px[0] * kk, px[1] * kk, 1);
+  }
+
+  // ponto redondo na ponta da linha da etiqueta
+  _dotTex() {
+    const E = this._E; if (E.tex.ldot) return E.tex.ldot;
+    const c = this._cvs(64, 64), g = c.getContext('2d');
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.arc(32, 32, 30, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#10263F'; g.beginPath(); g.arc(32, 32, 21, 0, Math.PI * 2); g.fill();
+    const tx = this._tx(c, false); tx.generateMipmaps = false; tx.minFilter = E.T.LinearFilter;
+    E.tex.ldot = tx; return tx;
+  }
+
+  // etiquetas com âncora: a um deslocamento fixo em pixels do ponto, com uma linha até ele
+  _layoutAnchored(cam) {
+    const E = this._E, T = E.T; if (!E.labels) return;
+    cam.updateMatrixWorld(true);
+    const P = cam.projectionMatrix.elements, W = E.W || 390, H = E.H || 400, kk = 2 / (P[5] * H);
+    E.labels.forEach((l) => {
+      const ud = l.userData; if (!ud.anchor || !l.parent) return;
+      const par = l.parent; par.updateMatrixWorld(true);
+      const p = par.localToWorld(ud.anchor.clone()).project(cam);
+      if (p.z > 1) return;
+      const hw = 0.5 * l.scale.x * P[0], hh = 0.5 * l.scale.y * P[5];
+      const q = new T.Vector3(p.x + ud.off[0] * 2 / W, p.y + ud.off[1] * 2 / H, p.z);
+      // embaixo ficam os botões (girar, abas): a etiqueta para antes deles
+      const yMin = E.viewer ? -1 + 2 * 60 / H : -0.58;
+      q.x = Math.max(-0.97 + hw, Math.min(0.97 - hw, q.x)); q.y = Math.max(yMin + hh, Math.min(0.92 - hh, q.y));
+      l.position.copy(par.worldToLocal(q.clone().unproject(cam)));
+      const ex = q.x, ey = q.y + (ud.off[1] >= 0 ? -hh : hh);
+      const dxp = (ex - p.x) * W / 2, dyp = (ey - p.y) * H / 2, len = Math.hypot(dxp, dyp);
+      if (ud.lead) { ud.lead.position.copy(ud.anchor); ud.lead.material.rotation = Math.atan2(-dxp, dyp); ud.lead.scale.set(2 * kk, Math.max(0, len - 1) * kk, 1); }
+      if (ud.dot) { ud.dot.position.copy(ud.anchor); ud.dot.scale.set(8 * kk, 8 * kk, 1); }
+    });
+    E.dirty = true;
   }
 
   _declutter() {
@@ -2946,8 +3078,9 @@ class Studio extends DCLogic {
     cam.lookAt(o.tx, o.ty, o.tz); cam.updateMatrixWorld(true);
     const P = cam.projectionMatrix.elements, pad = 0.014;
     const its = [];
+    if (E.anch) this._layoutAnchored(cam);
     E.labels.forEach((l) => {
-      if (!l.parent) return;
+      if (!l.parent || l.userData.anchor) return;
       if (!l.userData.p0) l.userData.p0 = l.position.clone();
       l.position.copy(l.userData.p0); l.updateMatrixWorld(true);
       const p = new T.Vector3().setFromMatrixPosition(l.matrixWorld).project(cam);
@@ -2993,7 +3126,11 @@ class Studio extends DCLogic {
     if (itH) itH.F.children.forEach((c) => { c.visible = c === itH.t; });
     if (E.lotGroup) E.lotGroup.visible = !hide;
     if (E.house) E.house.children.forEach((c) => { if (c !== E.house0 && c !== E.lotGroup && (E.blockGroups || []).indexOf(c) < 0) c.visible = !hide; });
-    E.labels.forEach((l) => { if (l.parent) l.parent.remove(l); l.material.map.dispose(); l.material.dispose(); });
+    E.labels.forEach((l) => {
+      if (l.parent) l.parent.remove(l); l.material.map.dispose(); l.material.dispose();
+      ['lead', 'dot'].forEach((kk) => { const o = l.userData[kk]; if (o) { if (o.parent) o.parent.remove(o); o.material.dispose(); } });
+    });
+    E.anch = false;
     E.labels = [];
     if (!E.house) return;
     const nf = (n, d) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -3001,17 +3138,22 @@ class Studio extends DCLogic {
       const it = this._insideTile(m);
       if (it) {
         const F = it.F, mm = m.mm || (m.blocksMode ? k.PIRMM : (k.TELHAS[m.telha] || k.TELHAS.trap).mm);
-        const th = mm / 1000, vw = !!m.viewer;
-        const add = (txt, p) => { const sp = this._label(txt, { s: vw ? 0.12 : 0.14, dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
-        if (vw) {
-          add(['Aço pré-pintado'], new T.Vector3(it.x + it.w * 0.62, it.y + 0.075, it.z + 0.02));
-          add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x + it.w * 0.2, it.y - th * 0.5, it.z + 0.02));
-          add(['Forro metálico'], new T.Vector3(it.x + it.w * 0.62, it.y - th - 0.05, it.z + 0.02));
-        } else {
-          add(['Aço pré-pintado'], new T.Vector3(it.x + it.w * 0.5, it.y + 0.21, it.z + 0.05));
-          add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x - 0.1, it.y - 0.02, it.z + 0.05));
-          add(['Forro metálico'], new T.Vector3(it.x + it.w * 0.5, it.y - 0.19, it.z + 0.05));
-        }
+        const th = mm / 1000, w = Math.min(1, it.w), z = it.z + 0.003, col = m.telha === 'colonial';
+        // cada etiqueta fica fora do corte, ligada por uma linha à sua camada (off = deslocamento em px na tela, para cima > 0)
+        const add = (txt, anchor, off) => {
+          const sp = this._label(txt, { k: 1.04, dark: true }); sp.position.copy(anchor);
+          sp.userData.anchor = anchor.clone(); sp.userData.off = off;
+          const ld = new T.Sprite(new T.SpriteMaterial({ color: 0x10263F, depthTest: false, transparent: true, sizeAttenuation: false, toneMapped: false }));
+          ld.center.set(0.5, 0); ld.renderOrder = 49;
+          const dt = new T.Sprite(new T.SpriteMaterial({ map: this._dotTex(), depthTest: false, transparent: true, sizeAttenuation: false, toneMapped: false }));
+          dt.renderOrder = 49;
+          F.add(ld); F.add(dt); F.add(sp); sp.userData.lead = ld; sp.userData.dot = dt;
+          E.labels.push(sp); E.anch = true;
+        };
+        const tz0 = (it.t.userData.base || it.t.position).z, cy = col ? this.colY(0.5, it.z - tz0, tz0) + 0.006 : 0.044;
+        add(['Aço pré-pintado'], new T.Vector3(it.x + w * (col ? 0.5 : 0.55), it.y + cy, z), [0, 46]);
+        add(['Núcleo de PIR ' + mm + ' mm'], new T.Vector3(it.x + w * 0.25, it.y - th * 0.5, z), [-24, -44]);
+        add(['Forro metálico'], new T.Vector3(it.x + w * 0.82, it.y - th - 0.004, z), [6, -40]);
       }
       this._applyExplode(); return;
     }
@@ -3020,8 +3162,8 @@ class Studio extends DCLogic {
       const PB = this.bomPitched(m), P = PB.P, F = this._bestFace(0.66);
       if (!F || !E.house0) return;
       const acr = F.userData.acr, run = F.userData.run;
-      const addF = (lines, p) => { const sp = this._label(lines, { s: 0.125, dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
-      const addG = (lines, p) => { const sp = this._label(lines, { s: 0.125, dark: true }); sp.position.copy(p); E.house0.add(sp); E.labels.push(sp); };
+      const addF = (lines, p) => { const sp = this._label(lines, { dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
+      const addG = (lines, p) => { const sp = this._label(lines, { dark: true }); sp.position.copy(p); E.house0.add(sp); E.labels.push(sp); };
       const lensK = Object.keys(PB.lens);
       addF([PB.tiles + ' telhas' + (lensK.length === 1 ? ' de ' + nf(Number(lensK[0]), 2) + ' m' : '')], new T.Vector3(acr * 0.5, 3.0, run * 0.45));
       if (PB.rufoLat > 0 || PB.rufoTopo > 0) addF([PB.rufoTopo > 0 ? 'Rufos de topo e laterais' : 'Rufos laterais'], new T.Vector3(acr * 0.03, 3.4, run * 0.62));
@@ -3035,7 +3177,7 @@ class Studio extends DCLogic {
     const F = E.frames[i]; if (!F) return;
     const per = B.per.find((p) => p.i === i);
     const acr = F.userData.acr, run = F.userData.run;
-    const add = (lines, p) => { const sp = this._label(lines, { s: 0.125, dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
+    const add = (lines, p) => { const sp = this._label(lines, { dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
     if (per) add([per.n + ' telhas de ' + nf(per.L, 2) + ' m'], new T.Vector3(acr * 0.5, 2.55, run * 0.62));
     add(['Rufo de encosto'], new T.Vector3(acr * 0.85, 3.85, 0.1));
     add(['Calha · ' + nf(acr, 1) + ' m'], new T.Vector3(acr * 0.4, 1.5, run + 1.05));
@@ -3538,7 +3680,8 @@ function vwUnmount() {
 
 // liga, atualiza ou desliga o 3D depois de cada desenho da tela
 function viewerAfterRender(v) {
-  const p = v && v.v3d, cv = p ? root.querySelector('canvas.cv3d') : null;
+  const p = v && v.v3d;
+  let cv = p ? root.querySelector('canvas.cv3d') : null;
   if (!p || !cv) { vwUnmount(); return; }
   if (!VW || vwArea !== p.area) {
     vwUnmount();
@@ -3550,6 +3693,9 @@ function viewerAfterRender(v) {
   VW.state = Object.assign({ glReady: keep.glReady, glFail: keep.glFail, touched: keep.touched }, p.state);
   if (!vwMounted || cv !== VW._cv) {
     if (vwMounted) VW.componentWillUnmount();
+    // um canvas que já teve um 3D desligado não abre outro: troca por um canvas novo
+    if (cv.__glUsed) { const nc = cv.cloneNode(false); cv.replaceWith(nc); cv = nc; }
+    cv.__glUsed = true;
     vwMounted = true; VW._E = null; VW._failed = false; VW._waitN = 0; VW._cv = cv; VW.state.glReady = false;
     VW.componentDidMount();
   } else VW.componentDidUpdate();
