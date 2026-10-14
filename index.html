@@ -809,7 +809,7 @@ class Component extends DCLogic {
     // (cor, telha vista no card, espessura do PIR, estrutura e kit acompanham as escolhas)
     let v3d = null;
     if (shape && !s.studio && step >= 4 && step <= 9) {
-      const mem3d = (s.studioMem || {})[(btype === 'galpao' ? 'galpao:' : '') + shape] || null;
+      const mem3d = (s.studioMem || {})[(btype !== 'casa' ? btype + ':' : '') + shape] || null;
       const tv = step === 4 && revealed && !pirMode ? (ordered[cardIdx] || telha).id : telhaId;
       const cv3 = tv === telhaId ? colorId : (tv === 'colonial' ? 'terracota' : 'grafite');
       const mm3 = tv === 'colonial' ? 40 : ({ bom: 20, melhor: 30, max: 50 })[s.comfort && s.comfort !== 'col' ? s.comfort : 'melhor'];
@@ -818,14 +818,14 @@ class Component extends DCLogic {
       // medidas mudadas na etapa Medidas depois do Estúdio: os blocos acompanham na mesma proporção
       if (blocks3 && mem3d.__w && mem3d.__l && (w !== mem3d.__w || l !== mem3d.__l)) { const fx = w / mem3d.__w, fz = l / mem3d.__l; blocks3 = blocks3.map((b) => Object.assign({}, b, { x: b.x * fx, w: b.w * fx, y: b.y * fz, d: b.d * fz })); }
       v3d = {
-        area: btype === 'galpao' ? 'galpao' : 'casa',
+        area: btype,
         state: { forma: shape, cL: w, cS: l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, fall1: mem3d ? mem3d.fall1 : undefined, tpl: mem3d ? mem3d.tpl : undefined, blocks: blocks3, telha: tv, color: cv3, mm: mm3, fix: fix || null, kit, vstep, comum: vstep === 'calor' && !!s.pirComum },
         shot: ['Meu telhado Kingspan Isoeste', tQty + ' telhas ' + telha.curto + ' · ' + color.nome, comfort.mm + ' de PIR · ' + nf(Math.round(areaM2), 0) + ' m² de telhado']
       };
     }
 
     return {
-      v3d,
+      v3d, montar3dTxt: 'Toque num formato para montar ' + ({ gourmet: 'sua área gourmet', galpao: 'seu galpão', comercio: 'sua loja' }[btype] || 'sua casa') + ' em 3D.',
       accent, onBack, segs, phaseLabel, phaseCount, stageH,
       notPersp: step !== 3, isPersp: step === 3,
       houseCls: fin ? 'houseB pop' : 'houseB',
@@ -1014,7 +1014,7 @@ ${iff(v.cepOk, `<div class="ok"><svg width="22" height="22" viewBox="0 0 24 24" 
 ${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;animation:rise .3s both"><span class="odesc" style="text-align:center">Escolha o modelo. A gente pula a parte das prioridades.</span><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${each(v.models, (m) => `<button class="chip" data-c="${on(m.pick)}">${m.curto}</button>`)}</div></div>`)}
 </div>`;
   else if (v.is2) body = `<div class="screen" data-k="s2">
-<h1 class="h1">Qual o formato do telhado?</h1><p class="sub">"Água" é cada lado por onde a chuva escorre. Toque num formato para montar sua casa em 3D.</p>
+<h1 class="h1">Qual o formato do telhado?</h1><p class="sub">"Água" é cada lado por onde a chuva escorre. ${v.montar3dTxt}</p>
 <div class="grid2">${each(v.shapes, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-label="${it.nome}: montar em 3D"><span class="b3d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8 L12 4 L21 8 L12 12 Z M3 8 V16 L12 20 L21 16 V8 M12 12 V20"></path></svg>3D</span>
 <svg width="80" height="56" viewBox="0 0 80 56" aria-hidden="true" style="flex-shrink:0"><path d="${it.wall}" fill="#F7EFE4" stroke="#0F1E2E" stroke-width="2" stroke-linejoin="round"></path><path d="${it.roof}" fill="none" stroke="${v.roofHex}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 <div style="display:flex;flex-direction:column;gap:4px"><span class="otitle">${it.nome}</span><span class="odesc">${it.sub}</span></div></button>`)}</div>
@@ -1133,7 +1133,33 @@ class Studio extends DCLogic {
         doisgar: { nome: 'Dois blocos + garagem', icon: 'M7 3 H20 V21 H7 Z M20 3 H33 V21 H20 Z M7 21 H20 V31 H7 Z M13.5 5.5 H17.5 V9.5 H13.5 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 5, d: 11, lvl: 'terreo', fall: 'O' }, { t: 'casa', x: 5, y: 0, w: 5, d: 11, lvl: 'alto', fall: 'L' }, { t: 'garagem', x: 0, y: 11, w: 5, d: 5.5, lvl: 'garagem', fall: 'O' }, { t: 'caixa', x: 2.2, y: 1, w: 2.5, d: 2.5 }] },
         patio: { nome: 'Com pátio', icon: 'M4 4 H36 V14 H4 Z M4 14 H14 V31 H4 Z M26 14 H36 V31 H26 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 12, d: 5, lvl: 'alto', fall: 'N' }, { t: 'casa', x: 0, y: 5, w: 4, d: 8, lvl: 'terreo', fall: 'O' }, { t: 'casa', x: 8, y: 5, w: 4, d: 8, lvl: 'terreo', fall: 'L' }, { t: 'piscina', x: 5, y: 6.5, w: 2.5, d: 5 }] }
       },
-      NOME: { casa: 'Casa', garagem: 'Garagem', caixa: "Caixa d'água", piscina: 'Piscina' },
+      NOME: { casa: 'Casa', garagem: 'Garagem', caixa: "Caixa d'água", piscina: 'Piscina', gourmet: 'Gourmet' },
+      // área gourmet (montada em blocos): coberta aberta com churrasqueira, piscina e garagem
+      TPLO: {
+        gpiscina: { nome: 'Gourmet + piscina', icon: 'M5 3 H35 V17 H5 Z M8 5 H13 V9 H8 Z M14 11 H25 V14 H14 Z M9 21 H31 V31 H9 Z', blocks: [{ t: 'gourmet', x: 0, y: 0, w: 7, d: 5, lvl: 'terreo', fall: 'N' }, { t: 'piscina', x: 1.25, y: 6.6, w: 4.5, d: 2.6 }] },
+        gourmet: { nome: 'Gourmet', icon: 'M5 5 H35 V29 H5 Z M8 8 H14 V12 H8 Z M14 17 H26 V21 H14 Z', blocks: [{ t: 'gourmet', x: 0, y: 0, w: 7, d: 5, lvl: 'terreo', fall: 'N' }] },
+        ggaragem: { nome: 'Gourmet + garagem', icon: 'M4 5 H22 V29 H4 Z M7 8 H12 V12 H7 Z M8 17 H18 V21 H8 Z M22 5 H36 V31 H22 Z', blocks: [{ t: 'gourmet', x: 0, y: 0, w: 6.5, d: 5, lvl: 'terreo', fall: 'N' }, { t: 'garagem', x: 6.5, y: 0, w: 4, d: 5.5, lvl: 'garagem', fall: 'L' }] }
+      },
+      // comércio (montado em blocos): loja com vitrine, depósito ou duas lojas lado a lado
+      TPLC: {
+        loja: { nome: 'Loja', icon: 'M6 4 H34 V30 H6 Z M9 26 H31', blocks: [{ t: 'casa', x: 0, y: 0, w: 10, d: 12, lvl: 'alto', fall: 'O' }] },
+        deposito: { nome: 'Loja + depósito', icon: 'M6 3 H34 V13 H6 Z M6 13 H34 V31 H6 Z M9 28 H31', blocks: [{ t: 'casa', x: 0, y: 6, w: 10, d: 8, lvl: 'alto', fall: 'O' }, { t: 'casa', x: 0, y: 0, w: 10, d: 6, lvl: 'sobrado', fall: 'L' }] },
+        duas: { nome: 'Duas lojas', icon: 'M5 4 H20 V30 H5 Z M20 4 H35 V30 H20 Z M7 27 H18 M22 27 H33', blocks: [{ t: 'casa', x: 0, y: 0, w: 7, d: 12, lvl: 'alto', fall: 'O' }, { t: 'casa', x: 7, y: 0, w: 7, d: 12, lvl: 'alto', fall: 'L' }] }
+      },
+      // telhados aparentes da área gourmet e do comércio: tamanho inicial e altura das paredes/pilares
+      PDO: { '1': { L: 6, S: 4.5 }, '2': { L: 7, S: 5 } }, HO: 2.7,
+      PDC: { '1': { L: 10, S: 8 }, '2': { L: 12, S: 8 } }, HC: 3.6,
+      FTXTO: {
+        '1': ['Área gourmet de 1 água', 'Coberta aberta, com churrasqueira, bancada e mesa. A chuva cai para um lado só.'],
+        '2': ['Área gourmet de 2 águas', 'Telhado de 2 águas sobre pilares, com churrasqueira, bancada e mesa.'],
+        outro: ['Monte sua área gourmet', 'Combine a área gourmet com piscina e garagem. Cada bloco tem platibanda e calha.']
+      },
+      FTXTC: {
+        '1': ['Loja de 1 água', 'Salão com vitrine, toldo e letreiro. A chuva cai para um lado só.'],
+        '2': ['Loja de 2 águas', 'Salão com vitrine, toldo e letreiro. A chuva cai para os dois lados.'],
+        plat: ['Loja com platibanda', 'O letreiro fica na mureta e o telhado, escondido, tem 2 águas que descem para uma calha no meio.'],
+        outro: ['Monte sua loja com blocos', 'Combine a loja com um depósito ou outra loja ao lado. Cada bloco tem platibanda e calha.']
+      },
       LV: { garagem: 2.7, terreo: 3.0, alto: 3.5, sobrado: 6.0 },
       COLORS: [
         { id: 'branco', nome: 'Branco', curto: 'Branco', hex: '#E7EBEE', alpha: 0.25 },
@@ -1199,26 +1225,27 @@ class Studio extends DCLogic {
   mdl() {
     const k = this.kfg(), viewer = this.isViewer();
     const s = viewer && this.props.vState ? Object.assign({}, this.state || {}, this.props.vState) : (this.state || {});
-    const galpao = this.props.area === 'galpao';
+    const area = this.areaOf(), galpao = area === 'galpao', gourmet = area === 'gourmet', comercio = area === 'comercio';
     const forma0 = s.forma || this.props.startForma || 'outro';
-    const forma = galpao && ['1', '2', 'plat', 'outro'].indexOf(forma0) < 0 ? '2' : forma0;
+    const OK = { galpao: ['1', '2', 'plat', 'outro'], comercio: ['1', '2', 'plat', 'outro'], gourmet: ['1', '2', 'outro'] }[area];
+    const forma = OK && OK.indexOf(forma0) < 0 ? '2' : forma0;
     const blocksMode = forma === 'plat' || forma === 'outro';
-    const TPLS = galpao ? k.TPLG : k.TPL;
+    const TPLS = this.tplsOf(area);
     const st0 = this.props.startTpl && this.props.startTpl !== 'auto' && TPLS[this.props.startTpl] ? this.props.startTpl : null;
-    const tplId = (s.tpl && TPLS[s.tpl]) ? s.tpl : (st0 || (galpao ? 'galpao' : (forma === 'plat' ? 'garagem' : 'dois')));
+    const tplId = (s.tpl && TPLS[s.tpl]) ? s.tpl : (st0 || ({ galpao: 'galpao', gourmet: 'gpiscina', comercio: 'loja' }[area] || (forma === 'plat' ? 'garagem' : 'dois')));
     // Platibanda: casas e galpão começam com 2 águas para o meio (calha central), como no desenho do card
     const src0 = s.blocks || TPLS[tplId].blocks;
     const src = !s.blocks && forma === 'plat' ? src0.map((b) => (b.t === 'casa' ? Object.assign({}, b, { fall: 'C' }) : b)) : src0;
     const blocks = src.map((b) => Object.assign({}, b));
     const sel = blocksMode ? Math.max(0, Math.min(blocks.length - 1, s.sel || 0)) : 0;
-    const pd = (galpao ? k.PDG[forma] : k.PD[forma]) || k.PD['2'];
+    const pd = (({ galpao: k.PDG, gourmet: k.PDO, comercio: k.PDC }[area] || k.PD)[forma]) || k.PD['2'];
     const telha = viewer && k.TELHAS[s.telha] ? s.telha : (blocksMode ? 'trap' : (s.telha || (forma === 'chale' || forma === 'varanda' ? 'colonial' : 'trap')));
     const cL0 = s.cL !== undefined ? s.cL : pd.L, cS0 = s.cS !== undefined ? s.cS : pd.S;
     const casa = viewer ? this.clampView(forma, cL0, cS0) : this.clampCasa(forma, cL0, cS0, galpao);
     const vstep = viewer ? (s.vstep || 'casa') : null;
     const hc = forma === 'chale' ? this.chaleH(casa.S, s.hC) : null;
     return {
-      forma, blocksMode, tplId, blocks, sel, casa, telha, galpao,
+      forma, blocksMode, tplId, blocks, sel, casa, telha, galpao, area, gourmet, comercio,
       hC: hc ? hc.h : null, hClo: hc ? hc.lo : null, hChi: hc ? hc.hi : null,
       slope: s.slope || (galpao ? 'reto' : 'medio'), fall1: s.fall1 || 'N',
       viewer, vstep, mm: viewer && s.mm ? Number(s.mm) : null, fix: viewer ? (s.fix || null) : null, kit: viewer ? (s.kit || null) : null,
@@ -1233,7 +1260,34 @@ class Studio extends DCLogic {
     };
   }
 
-  isRoof(b) { return b.t === 'casa' || b.t === 'garagem'; }
+  isRoof(b) { return b.t === 'casa' || b.t === 'garagem' || b.t === 'gourmet'; }
+
+  // tipo de obra: casa, área gourmet, galpão ou comércio. No Design, as telas do Estúdio são as mesmas:
+  // a área chega pelo link (…dc.html#area=gourmet) quando a propriedade não vem preenchida.
+  areaOf() {
+    let a = this.props.area;
+    if (!a) { try { const mm = /(?:^|[#&])area=(gourmet|comercio|galpao)\b/.exec((typeof location !== 'undefined' && location.hash) || ''); if (mm) a = mm[1]; } catch (e) { a = null; } }
+    return ['gourmet', 'galpao', 'comercio'].indexOf(a) >= 0 ? a : 'casa';
+  }
+
+  tplsOf(area) { const k = this.kfg(); return ({ galpao: k.TPLG, gourmet: k.TPLO, comercio: k.TPLC }[area]) || k.TPL; }
+
+  // nome do bloco nas listas: no comércio a casa vira loja (ou depósito), no galpão, galpão ou escritório
+  nomeB(b, i, blocks, area) {
+    const k = this.kfg();
+    if (b.t === 'casa' && area === 'galpao') return b.ind ? 'Galpão' : 'Escritório';
+    if (b.t === 'casa' && area === 'comercio') return this._isShop(blocks, i) ? 'Loja' : 'Depósito';
+    return k.NOME[b.t] || 'Bloco';
+  }
+
+  // comércio: bloco com vitrine = bloco de casa na linha de frente com a frente toda livre
+  _isShop(blocks, i) {
+    const b = blocks[i]; if (!b || b.t !== 'casa') return false;
+    let fz = -Infinity; blocks.forEach((o) => { if (o.t === 'casa') fz = Math.max(fz, o.y + o.d); });
+    if (b.y + b.d < fz - 1.0) return false;
+    for (let u = b.x + 0.4; u <= b.x + b.w - 0.4; u += 0.5) if (!this._exposed(blocks, i, u, b.y + b.d + 0.3)) return false;
+    return true;
+  }
 
   // chalé: altura do chão até a cumeeira, entre 31° e 63° de inclinação (sem valor, fica a 45°)
   chaleH(S, raw) {
@@ -1363,8 +1417,10 @@ class Studio extends DCLogic {
     const upd = (patch) => { const nbs = plain(); Object.assign(nbs[m.sel], patch); commit(nbs); };
     const bump = (s.camReq || 0) + 1;
     const pitched = !m.blocksMode, PB = pitched ? this.bomPitched(m) : null, TN = k.TELHAS[m.telha] || k.TELHAS.trap;
-    const FT = (m.galpao && k.FTXTG[m.forma]) || k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
-    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'plat', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, hC: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
+    const FTA = { galpao: k.FTXTG, gourmet: k.FTXTO, comercio: k.FTXTC }[m.area];
+    const FT = (FTA && FTA[m.forma]) || k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
+    const OKF = { galpao: ['1', '2', 'plat', 'outro'], comercio: ['1', '2', 'plat', 'outro'], gourmet: ['1', '2', 'outro'] }[m.area];
+    const formas = k.FORMAS.filter((f) => !OKF || OKF.indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, hC: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
     const C = m.casa, ch = m.forma === 'chale';
     const setA = (v) => set(ch ? { cS: v } : { cL: v }), setB = (v) => set(ch ? { cL: v } : { cS: v });
     const vA = ch ? C.S : C.L, vB = ch ? C.L : C.S;
@@ -1391,18 +1447,18 @@ class Studio extends DCLogic {
     const HINT = { montar: pitched ? (m.forma === 'chale' ? 'Puxe as setas azuis para mudar o tamanho e a altura' : 'Puxe as setas azuis para mudar o tamanho') : 'Arraste o bloco azul para mover · puxe as setas', pecas: 'Toque numa peça para ver o que ela é', sol: 'Mude a hora e veja a sombra andar' };
 
     // ---------- montar ----------
-    const TPLS = m.galpao ? k.TPLG : k.TPL;
+    const TPLS = this.tplsOf(m.area);
     const tpls = Object.keys(TPLS).map((id) => { const on = !s.blocks && m.tplId === id; return { nome: TPLS[id].nome, icon: TPLS[id].icon, on, cls: on ? 'tplb on' : 'tplb', pick: () => set({ tpl: id, blocks: undefined, sel: 0, pick: null }) }; });
-    const blks = blocks.map((b, i) => ({ txt: letra(i) + ' · ' + k.NOME[b.t], on: i === m.sel, cls: i === m.sel ? 'chip2 on' : 'chip2', pick: () => set({ sel: i }) }));
+    const blks = blocks.map((b, i) => ({ txt: letra(i) + ' · ' + this.nomeB(b, i, blocks, m.area), on: i === m.sel, cls: i === m.sel ? 'chip2 on' : 'chip2', pick: () => set({ sel: i }) }));
     const base = this.isRoof(cb) ? cb : (blocks.find((b) => this.isRoof(b)) || cb);
     const full = blocks.length >= 7;
     const addB = (nb) => { if (blocks.length >= 7) return; const nbs = plain(); nbs.push(nb); commit(nbs, { sel: nbs.length - 1 }); };
     const adds = [
       { txt: '+ Garagem', fn: () => addB({ t: 'garagem', x: base.x, y: base.y + base.d, w: Math.min(4.5, base.w), d: 5.5, lvl: 'garagem', fall: 'O' }) },
-      { txt: '+ Bloco', fn: () => addB({ t: 'casa', x: base.x + base.w, y: base.y, w: 4, d: Math.min(base.d, 8), lvl: 'terreo', fall: m.forma === 'plat' ? 'C' : 'L' }) },
+      { txt: '+ Bloco', fn: () => addB({ t: 'casa', x: base.x + base.w, y: base.y, w: 4, d: Math.min(base.d, 8), lvl: m.comercio ? 'alto' : 'terreo', fall: m.forma === 'plat' ? 'C' : 'L' }) },
       { txt: "+ Caixa d'água", fn: () => addB({ t: 'caixa', x: base.x + 0.5, y: base.y + 0.5, w: 2.5, d: 2.5 }) },
       { txt: '+ Piscina', fn: () => addB({ t: 'piscina', x: base.x + base.w + 1.5, y: base.y + 1, w: 3, d: 6 }) }
-    ].filter((a) => !m.galpao || a.txt === '+ Bloco' || a.txt === "+ Caixa d'água").map((a) => ({ txt: a.txt, pick: a.fn, off: full }));
+    ].filter((a) => ({ galpao: ['+ Bloco', "+ Caixa d'água"], comercio: ['+ Bloco', "+ Caixa d'água"], gourmet: ['+ Garagem', '+ Piscina', "+ Caixa d'água"] }[m.area] || [a.txt]).indexOf(a.txt) >= 0).map((a) => ({ txt: a.txt, pick: a.fn, off: full }));
     const FALLS = [
       { id: 'N', nome: 'Fundos', icon: 'M12 19 V5 M6 11 L12 5 L18 11' },
       { id: 'S', nome: 'Frente', icon: 'M12 5 V19 M6 13 L12 19 L18 13' },
@@ -1415,7 +1471,7 @@ class Studio extends DCLogic {
     const isR = this.isRoof(cb);
     const fallObj = FALLS.find((f) => f.id === cb.fall) || FALLS[0];
     const cur = {
-      letra: letra(m.sel), nome: k.NOME[cb.t], isRoof: isR,
+      letra: letra(m.sel), nome: this.nomeB(cb, m.sel, blocks, m.area), isRoof: isR,
       resumo: nf(cb.w, 1) + ' × ' + nf(cb.d, 1) + ' m' + (isR ? ' · água para ' + (FTXT2[fallObj.id] || fallObj.nome.toLowerCase()) : cb.t === 'caixa' ? ' · sobre a laje' : ''),
       wTxt: nf(cb.w, 1) + ' m', dTxt: nf(cb.d, 1) + ' m',
       decW: () => upd({ w: clamp(r05(cb.w - 0.5), 1.5, 24) }), incW: () => upd({ w: clamp(r05(cb.w + 0.5), 1.5, 24) }),
@@ -1474,6 +1530,9 @@ class Studio extends DCLogic {
       loading: !s.glReady && !s.glFail, failed: !!s.glFail,
       statTxt: pitched ? formaNome + ' · ' + nf(Math.round(PB.area), 0) + ' m² · ' + PB.tiles + ' telhas' : nRoof + (nRoof === 1 ? ' bloco' : ' blocos') + ' · ' + nf(Math.round(B.area), 0) + ' m² · ' + B.tiles + ' telhas',
       formas, showFormas: !!k.MOSTRAR_FORMATOS, setFormRow: this._refFR, pc, isBlocks: !pitched, isPitched: pitched, montarTitle: FT[0], montarSub: FT[1],
+      oQue: { galpao: 'seu galpão', gourmet: 'sua área gourmet', comercio: 'sua loja' }[m.area] || 'sua casa',
+      oQueCap: { galpao: 'Seu galpão', gourmet: 'Sua área gourmet', comercio: 'Sua loja' }[m.area] || 'Sua casa',
+      blocosLbl: { galpao: 'Blocos do galpão', gourmet: 'Blocos da área gourmet', comercio: 'Blocos da loja' }[m.area] || 'Blocos da casa',
       montarNote: pitched ? 'No 3D, puxe as setas azuis para mudar o tamanho. Arraste para girar e use dois dedos para aproximar.' : 'No 3D, arraste o bloco selecionado para mover e puxe as setas para mudar o tamanho. Arraste fora da casa para girar e use dois dedos para aproximar.',
       cams, tabs, hintOn: !!s.glReady && !s.inside && !s.touched && m.vp !== 'half', hintTxt: HINT[m.mode],
       // tamanho da área do 3D: metade (mais configurações), normal ou tela cheia
@@ -1675,6 +1734,39 @@ class Studio extends DCLogic {
     g.fillStyle = '#10263F'; g.beginPath(); g.moveTo(128, 222); g.lineTo(160, 134); g.lineTo(96, 134); g.closePath(); g.fill();
     g.font = '800 54px Figtree, system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = '#10263F'; g.fillText('N', 128, 30 + 0);
     X.compass = this._tx(c, false);
+    // ----- área gourmet e comércio -----
+    // tijolinho aparente (1 m por repetição: 4 tijolos por fiada, 12 fiadas)
+    c = this._cvs(256, 256); g = c.getContext('2d'); g.fillStyle = '#D9CFC2'; g.fillRect(0, 0, 256, 256);
+    for (let r = 0; r < 12; r++) {
+      const yy = r * 256 / 12, off = (r % 2) * 32;
+      for (let xx = -64 + off; xx < 256; xx += 64) { const v = rnd(); g.fillStyle = 'rgb(' + Math.floor(168 + v * 40) + ',' + Math.floor(84 + v * 28) + ',' + Math.floor(56 + v * 18) + ')'; g.fillRect(xx + 2, yy + 2, 60, 256 / 12 - 4); }
+    }
+    noise(g, 256, 256, 5000, (g2, x, y) => { g2.fillStyle = 'rgba(60,30,15,' + (0.05 + rnd() * 0.08) + ')'; g2.fillRect(x, y, 1.4, 1.4); });
+    X.brick = this._tx(c, true);
+    // porcelanato 60 x 60 cm (1,2 m por repetição)
+    c = this._cvs(256, 256); g = c.getContext('2d'); g.fillStyle = '#E8E0D3'; g.fillRect(0, 0, 256, 256);
+    for (let q = 0; q < 4; q++) { g.fillStyle = q === 1 || q === 2 ? 'rgba(255,252,246,0.35)' : 'rgba(205,195,180,0.18)'; g.fillRect((q % 2) * 128, Math.floor(q / 2) * 128, 128, 128); }
+    noise(g, 256, 256, 4000, (g2, x, y) => { g2.fillStyle = 'rgba(150,135,115,' + (0.04 + rnd() * 0.05) + ')'; g2.fillRect(x, y, 2, 2); });
+    g.fillStyle = 'rgba(140,128,114,0.7)'; g.fillRect(0, 0, 256, 2); g.fillRect(0, 128, 256, 2); g.fillRect(0, 0, 2, 256); g.fillRect(128, 0, 2, 256);
+    X.tile = this._tx(c, true);
+    // granito escuro
+    c = this._cvs(128, 128); g = c.getContext('2d'); g.fillStyle = '#2B2C30'; g.fillRect(0, 0, 128, 128);
+    noise(g, 128, 128, 2600, (g2, x, y) => { g2.fillStyle = rnd() < 0.5 ? 'rgba(205,205,210,0.35)' : 'rgba(8,8,10,0.5)'; g2.fillRect(x, y, 1.5, 1.5); });
+    X.granite = this._tx(c, true);
+    // toldo listrado (listras de 25 cm)
+    c = this._cvs(128, 16); g = c.getContext('2d');
+    for (let q = 0; q < 4; q++) { g.fillStyle = q % 2 ? '#FFF7EC' : '#E4572E'; g.fillRect(q * 32, 0, 32, 16); }
+    X.stripes = this._tx(c, true);
+    // fumaça
+    c = this._cvs(64, 64); g = c.getContext('2d');
+    const gs = g.createRadialGradient(32, 32, 0, 32, 32, 31); gs.addColorStop(0, 'rgba(255,255,255,0.9)'); gs.addColorStop(0.5, 'rgba(255,255,255,0.45)'); gs.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gs; g.fillRect(0, 0, 64, 64);
+    X.smoke = this._tx(c, false);
+    // reflexos que andam no fundo da piscina
+    c = this._cvs(256, 256); g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 256, 256);
+    g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineCap = 'round';
+    for (let q = 0; q < 46; q++) { const x = rnd() * 256, y = rnd() * 256, r = 14 + rnd() * 26; g.lineWidth = 1.5 + rnd() * 2.5; g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + r, y - r * 0.6, x + r * 1.6, y + r * 0.5, x + r * 2.2, y + rnd() * 6); g.stroke(); }
+    X.caustic = this._tx(c, true); X.caustic.repeat.set(2, 2);
   }
 
   _mkMaterials() {
@@ -1737,7 +1829,44 @@ class Studio extends DCLogic {
       heatHot: new T.MeshBasicMaterial({ color: 0xFF5A2B, transparent: true, opacity: 0.32, depthWrite: false })
     };
     [['wall', 3], ['wallNoAO', 3], ['muro', 3], ['coping', 2.5], ['laje', 2.5], ['ripado', 1.4], ['paver', 1.6], ['sidewalk', 2.5], ['clad', 1], ['portao', 1], ['yard', 4]].forEach((q) => { E.mat[q[0]].userData.uvs = q[1]; });
-    E.ghostable = ['clad', 'portao', 'poly', 'fascia', 'wallNoAO', 'wall', 'coping', 'roof', 'pir', 'liner', 'rufo', 'calha', 'laje', 'glass', 'frame', 'door', 'ripado'];
+    // ----- área gourmet e comércio -----
+    Object.assign(E.mat, {
+      brick: std({ color: 0xffffff, map: X.brick, roughness: 0.9 }),
+      tile: std({ color: 0xffffff, map: X.tile, roughness: 0.38, envMapIntensity: 0.8 }),
+      granite: std({ color: 0xffffff, map: X.granite, roughness: 0.22, metalness: 0.05, envMapIntensity: 1.1 }),
+      woodDark: std({ color: 0x9A6A44, map: X.door, roughness: 0.7 }),
+      woodLight: std({ color: 0xDDAE7E, map: X.door, roughness: 0.66 }),
+      inox: std({ color: 0xCBD1D6, metalness: 0.85, roughness: 0.28, envMapIntensity: 1.2 }),
+      blackMetal: std({ color: 0x24282D, metalness: 0.45, roughness: 0.45 }),
+      grillIn: std({ color: 0x141414, roughness: 0.95 }),
+      ember: std({ color: 0x2A1206, emissive: 0xFF5A14, emissiveIntensity: 1.2, roughness: 0.9 }),
+      meat: std({ color: 0x9C4A2F, roughness: 0.6 }),
+      bulb: new T.MeshBasicMaterial({ color: 0xFFD08A }),
+      cord: new T.LineBasicMaterial({ color: 0x2B2B2B }),
+      fabric: std({ color: 0xE4572E, roughness: 0.85 }),
+      cushion: std({ color: 0xF2E8D5, roughness: 0.9 }),
+      pot: std({ color: 0xB86B45, roughness: 0.85 }),
+      boia: std({ color: 0xFF6F91, roughness: 0.4 }),
+      shopGlass: std({ color: 0xC4DCE8, metalness: 0.1, roughness: 0.04, transparent: true, opacity: 0.24, depthWrite: false, envMapIntensity: 1.6 }),
+      alum: std({ color: 0xA5ADB4, metalness: 0.8, roughness: 0.32 }),
+      acm: std({ color: 0x1F2A36, metalness: 0.5, roughness: 0.35 }),
+      awning: std({ color: 0xffffff, map: X.stripes, roughness: 0.85, side: T.DoubleSide }),
+      interior: std({ color: 0xF6F3EC, roughness: 0.9 }),
+      shopWall: std({ color: 0x2E8C8A, roughness: 0.85 }),
+      shelf: std({ color: 0xF1F1EE, roughness: 0.55 }),
+      product: std({ color: 0xffffff, roughness: 0.55 }),
+      panel: new T.MeshBasicMaterial({ color: 0xFFF4DC }),
+      lampHead: new T.MeshBasicMaterial({ color: 0xFFE7B0 }),
+      hedge: std({ color: 0x4E8034, roughness: 0.9 }),
+      bikeFrame: std({ color: 0x1FA39A, metalness: 0.5, roughness: 0.35 }),
+      bin: std({ color: 0x2E7D4F, roughness: 0.6 }),
+      carBody2: std({ color: 0x2F74C0, metalness: 0.7, roughness: 0.25, envMapIntensity: 1.4 }),
+      carBody3: std({ color: 0xF1F3F4, metalness: 0.6, roughness: 0.3, envMapIntensity: 1.3 }),
+      carBody4: std({ color: 0xF2C14E, metalness: 0.6, roughness: 0.3, envMapIntensity: 1.3 })
+    });
+    E.mat.water.emissiveMap = X.caustic; E.mat.water.emissive = new T.Color(0x9FE8FF); E.mat.water.emissiveIntensity = 0.3;
+    [['brick', 1], ['tile', 1.2], ['granite', 0.8]].forEach((q) => { E.mat[q[0]].userData.uvs = q[1]; });
+    E.ghostable = ['brick', 'woodDark', 'acm', 'interior', 'shopWall', 'clad', 'portao', 'poly', 'fascia', 'wallNoAO', 'wall', 'coping', 'roof', 'pir', 'liner', 'rufo', 'calha', 'laje', 'glass', 'frame', 'door', 'ripado'];
   }
 
   _mkSky() {
@@ -1868,6 +1997,8 @@ class Studio extends DCLogic {
     }
     if (E.mode === 'montar' && E.flows.length && !E.lowPower && E.active) { E.flowT = ((E.flowT || 0) + dt * 0.55) % 1; E.flows.forEach((f) => { f.material.map.offset.y = E.flowT; }); busy = true; }
     if (E.parts.visible) { this._stepParticles(dt); busy = true; }
+    const A = E.amb;
+    if (A && A.on && !E.lowPower) { E.ambAcc = (E.ambAcc || 0) + dt; if (E.ambAcc >= 1 / 30) { this._animAmbient(Math.min(0.1, E.ambAcc)); E.ambAcc = 0; busy = true; } }
     return busy;
   }
 
@@ -1905,6 +2036,7 @@ class Studio extends DCLogic {
     o.traverse((n) => {
       if (n.geometry && !(n.geometry.userData && n.geometry.userData.keep)) n.geometry.dispose();
       if (n.userData && n.userData.own && n.material) { if (n.material.map) n.material.map.dispose(); n.material.dispose(); }
+      else if (n.userData && n.userData.ownMat && n.material) n.material.dispose();
     });
   }
 
@@ -1918,7 +2050,8 @@ class Studio extends DCLogic {
     if (m.telha === 'colonial') { const ar = m.blocksMode ? this.bomCalc(blocks).area : this.bomPitched(m).area; E.colLod = ar < 130 ? 0 : ar < 320 ? 1 : 2; } E.thkB = m.blocksMode ? (m.mm || k.PIRMM) / 1000 : this.thk(m); E.vaoB = this.vaoOf(m);
     const col = k.COLORS.find((c) => c.id === m.color) || k.COLORS[1];
     E.mat.roof.color.set(col.hex);
-    E.doorAt = null; E.ripadoAt = null; E.gates = null; E.galpao = !!m.galpao;
+    E.doorAt = null; E.ripadoAt = null; E.gates = null; E.galpao = !!m.galpao; E.area = m.area || 'casa'; E.shopDoors = []; E.shopN = 0; E.foot = null;
+    E.amb = { on: false, t: 0, fans: [], smoke: [], bulbs: null, ember: false, neons: [], floats: [], cars: [], peds: [], glow: [], lights: [], water: false };
     if (!m.blocksMode) {
       this._buildPitched(m, Hg);
       Hg.updateMatrixWorld(true);
@@ -1928,7 +2061,7 @@ class Studio extends DCLogic {
     }
     let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
     blocks.forEach((b) => { x0 = Math.min(x0, b.x); x1 = Math.max(x1, b.x + b.w); z0 = Math.min(z0, b.y); z1 = Math.max(z1, b.y + b.d); });
-    E.bb = { x0, x1, z0, z1 };
+    E.bb = { x0, x1, z0, z1 }; E.foot = { x0, x1, z0, z1 };
     E.roofTop = 0; blocks.forEach((b) => { if (this.isRoof(b)) E.roofTop = Math.max(E.roofTop, this.rInfo(b).top); });
     blocks.forEach((b, i) => {
       const g = new T.Group(); g.userData.block = i; Hg.add(g); E.blockGroups[i] = g;
@@ -1981,7 +2114,9 @@ class Studio extends DCLogic {
     const E = this._E, T = E.T, M = E.mat, k = this.kfg(), r = this.rInfo(b), Tw = k.T;
     const x0 = b.x, x1 = b.x + b.w, z0 = b.y, z1 = b.y + b.d;
     const ud = { block: i, kind: 'parede' };
-    if (b.t === 'garagem') {
+    if (b.t === 'gourmet') this._gourmetBlock(b, i, g, r);
+    else if (E.area === 'comercio' && b.t === 'casa' && this._isShop(blocks, i)) this._shopBlock(b, i, g, r);
+    else if (b.t === 'garagem') {
       const p = 0.24;
       [[x0, z0], [x1 - p, z0], [x0, z1 - p], [x1 - p, z1 - p]].forEach((q) => this._box(g, q[0], 0, q[1], q[0] + p, r.H0 - 0.4, q[1] + p, M.wall, ud));
       this._box(g, x0, r.H0 - 0.4, z0, x1, r.H0, z1, M.wall, ud);
@@ -2033,7 +2168,7 @@ class Studio extends DCLogic {
     // porta: na frente do bloco de casa mais à frente
     const front = this._frontIdx(blocks);
     let doorU = null;
-    if (front === i) {
+    if (front === i && E.area !== 'comercio') {
       const sd = sides[0];
       for (let u = sd.u0 + 1.0; u <= sd.u1 - 1.0; u += 0.25) { if (exp(sd, u - 0.6) && exp(sd, u + 0.6)) { doorU = u; break; } }
       if (doorU !== null) {
@@ -2352,12 +2487,14 @@ class Studio extends DCLogic {
     Object.assign(w.userData, ud); g.add(w);
     // deck de madeira
     this._box(g, x0 - 1.2, 0, z0, x0 - 0.05, 0.05, z1, M.ripado, ud, true);
+    this._poolFloat(g, x0 + e, z0 + e, b.w - 2 * e, b.d - 2 * e, 0.06);
+    E.amb.water = true;
   }
 
-  _car(g, cx, cz) {
+  _car(g, cx, cz, body) {
     const E = this._E, T = E.T, M = E.mat;
     const c = new T.Group(); g.add(c);
-    this._box(c, cx - 0.86, 0.3, cz - 2.1, cx + 0.86, 0.9, cz + 2.1, M.carBody);
+    this._box(c, cx - 0.86, 0.3, cz - 2.1, cx + 0.86, 0.9, cz + 2.1, body || M.carBody);
     this._box(c, cx - 0.76, 0.9, cz - 1.05, cx + 0.76, 1.42, cz + 0.85, M.carGlass);
     this._box(c, cx - 0.7, 0.62, cz + 2.08, cx - 0.4, 0.74, cz + 2.13, M.chrome, null, true);
     this._box(c, cx + 0.4, 0.62, cz + 2.08, cx + 0.7, 0.74, cz + 2.13, M.chrome, null, true);
@@ -2384,9 +2521,548 @@ class Studio extends DCLogic {
     return tg;
   }
 
+  // =====================================================================
+  //  ÁREA GOURMET E COMÉRCIO: peças do cenário e animações (fumaça, ventilador,
+  //  luzes, boia na piscina, placa ABERTO, pedestres e carros passando)
+  // =====================================================================
+  // várias caixas numa malha só (menos chamadas de desenho)
+  _mBoxes(g, list, mat, ud, noCast) {
+    const T = this._E.T; if (!list.length) return null;
+    const parts = list.map((q) => { const b = new T.BoxGeometry(Math.max(0.002, q[3] - q[0]), Math.max(0.002, q[4] - q[1]), Math.max(0.002, q[5] - q[2])); b.translate((q[0] + q[3]) / 2, (q[1] + q[4]) / 2, (q[2] + q[5]) / 2); return b; });
+    const me = new T.Mesh(this._merge(parts), mat); parts.forEach((p) => p.dispose());
+    me.castShadow = !noCast; me.receiveShadow = true; if (ud) Object.assign(me.userData, ud);
+    g.add(me); return me;
+  }
+
+  _merge(geos) {
+    const T = this._E.T; let n = 0;
+    const ng = geos.map((x) => { const y = x.index ? x.toNonIndexed() : x; n += y.attributes.position.count; return y; });
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2); let o = 0;
+    ng.forEach((y) => { pos.set(y.attributes.position.array, o * 3); nor.set(y.attributes.normal.array, o * 3); if (y.attributes.uv) uv.set(y.attributes.uv.array, o * 2); o += y.attributes.position.count; });
+    ng.forEach((y, i) => { if (y !== geos[i]) y.dispose(); });
+    const gm = new T.BufferGeometry();
+    gm.setAttribute('position', new T.BufferAttribute(pos, 3)); gm.setAttribute('normal', new T.BufferAttribute(nor, 3)); gm.setAttribute('uv', new T.BufferAttribute(uv, 2));
+    return gm;
+  }
+
+  // cilindro com a base em y
+  _cyl(g, x, y, z, rt, rb, h, mat, seg, noCast) {
+    const T = this._E.T, me = new T.Mesh(new T.CylinderGeometry(rt, rb, h, seg || 16), mat);
+    me.position.set(x, y + h / 2, z); me.castShadow = !noCast; me.receiveShadow = true; g.add(me); return me;
+  }
+
+  // barra cilíndrica entre dois pontos
+  _rod(g, a, b, r, mat) {
+    const T = this._E.T, v = new T.Vector3().subVectors(b, a), len = v.length();
+    const me = new T.Mesh(new T.CylinderGeometry(r, r, len, 8), mat);
+    me.position.copy(a).addScaledVector(v, 0.5); me.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), v.normalize());
+    me.castShadow = true; g.add(me); return me;
+  }
+
+  // tronco de pirâmide retangular (coifa da churrasqueira)
+  _frustum(g, cx, cz, y0, y1, w0, d0, w1, d1, mat, ud) {
+    const T = this._E.T;
+    const B = [[-w0 / 2, y0, -d0 / 2], [w0 / 2, y0, -d0 / 2], [w0 / 2, y0, d0 / 2], [-w0 / 2, y0, d0 / 2]];
+    const U = [[-w1 / 2, y1, -d1 / 2], [w1 / 2, y1, -d1 / 2], [w1 / 2, y1, d1 / 2], [-w1 / 2, y1, d1 / 2]];
+    const quads = [[B[0], B[1], U[1], U[0]], [B[1], B[2], U[2], U[1]], [B[2], B[3], U[3], U[2]], [B[3], B[0], U[0], U[3]], [U[0], U[1], U[2], U[3]]];
+    const ctr = new T.Vector3(0, (y0 + y1) / 2, 0), pos = [], uv = [];
+    quads.forEach((qd) => {
+      [[0, 1, 2], [0, 2, 3]].forEach((tr) => {
+        let p = tr.map((k) => new T.Vector3(qd[k][0], qd[k][1], qd[k][2]));
+        const nrm = new T.Vector3().subVectors(p[1], p[0]).cross(new T.Vector3().subVectors(p[2], p[0]));
+        const fc = p[0].clone().add(p[1]).add(p[2]).multiplyScalar(1 / 3).sub(ctr);
+        if (nrm.dot(fc) < 0) p = [p[0], p[2], p[1]];
+        p.forEach((v) => { pos.push(v.x, v.y, v.z); uv.push((v.x + v.z) / 1.0, v.y / 1.0); });
+      });
+    });
+    const gm = new T.BufferGeometry();
+    gm.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); gm.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); gm.computeVertexNormals();
+    const me = new T.Mesh(gm, mat); me.position.set(cx, 0, cz); me.castShadow = true; me.receiveShadow = true;
+    if (ud) Object.assign(me.userData, ud); g.add(me); return me;
+  }
+
+  _potPlant(g, x, z, y0, s, seed) {
+    const E = this._E, T = E.T, M = E.mat, rnd = this._rng(seed);
+    this._cyl(g, x, y0, z, 0.2 * s, 0.15 * s, 0.42 * s, M.pot, 14);
+    for (let q = 0; q < 5; q++) {
+      const f = new T.Mesh(new T.IcosahedronGeometry((0.17 + rnd() * 0.12) * s, 1), M.leaf[q % 3]);
+      f.position.set(x + (rnd() - 0.5) * 0.3 * s, y0 + (0.55 + rnd() * 0.4) * s, z + (rnd() - 0.5) * 0.3 * s);
+      f.castShadow = true; g.add(f);
+    }
+  }
+
+  // ---------- área gourmet: parede de tijolinho, churrasqueira, bancada, mesa, ventilador e varal de luzes ----------
+  // o: { x0, x1, z0 (fundo), z1 (frente), y0 (piso), H (fundo das vigas), hBack (topo da parede do fundo),
+  //      roofAt(z) (altura do telhado, para a chaminé), ceilAt(z) (forro, para o ventilador), pil: x dos pilares da frente, ud }
+  _gourmetKit(g, o) {
+    const E = this._E, T = E.T, M = E.mat, A = E.amb, ud = o.ud;
+    const W = o.x1 - o.x0, y0 = o.y0, zb = o.z0 + 0.2;
+    // parede do fundo em tijolinho aparente
+    this._box(g, o.x0, 0, o.z0, o.x1, o.hBack, zb, M.brick, ud);
+    // churrasqueira: base, boca com brasa e grelha, verga de granito, coifa e chaminé acima do telhado
+    const gw = Math.max(1.1, Math.min(1.5, W * 0.26)), gx0 = o.x0 + Math.min(0.45, W * 0.07), gx1 = gx0 + gw, gz1 = zb + 0.72;
+    const gcx = (gx0 + gx1) / 2, gcz = (zb + gz1) / 2;
+    this._box(g, gx0, y0, zb, gx1, y0 + 0.9, gz1, M.brick, ud);
+    this._box(g, gx0, y0 + 0.9, zb, gx0 + 0.16, y0 + 1.62, gz1, M.brick, ud);
+    this._box(g, gx1 - 0.16, y0 + 0.9, zb, gx1, y0 + 1.62, gz1, M.brick, ud);
+    this._box(g, gx0 + 0.16, y0 + 0.9, zb, gx1 - 0.16, y0 + 1.62, zb + 0.05, M.grillIn, ud, true);
+    this._box(g, gx0 + 0.16, y0 + 0.88, zb + 0.05, gx1 - 0.16, y0 + 0.92, gz1, M.grillIn, ud, true);
+    this._box(g, gx0 + 0.24, y0 + 0.92, zb + 0.12, gx1 - 0.24, y0 + 0.96, gz1 - 0.14, M.ember, null, true);
+    A.ember = true;
+    const bars = [];
+    for (let x = gx0 + 0.24; x < gx1 - 0.22; x += 0.075) bars.push([x, y0 + 1.2, zb + 0.1, x + 0.014, y0 + 1.215, gz1 - 0.06]);
+    bars.push([gx0 + 0.2, y0 + 1.19, zb + 0.1, gx1 - 0.2, y0 + 1.2, zb + 0.12], [gx0 + 0.2, y0 + 1.19, gz1 - 0.08, gx1 - 0.2, y0 + 1.2, gz1 - 0.06]);
+    this._mBoxes(g, bars, M.inox, null, true);
+    // linguiças na grelha
+    const sg = new T.CapsuleGeometry(0.032, 0.16, 3, 8);
+    for (let q = 0; q < 4; q++) { const s = new T.Mesh(sg, M.meat); s.rotation.x = Math.PI / 2; s.position.set(gx0 + 0.36 + q * (gw - 0.72) / 3, y0 + 1.25, gcz + (q % 2 ? 0.08 : -0.06)); s.castShadow = true; g.add(s); }
+    this._box(g, gx0 - 0.03, y0 + 1.62, zb, gx1 + 0.03, y0 + 1.78, gz1 + 0.05, M.granite, ud);
+    const ch = 0.42, hy0 = y0 + 1.78, hy1 = y0 + 2.28;
+    this._frustum(g, gcx, gcz + 0.025, hy0, hy1, gw + 0.06, gz1 - zb + 0.05, ch + 0.04, ch + 0.04, M.brick, ud);
+    const topY = Math.max(o.roofAt(gcz) + 0.95, hy1 + 0.6);
+    this._box(g, gcx - ch / 2, hy1, gcz - ch / 2, gcx + ch / 2, topY, gcz + ch / 2, M.brick, ud);
+    this._box(g, gcx - ch / 2 + 0.06, topY, gcz - ch / 2 + 0.06, gcx + ch / 2 - 0.06, topY + 0.14, gcz + ch / 2 - 0.06, M.grillIn, null, true);
+    this._box(g, gcx - ch / 2 - 0.07, topY + 0.14, gcz - ch / 2 - 0.07, gcx + ch / 2 + 0.07, topY + 0.2, gcz + ch / 2 + 0.07, M.granite, ud);
+    // fumaça saindo da chaminé
+    for (let q = 0; q < 7; q++) {
+      const sp = new T.Sprite(new T.SpriteMaterial({ map: E.tex.smoke, transparent: true, depthWrite: false, opacity: 0, color: 0xE9ECEF }));
+      sp.userData.ownMat = true; sp.renderOrder = 4; sp.scale.set(0.01, 0.01, 1); g.add(sp);
+      A.smoke.push({ sp, age: q * 0.62, life: 4.3, x: gcx, y: topY + 0.18, z: gcz, dx: 0.55 + 0.3 * Math.sin(q * 2.1), dz: 0.25 * Math.cos(q * 1.7) });
+    }
+    // bancada com armários, cuba, torneira e prateleira com potes; geladeira de inox ao lado
+    const bx0 = gx1 + 0.14, room = o.x1 - 0.3 - bx0, bw = Math.max(0, Math.min(2.6, room - (room > 2.3 ? 0.9 : 0)));
+    if (bw >= 0.9) {
+      const bx1 = bx0 + bw, zt = zb + 0.6;
+      this._box(g, bx0, y0, zb, bx1, y0 + 0.86, zt - 0.02, M.woodLight, ud);
+      const hd = []; for (let x = bx0 + 0.3; x < bx1 - 0.1; x += 0.45) hd.push([x - 0.09, y0 + 0.7, zt - 0.02, x + 0.09, y0 + 0.72, zt + 0.006]);
+      this._mBoxes(g, hd, M.inox, null, true);
+      this._box(g, bx0 - 0.02, y0 + 0.86, zb, bx1 + 0.02, y0 + 0.9, zt + 0.03, M.granite, ud);
+      const sx = bx0 + bw * 0.62;
+      this._box(g, sx - 0.24, y0 + 0.9, zb + 0.14, sx + 0.24, y0 + 0.906, zb + 0.46, M.inox, null, true);
+      this._mBoxes(g, [[sx - 0.02, y0 + 0.9, zb + 0.04, sx + 0.02, y0 + 1.2, zb + 0.08], [sx - 0.018, y0 + 1.17, zb + 0.04, sx + 0.018, y0 + 1.2, zb + 0.27]], M.inox, null, true);
+      this._box(g, bx0, y0 + 1.55, zb, bx1, y0 + 1.58, zb + 0.24, M.woodDark, ud);
+      [M.fabric, M.carBody4, M.leaf[1], M.boia].forEach((mt, q) => { const x = bx0 + 0.25 + q * Math.min(0.32, (bw - 0.4) / 3); if (x < bx1 - 0.1) this._cyl(g, x, y0 + 1.58, zb + 0.12, 0.055, 0.055, 0.14 + (q % 2) * 0.06, mt, 12, true); });
+      if (o.x1 - 0.3 - bx1 >= 0.8) {
+        const fx0 = bx1 + 0.08;
+        this._box(g, fx0, y0, zb, fx0 + 0.7, y0 + 1.82, zb + 0.66, M.inox, ud);
+        this._mBoxes(g, [[fx0 + 0.6, y0 + 0.9, zb + 0.66, fx0 + 0.63, y0 + 1.6, zb + 0.69], [fx0 + 0.02, y0 + 1.2, zb + 0.66, fx0 + 0.68, y0 + 1.21, zb + 0.67]], M.blackMetal, null, true);
+      }
+    }
+    // mesa de madeira com cadeiras
+    const zA = zb + 0.62 + 0.85, zB = o.z1 - 0.45, tcz = Math.max(zA + 0.45, (zA + zB) / 2);
+    const tl = Math.min(2.4, W - 1.6), tcx = (o.x0 + o.x1) / 2 + (W >= 6.5 ? 0.35 : 0);
+    if (tl >= 1.1 && tcz + 0.45 < o.z1) {
+      this._box(g, tcx - tl / 2, y0 + 0.72, tcz - 0.45, tcx + tl / 2, y0 + 0.77, tcz + 0.45, M.woodDark, ud);
+      const legs = []; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach((s) => { const lx = tcx + s[0] * (tl / 2 - 0.1), lz = tcz + s[1] * 0.35; legs.push([lx - 0.035, y0, lz - 0.035, lx + 0.035, y0 + 0.72, lz + 0.035]); });
+      const wood = [], metal = [], n = Math.max(2, Math.floor((tl + 0.1) / 0.62));
+      [-1, 1].forEach((sd) => {
+        for (let q = 0; q < n; q++) {
+          const cx = tcx - tl / 2 + (q + 0.5) * tl / n, cz = tcz + sd * 0.72;
+          wood.push([cx - 0.21, y0 + 0.44, cz - 0.21, cx + 0.21, y0 + 0.48, cz + 0.21]);
+          wood.push([cx - 0.21, y0 + 0.48, cz + sd * 0.17, cx + 0.21, y0 + 0.92, cz + sd * 0.21]);
+          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach((s) => metal.push([cx + s[0] * 0.18 - 0.015, y0, cz + s[1] * 0.18 - 0.015, cx + s[0] * 0.18 + 0.015, y0 + 0.44, cz + s[1] * 0.18 + 0.015]));
+        }
+      });
+      this._mBoxes(g, wood, M.woodLight, ud); this._mBoxes(g, legs.concat(metal), M.blackMetal, ud);
+      this._cyl(g, tcx, y0 + 0.77, tcz, 0.07, 0.055, 0.12, M.pot, 12, true);
+      const fl = new T.Mesh(new T.IcosahedronGeometry(0.11, 1), M.leaf[0]); fl.position.set(tcx, y0 + 0.97, tcz); g.add(fl);
+    }
+    // ventilador de teto sobre a mesa (as pás giram) com globo que acende no fim da tarde
+    {
+      const fy = Math.min(o.H - 0.12, y0 + 2.4), top = Math.max(fy + 0.1, o.ceilAt(tcz) - 0.01);
+      const fan = new T.Group(); fan.position.set(tcx, fy, tcz); g.add(fan);
+      this._cyl(fan, 0, 0, 0, 0.016, 0.016, top - fy, M.blackMetal, 8, true);
+      this._cyl(fan, 0, -0.1, 0, 0.12, 0.1, 0.12, M.woodDark, 16);
+      const glb = new T.Mesh(new T.SphereGeometry(0.085, 14, 10), M.bulb); glb.position.y = -0.17; fan.add(glb);
+      const blades = new T.Group(); blades.position.y = -0.05; fan.add(blades);
+      const bg = new T.BoxGeometry(0.62, 0.012, 0.13); bg.translate(0.43, 0, 0);
+      for (let q = 0; q < 4; q++) { const bl = new T.Mesh(bg, M.woodDark); bl.rotation.y = q * Math.PI / 2; bl.castShadow = true; blades.add(bl); }
+      A.fans.push(blades);
+    }
+    // varal de luzes: entre os pilares da frente e ao longo das laterais
+    const pts = [], cord = [];
+    const span = (a, b, yy, sag) => {
+      const len = a.distanceTo(b), nb = Math.max(2, Math.round(len / 0.42));
+      for (let q = 0; q <= 24; q++) { const t = q / 24; cord.push(new T.Vector3().lerpVectors(a, b, t).setY(yy - sag * 4 * t * (1 - t))); }
+      for (let q = 1; q < nb; q++) { const t = q / nb; pts.push(new T.Vector3().lerpVectors(a, b, t).setY(yy - 0.05 - sag * 4 * t * (1 - t))); }
+    };
+    const yC = o.H - 0.06, zF = o.z1 - 0.06, pil = o.pil || [o.x0, o.x1];
+    for (let q = 1; q < pil.length; q++) span(new T.Vector3(pil[q - 1], yC, zF), new T.Vector3(pil[q], yC, zF), yC, 0.24);
+    if (o.z1 - o.z0 > 2.5) { span(new T.Vector3(o.x0 + 0.08, yC, zb + 0.3), new T.Vector3(o.x0 + 0.08, yC, zF), yC, 0.2); span(new T.Vector3(o.x1 - 0.08, yC, zb + 0.3), new T.Vector3(o.x1 - 0.08, yC, zF), yC, 0.2); }
+    if (pts.length) {
+      const bm = new T.MeshBasicMaterial({ color: 0xffffff }), im = new T.InstancedMesh(new T.SphereGeometry(0.045, 8, 6), bm, pts.length), mx = new T.Matrix4(), cc = new T.Color(0xFFD08A);
+      pts.forEach((p, q) => { mx.makeTranslation(p.x, p.y, p.z); im.setMatrixAt(q, mx); im.setColorAt(q, cc); });
+      im.instanceMatrix.needsUpdate = true; im.userData.ownMat = true; im.castShadow = false; g.add(im); A.bulbs = im;
+      const ln = new T.LineSegments(new T.BufferGeometry().setFromPoints(cord.reduce((acc, p, q) => { if (q % 25 !== 0) acc.push(cord[q - 1], p); return acc; }, [])), M.cord);
+      g.add(ln);
+    }
+    // vasos com plantas nos cantos da frente
+    this._potPlant(g, o.x0 + 0.5, o.z1 - 0.55, y0, 1.0, 21); this._potPlant(g, o.x1 - 0.5, o.z1 - 0.55, y0, 0.9, 22);
+    // luz quente que acende no fim da tarde
+    const pl = new T.PointLight(0xFFC27A, 0, 10, 2); pl.position.set(tcx, Math.min(o.H, 2.5) - 0.35, tcz); g.add(pl);
+    A.lights.push({ l: pl, max: 7 });
+    A.on = true;
+  }
+
+  // telhado aparente (1 ou 2 águas) sobre pilares de madeira, aberto na frente e nas laterais
+  _gourmetPitched(G, P, m, ud) {
+    const E = this._E, M = E.mat, L = P.L, S = P.S, f = m.forma, H = P.H;
+    const hiBack = f === '1' && m.fall1 === 'S';
+    const roofAt = (z) => (f === '2' ? H + P.rise - P.sv * Math.abs(z - P.half) : (hiBack ? H + P.rise - P.sv * z : H + P.sv * z));
+    this._box(G, -0.05, 0, -0.05, L + 0.05, 0.1, S + 0.05, M.tile, null, true);
+    const pw = 0.18, nF = Math.max(1, Math.ceil((L - 0.2) / 3.3)), xs = [];
+    for (let q = 0; q <= nF; q++) xs.push(0.12 + (L - 0.24) * q / nF);
+    const posts = xs.map((x) => [x - pw / 2, 0.1, S - 0.12 - pw, x + pw / 2, H - 0.2, S - 0.12]);
+    const nS = Math.max(1, Math.ceil((S - 0.5) / 3.3));
+    for (let q = 1; q < nS; q++) { const z = 0.2 + (S - 0.52) * q / nS; posts.push([0.12 - pw / 2, 0.1, z - pw / 2, 0.12 + pw / 2, H - 0.2, z + pw / 2], [L - 0.12 - pw / 2, 0.1, z - pw / 2, L - 0.12 + pw / 2, H - 0.2, z + pw / 2]); }
+    this._mBoxes(G, posts, M.woodDark, ud);
+    this._mBoxes(G, [[0, H - 0.22, S - 0.32, L, H, S - 0.1], [0.02, H - 0.22, 0.2, 0.22, H, S - 0.32], [L - 0.22, H - 0.22, 0.2, L - 0.02, H, S - 0.32]], M.woodDark, ud);
+    // oitões em madeira (2 águas) ou fechamento do lado alto (1 água)
+    const Tw = 0.1;
+    if (f === '1') {
+      const pr = hiBack ? [[0, H], [S, H], [0, H + P.rise]] : [[0, H], [S, H], [S, H + P.rise]];
+      this._prism(G, pr, 0, Tw, M.woodDark, ud); this._prism(G, pr, L - Tw, L, M.woodDark, ud);
+      if (!hiBack) this._box(G, 0, H, S - 0.32, L, H + P.rise, S - 0.1, M.woodDark, ud);
+    } else {
+      const tri = [[0, H], [S, H], [S / 2, H + P.rise]];
+      this._prism(G, tri, 0, Tw, M.woodDark, ud); this._prism(G, tri, L - Tw, L, M.woodDark, ud);
+    }
+    this._gourmetKit(G, { x0: 0, x1: L, z0: 0, z1: S, y0: 0.1, H: H - 0.22, hBack: hiBack ? H + P.rise : H, roofAt, ceilAt: (z) => roofAt(z) - 0.02, ud, pil: xs });
+    const hv = this._box(G, 0.3, 0.12, 0.3, L - 0.3, H - 0.25, S - 0.35, M.heatCool, null, true);
+    hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
+  }
+
+  // bloco de área gourmet (platibanda): pilares, laje e o mesmo conteúdo
+  _gourmetBlock(b, i, g, r) {
+    const E = this._E, M = E.mat, x0 = b.x, x1 = b.x + b.w, z0 = b.y, z1 = b.y + b.d, H0 = r.H0, ud = { block: i, kind: 'parede' };
+    this._box(g, x0, 0, z0, x1, 0.1, z1, M.tile, null, true);
+    const p = 0.24, nF = Math.max(1, Math.ceil((b.w - 0.3) / 3.3)), xs = [];
+    for (let q = 0; q <= nF; q++) xs.push(x0 + p / 2 + (b.w - p) * q / nF);
+    const posts = xs.map((x) => [x - p / 2, 0.1, z1 - p, x + p / 2, H0 - 0.4, z1]);
+    const nS = Math.max(1, Math.ceil((b.d - 0.5) / 3.3));
+    for (let q = 1; q < nS; q++) { const z = z0 + 0.2 + (b.d - 0.44) * q / nS; posts.push([x0, 0.1, z - p / 2, x0 + p, H0 - 0.4, z + p / 2], [x1 - p, 0.1, z - p / 2, x1, H0 - 0.4, z + p / 2]); }
+    posts.push([x0, 0.1, z0 + 0.2, x0 + p, H0 - 0.4, z0 + 0.2 + p], [x1 - p, 0.1, z0 + 0.2, x1, H0 - 0.4, z0 + 0.2 + p]);
+    this._mBoxes(g, posts, M.wallNoAO, ud);
+    this._box(g, x0, H0 - 0.4, z0, x1, H0, z1, M.wallNoAO, ud);
+    this._gourmetKit(g, { x0, x1, z0, z1, y0: 0.1, H: H0 - 0.4, hBack: H0 - 0.4, roofAt: () => r.top - 0.3, ceilAt: () => H0 - 0.4, ud, pil: xs });
+    const hv = this._box(g, x0 + 0.3, 0.12, z0 + 0.3, x1 - 0.3, H0 - 0.45, z1 - 0.3, M.heatCool, null, true);
+    hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
+  }
+
+  // ---------- comércio: salão com vitrine, porta de vidro, toldo, letreiro e prateleiras ----------
+  _shopDepth(d) { return Math.min(3.4, Math.max(2.2, d * 0.36)); }
+
+  _signTex(text) {
+    const c = this._cvs(1024, 256), g = c.getContext('2d');
+    g.clearRect(0, 0, 1024, 256);
+    // sacola de compras
+    g.fillStyle = '#F2C14E'; g.beginPath(); g.moveTo(60, 100); g.lineTo(200, 100); g.lineTo(212, 224); g.lineTo(48, 224); g.closePath(); g.fill();
+    g.strokeStyle = '#F2C14E'; g.lineWidth = 14; g.beginPath(); g.arc(130, 100, 38, Math.PI, 0); g.stroke();
+    g.font = '800 128px Figtree, "Bricolage Grotesque", system-ui, sans-serif'; g.fillStyle = '#FFFFFF'; g.textBaseline = 'middle';
+    g.fillText(text, 250, 140, 760);
+    return this._tx(c, false);
+  }
+
+  _neonTex(text) {
+    const c = this._cvs(512, 168), g = c.getContext('2d');
+    g.fillStyle = 'rgba(14,14,18,0.86)';
+    g.beginPath(); g.moveTo(24, 8); g.lineTo(488, 8); g.quadraticCurveTo(504, 8, 504, 24); g.lineTo(504, 144); g.quadraticCurveTo(504, 160, 488, 160); g.lineTo(24, 160); g.quadraticCurveTo(8, 160, 8, 144); g.lineTo(8, 24); g.quadraticCurveTo(8, 8, 24, 8); g.fill();
+    g.font = '800 96px Figtree, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = '#FF2D2D'; g.shadowBlur = 26; g.fillStyle = '#FF5A5A'; g.fillText(text, 256, 88);
+    g.shadowBlur = 6; g.fillStyle = '#FFE1E1'; g.fillText(text, 256, 88);
+    return this._tx(c, false);
+  }
+
+  // o: { x0, x1, zf (fachada), zb (fundo do salão), H (topo da parede), hFront (topo da fachada), name, seed, ud }
+  _shopFront(g, o) {
+    const E = this._E, T = E.T, M = E.mat, A = E.amb, ud = o.ud, Tw = 0.15, rnd = this._rng(o.seed || 1);
+    const xa = o.x0 + Tw, xb = o.x1 - Tw, zf = o.zf, zb = o.zb, H = o.H, W = xb - xa, hTop = o.hFront || H;
+    const hG = Math.min(2.6, H - 0.8);
+    // salão: piso, forro com luminárias e parede do fundo colorida
+    this._box(g, xa, 0, zb, xb, 0.05, zf - 0.02, M.tile, null, true);
+    this._box(g, xa, H - 0.1, zb, xb, H - 0.04, zf - 0.2, M.interior, null, true);
+    const pans = [];
+    for (let x = xa + 0.55; x < xb - 1.3; x += 1.7) for (let z = zb + 0.45; z < zf - 0.75; z += 1.15) pans.push([x, H - 0.118, z, x + 1.0, H - 0.1, z + 0.22]);
+    this._mBoxes(g, pans, M.panel, null, true);
+    this._box(g, xa, 0.05, zb, xb, H - 0.1, zb + 0.03, M.shopWall, null, true);
+    // prateleiras com produtos coloridos (no fundo e nas laterais)
+    const sh = [], prods = [], PAL = [0xE4572E, 0xF2C14E, 0x4C9F70, 0x2F74C0, 0x8E5BB5, 0xF28C28, 0xE8E1D5, 0xC8102E, 0x1FA39A];
+    const fillRow = (u0, u1, y, along, fixed, depth, dir) => {
+      let u = u0 + 0.04;
+      while (u < u1 - 0.12) {
+        const w = 0.1 + rnd() * 0.14, h = 0.12 + rnd() * 0.2, d = Math.min(depth - 0.06, 0.18 + rnd() * 0.1);
+        if (u + w > u1 - 0.03) break;
+        const c = PAL[Math.floor(rnd() * PAL.length)];
+        prods.push(along === 'x' ? [u + w / 2, y + h / 2, fixed + dir * (d / 2 + 0.03), w, h, d, c] : [fixed + dir * (d / 2 + 0.03), y + h / 2, u + w / 2, d, h, w, c]);
+        u += w + 0.025 + rnd() * 0.03;
+      }
+    };
+    const LV = [0.12, 0.56, 1.0, 1.44];
+    // fundo
+    const z0s = zb + 0.03, z1s = z0s + 0.42;
+    for (let x = xa + 0.25; x < xb - 0.6; x += 1.25) {
+      const x1u = Math.min(x + 1.2, xb - 0.25);
+      sh.push([x, 0.05, z0s, x + 0.04, 1.9, z1s], [x1u - 0.04, 0.05, z0s, x1u, 1.9, z1s]);
+      LV.forEach((y) => { sh.push([x, y - 0.03, z0s, x1u, y, z1s]); fillRow(x + 0.04, x1u - 0.04, y, 'x', z0s, 0.42, 1); });
+      sh.push([x, 1.88, z0s, x1u, 1.91, z1s]);
+    }
+    // laterais
+    const sideL = (zs0, zs1, xw, dir) => {
+      if (zs1 - zs0 < 0.8) return;
+      const xi = xw + dir * 0.36;
+      sh.push([Math.min(xw, xi), 0.05, zs0, Math.max(xw, xi), 0.09, zs1]);
+      LV.forEach((y) => { sh.push([Math.min(xw, xi), y - 0.03, zs0, Math.max(xw, xi), y, zs1]); fillRow(zs0 + 0.04, zs1 - 0.04, y, 'z', xw, 0.36, dir); });
+      sh.push([Math.min(xw, xi), 0.05, zs0, Math.max(xw, xi), 1.9, zs0 + 0.04], [Math.min(xw, xi), 0.05, zs1 - 0.04, Math.max(xw, xi), 1.9, zs1]);
+    };
+    const dc = (o.x0 + o.x1) / 2 + (W > 7 ? -W * 0.16 : 0), dw = W < 2.6 ? Math.max(0.9, W - 0.4) : 1.7, dh = Math.min(2.3, hG - 0.1);
+    sideL(zb + 0.6, zf - 1.1, xa, 1);
+    const hasCounter = W > 4.5;
+    sideL(zb + 0.6, hasCounter ? zf - 2.2 : zf - 1.1, xb, -1);
+    this._mBoxes(g, sh, M.shelf, null, true);
+    if (prods.length) {
+      const im = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), M.product, prods.length), mx = new T.Matrix4(), q0 = new T.Quaternion(), cc = new T.Color();
+      prods.forEach((p, q) => { mx.compose(new T.Vector3(p[0], p[1], p[2]), q0, new T.Vector3(p[3], p[4], p[5])); im.setMatrixAt(q, mx); im.setColorAt(q, cc.setHex(p[6])); });
+      im.instanceMatrix.needsUpdate = true; im.castShadow = false; im.receiveShadow = true; g.add(im);
+    }
+    // balcão do caixa perto da porta
+    if (hasCounter) {
+      const cx1 = xb - 0.45, cx0 = cx1 - 1.5, cz0 = zf - 1.8, cz1 = cz0 + 0.55;
+      this._box(g, cx0, 0.05, cz0, cx1, 1.0, cz1, M.woodLight, ud);
+      this._box(g, cx0 - 0.03, 1.0, cz0 - 0.03, cx1 + 0.03, 1.04, cz1 + 0.03, M.granite, ud);
+      this._mBoxes(g, [[cx0 + 0.3, 1.04, cz0 + 0.12, cx0 + 0.62, 1.12, cz0 + 0.4], [cx0 + 0.36, 1.12, cz0 + 0.3, cx0 + 0.58, 1.32, cz0 + 0.33]], M.blackMetal, null, true);
+      this._cyl(g, cx1 - 0.3, 1.04, cz0 + 0.25, 0.09, 0.07, 0.16, M.pot, 12, true);
+      const fl = new T.Mesh(new T.IcosahedronGeometry(0.12, 1), M.leaf[2]); fl.position.set(cx1 - 0.3, 1.3, cz0 + 0.25); g.add(fl);
+    }
+    // fachada: mureta, vidros, porta de vidro de 2 folhas e caixilhos de alumínio
+    const zg = zf - 0.11;
+    this._mBoxes(g, [[o.x0, 0, zf - 0.18, dc - dw / 2, 0.4, zf], [dc + dw / 2, 0, zf - 0.18, o.x1, 0.4, zf]], M.wallNoAO, ud);
+    const gl = [[xa, 0.4, zg - 0.01, dc - dw / 2 - 0.04, hG, zg + 0.01], [dc + dw / 2 + 0.04, 0.4, zg - 0.01, xb, hG, zg + 0.01], [dc - dw / 2, 0.05, zg - 0.01, dc + dw / 2, dh, zg + 0.01], [dc - dw / 2, dh + 0.07, zg - 0.01, dc + dw / 2, hG, zg + 0.01]];
+    this._mBoxes(g, gl, M.shopGlass, null, true).renderOrder = 3;
+    const fr = [[xa, 0.38, zg - 0.035, xb, 0.42, zg + 0.035], [xa, hG - 0.03, zg - 0.035, xb, hG + 0.02, zg + 0.035], [dc - dw / 2, dh, zg - 0.035, dc + dw / 2, dh + 0.07, zg + 0.035]];
+    [[xa, 0.4], [dc - dw / 2 - 0.04, 0.4], [dc - dw / 2, 0.05], [dc, 0.05], [dc + dw / 2, 0.05], [dc + dw / 2 + 0.04, 0.4], [xb, 0.4]].forEach((q) => fr.push([q[0] - 0.03, q[1], zg - 0.035, q[0] + 0.03, hG, zg + 0.035]));
+    const mull = (u0, u1) => { const nn = Math.max(1, Math.round((u1 - u0) / 1.5)); for (let q = 1; q < nn; q++) { const x = u0 + (u1 - u0) * q / nn; fr.push([x - 0.025, 0.4, zg - 0.03, x + 0.025, hG, zg + 0.03]); } };
+    mull(xa, dc - dw / 2); mull(dc + dw / 2, xb);
+    this._mBoxes(g, fr, M.alum, null, true);
+    this._mBoxes(g, [[dc - 0.16, 0.9, zg + 0.035, dc - 0.13, 1.5, zg + 0.07], [dc + 0.13, 0.9, zg + 0.035, dc + 0.16, 1.5, zg + 0.07]], M.chrome, null, true);
+    // faixa do letreiro (ACM) e letreiro iluminado
+    this._box(g, o.x0, hG + 0.02, zf - 0.2, o.x1, hTop, zf + 0.03, M.acm, ud);
+    const bandH = hTop - hG - 0.02, sgH = Math.min(0.95, bandH * 0.78), sgW = Math.min(W * 0.8, sgH * 4);
+    if (sgH > 0.2) {
+      const sm = new T.MeshBasicMaterial({ map: this._signTex(o.name || 'SUA LOJA'), transparent: true, depthWrite: false });
+      const sp = new T.Mesh(new T.PlaneGeometry(sgW, sgW / 4), sm); sp.position.set((o.x0 + o.x1) / 2, hG + 0.02 + bandH / 2, zf + 0.04); sp.userData.own = true; sp.renderOrder = 3; g.add(sp);
+      A.glow.push({ mat: sm, c: new T.Color(0xffffff), k0: 1.0, k1: 0.3, basic: true });
+    }
+    // toldo listrado sobre a vitrine
+    const aw0 = o.x0 + 0.25, aw1 = o.x1 - 0.25, Wa = aw1 - aw0, dz = 1.05, dy = 0.42, alen = Math.hypot(dz, dy);
+    const atx = E.tex.stripes.clone(); atx.needsUpdate = true; atx.repeat.set(Wa, 1);
+    const am = new T.MeshStandardMaterial({ color: 0xffffff, map: atx, roughness: 0.85, side: T.DoubleSide });
+    const aw = new T.Mesh(new T.PlaneGeometry(Wa, alen), am); aw.rotation.x = Math.atan2(-dz, dy); aw.position.set((aw0 + aw1) / 2, hG - dy / 2 + 0.02, zf + dz / 2 + 0.02); aw.castShadow = true; aw.receiveShadow = true; aw.userData.own = true; g.add(aw);
+    const va = new T.Mesh(new T.PlaneGeometry(Wa, 0.2), am); va.position.set((aw0 + aw1) / 2, hG - dy - 0.08, zf + dz + 0.02); va.castShadow = true; va.userData.ownMat = true; g.add(va);
+    // placa ABERTO (pisca) atrás do vidro, ao lado da porta
+    const nm = new T.MeshBasicMaterial({ map: this._neonTex('ABERTO'), transparent: true, depthWrite: false });
+    const ne = new T.Mesh(new T.PlaneGeometry(0.66, 0.22), nm); ne.position.set(Math.min(xb - 0.45, dc + dw / 2 + 0.6), dh - 0.2, zg - 0.05); ne.userData.own = true; ne.renderOrder = 2; g.add(ne);
+    A.neons.push({ mat: nm, ph: rnd() * 2 });
+    // vasos ao lado da porta
+    this._potPlant(g, dc - dw / 2 - 0.45, zf + 0.42, 0, 0.85, 31 + (o.seed || 0)); this._potPlant(g, dc + dw / 2 + 0.45, zf + 0.42, 0, 0.85, 32 + (o.seed || 0));
+    // luz do salão (acende no fim da tarde) e brilho das luminárias
+    const pl = new T.PointLight(0xFFE6BE, 0, Math.max(7, W + 2), 2); pl.position.set((xa + xb) / 2, H - 0.6, (zb + zf) / 2); g.add(pl);
+    A.lights.push({ l: pl, max: 6 });
+    A.glow.push({ mat: M.panel, c: new T.Color(0xFFF4DC), k0: 0.92, k1: 0.35, basic: true });
+    E.shopDoors.push({ x: dc, z: zf });
+    A.on = true;
+  }
+
+  // bloco de comércio com vitrine (platibanda e blocos)
+  _shopBlock(b, i, g, r) {
+    const E = this._E, M = E.mat, x0 = b.x, x1 = b.x + b.w, z0 = b.y, z1 = b.y + b.d, ud = { block: i, kind: 'parede' }, D = this._shopDepth(b.d);
+    this._box(g, x0, 0, z0, x1, r.H0, z1 - D, M.wall, ud);
+    this._box(g, x0, 0, z1 - D, x0 + 0.15, r.H0, z1, M.wall, ud); this._box(g, x1 - 0.15, 0, z1 - D, x1, r.H0, z1, M.wall, ud);
+    E.shopN = (E.shopN || 0) + 1;
+    this._shopFront(g, { x0, x1, zf: z1, zb: z1 - D, H: r.H0, hFront: r.H0, name: E.shopN === 1 ? 'SUA LOJA' : 'LOJA ' + E.shopN, seed: 3 + i, ud });
+    const hv = this._box(g, x0 + 0.25, 0.05, z0 + 0.25, x1 - 0.25, r.H0 - 0.05, z1 - 0.25, M.heatCool, null, true);
+    hv.receiveShadow = false; hv.visible = false; hv.renderOrder = 6; E.heatVols.push(hv);
+  }
+
+  // ---------- cenário ----------
+  _decoPool(g, x0, z0, w, d) {
+    const E = this._E, T = E.T, M = E.mat, x1 = x0 + w, z1 = z0 + d, e = 0.3;
+    this._box(g, x0 - 0.9, 0, z0 - 0.7, x1 + 0.9, 0.04, z1 + 0.7, M.ripado, null, true);
+    this._mBoxes(g, [[x0, 0.04, z0, x1, 0.08, z0 + e], [x0, 0.04, z1 - e, x1, 0.08, z1], [x0, 0.04, z0 + e, x0 + e, 0.08, z1 - e], [x1 - e, 0.04, z0 + e, x1, 0.08, z1 - e]], M.poolEdge, null, true);
+    this._box(g, x0 + e, 0.0, z0 + e, x1 - e, 0.02, z1 - e, M.poolIn, null, true);
+    const wa = new T.Mesh(new T.PlaneGeometry(w - 2 * e, d - 2 * e), M.water);
+    wa.rotation.x = -Math.PI / 2; wa.position.set((x0 + x1) / 2, 0.05, (z0 + z1) / 2); wa.receiveShadow = true; g.add(wa);
+    this._poolFloat(g, x0 + e, z0 + e, w - 2 * e, d - 2 * e, 0.07);
+    E.amb.water = true; E.amb.on = true;
+  }
+
+  _poolFloat(g, x0, z0, w, d, y0) {
+    const E = this._E, T = E.T, A = E.amb;
+    const m = new T.Mesh(new T.TorusGeometry(0.3, 0.1, 12, 26), E.mat.boia); m.rotation.x = Math.PI / 2; m.castShadow = true; g.add(m);
+    A.floats.push({ m, cx: x0 + w / 2, cz: z0 + d / 2, rx: Math.max(0.1, w / 2 - 0.55), rz: Math.max(0.08, d / 2 - 0.5), y0, ph: (x0 * 7.3 + z0 * 3.1) % 6.28 });
+    A.on = true;
+  }
+
+  _lounger(g, x, z, rot) {
+    const E = this._E, T = E.T, M = E.mat, b = new T.Group(); b.position.set(x, 0, z); b.rotation.y = rot; g.add(b);
+    this._mBoxes(b, [[-0.34, 0.26, -0.95, 0.34, 0.3, 0.95], [-0.32, 0, -0.9, -0.27, 0.26, -0.85], [0.27, 0, -0.9, 0.32, 0.26, -0.85], [-0.32, 0, 0.85, -0.27, 0.26, 0.9], [0.27, 0, 0.85, 0.32, 0.26, 0.9]], M.poolEdge, null);
+    this._box(b, -0.3, 0.3, -0.92, 0.3, 0.38, 0.25, M.cushion);
+    const bk = new T.Mesh(new T.BoxGeometry(0.6, 0.08, 0.72), M.cushion); bk.position.set(0, 0.55, 0.55); bk.rotation.x = -0.75; bk.castShadow = true; b.add(bk);
+  }
+
+  _umbrella(g, x, z) {
+    const E = this._E, T = E.T, M = E.mat;
+    this._cyl(g, x, 0, z, 0.025, 0.03, 2.25, M.poolEdge, 8);
+    const tx = E.tex.stripes.clone(); tx.needsUpdate = true; tx.repeat.set(2, 1);
+    const cm = new T.MeshStandardMaterial({ color: 0xffffff, map: tx, roughness: 0.85, side: T.DoubleSide });
+    const cn = new T.Mesh(new T.ConeGeometry(1.25, 0.42, 16, 1, true), cm); cn.position.set(x, 2.2, z); cn.castShadow = true; cn.userData.own = true; g.add(cn);
+  }
+
+  _bike(g, x, z) {
+    const E = this._E, T = E.T, M = E.mat, b = new T.Group(); b.position.set(x, 0, z); g.add(b);
+    const wg = new T.TorusGeometry(0.31, 0.026, 8, 26);
+    [-0.52, 0.52].forEach((dx) => { const w = new T.Mesh(wg, M.blackMetal); w.position.set(dx, 0.33, 0); w.castShadow = true; b.add(w); });
+    const V = (a, c) => new T.Vector3(a, c, 0), rh = V(-0.52, 0.33), fh = V(0.52, 0.33), bb = V(-0.05, 0.36), st = V(-0.15, 0.86), hs = V(0.4, 0.84), hb = V(0.44, 0.98);
+    [[rh, st], [rh, bb], [bb, st], [bb, hs], [st, hs], [hs, fh], [hs, hb]].forEach((p) => this._rod(b, p[0], p[1], 0.02, M.bikeFrame));
+    this._box(b, -0.25, 0.86, -0.06, -0.05, 0.9, 0.06, M.blackMetal);
+    this._box(b, 0.42, 0.97, -0.24, 0.47, 1.0, 0.24, M.blackMetal);
+    // paraciclo
+    [[-0.75, -0.35], [0.75, -0.35]].forEach((p) => this._rod(b, V(p[0], 0), V(p[0], 0.75), 0.025, M.alum).position.z = p[1]);
+    this._rod(b, V(-0.75, 0.75), V(0.75, 0.75), 0.025, M.alum).position.z = -0.35;
+  }
+
+  _bench(g, x, z) {
+    const M = this._E.mat;
+    this._mBoxes(g, [[x - 0.8, 0.44, z - 0.22, x + 0.8, 0.48, z - 0.08], [x - 0.8, 0.44, z - 0.05, x + 0.8, 0.48, z + 0.09], [x - 0.8, 0.52, z + 0.16, x + 0.8, 0.82, z + 0.2]], M.woodLight, null);
+    this._mBoxes(g, [[x - 0.7, 0, z - 0.2, x - 0.64, 0.44, z + 0.2], [x + 0.64, 0, z - 0.2, x + 0.7, 0.44, z + 0.2]], M.blackMetal, null);
+  }
+
+  _streetLamp(g, x, z) {
+    const E = this._E, T = E.T, M = E.mat;
+    this._cyl(g, x, 0.12, z, 0.06, 0.08, 5.1, M.blackMetal, 10);
+    this._rod(g, new T.Vector3(x, 5.15, z), new T.Vector3(x, 5.3, z + 1.1), 0.035, M.blackMetal);
+    this._box(g, x - 0.18, 5.22, z + 1.0, x + 0.18, 5.34, z + 1.45, M.blackMetal);
+    this._box(g, x - 0.15, 5.2, z + 1.03, x + 0.15, 5.22, z + 1.42, M.lampHead, null, true);
+    E.amb.glow.push({ mat: M.lampHead, c: new T.Color(0xFFE7B0), k0: 0.75, k1: 0.6, basic: true });
+  }
+
+  _person(g, x, z, shirt, skin, hair, ph) {
+    const E = this._E, T = E.T, mk = (c) => new T.MeshStandardMaterial({ color: c, roughness: 0.8 });
+    const P = new T.Group(); P.position.set(x, 0, z); g.add(P);
+    const mS = mk(shirt), mP = mk(0x2B3137), mK = mk(skin), mH = mk(hair);
+    const add = (geo, mt, px, py, pz, par) => { const me = new T.Mesh(geo, mt); me.position.set(px, py, pz); me.castShadow = true; me.userData.ownMat = true; (par || P).add(me); return me; };
+    add(new T.CapsuleGeometry(0.17, 0.42, 4, 10), mS, 0, 1.12, 0);
+    add(new T.SphereGeometry(0.13, 14, 10), mK, 0, 1.62, 0);
+    add(new T.SphereGeometry(0.137, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), mH, 0, 1.64, -0.01);
+    const legs = [], arms = [];
+    [-1, 1].forEach((s) => {
+      const hip = new T.Group(); hip.position.set(0.085 * s, 0.84, 0); P.add(hip); add(new T.CapsuleGeometry(0.07, 0.6, 4, 8), mP, 0, -0.38, 0, hip); legs.push(hip);
+      const sh = new T.Group(); sh.position.set(0.235 * s, 1.34, 0); P.add(sh); add(new T.CapsuleGeometry(0.05, 0.42, 4, 8), mS, 0, -0.27, 0, sh); arms.push(sh);
+    });
+    return { g: P, legs, arms, ph };
+  }
+
+  // carro andando pela rua (ao longo de x)
+  _movingCar(g, z, v, xa, xb, x, mat) {
+    const E = this._E, T = E.T, c = new T.Group(); c.position.set(x, 0, z); c.rotation.y = v > 0 ? Math.PI / 2 : -Math.PI / 2; g.add(c);
+    this._car(c, 0, 0, mat);
+    E.amb.cars.push({ g: c, v, xa, xb }); E.amb.on = true;
+  }
+
+  _lotGourmet(L, blocks, lx0, lx1, lz0, lz1) {
+    const E = this._E, M = E.mat, bb = E.bb, ft = E.foot || bb;
+    const pb = blocks.find((b) => b.t === 'piscina');
+    let pool;
+    if (pb) pool = { x: pb.x, z: pb.y, w: pb.w, d: pb.d };
+    else { const pw = Math.min(4.8, Math.max(3.2, (ft.x1 - ft.x0) * 0.6)); pool = { x: ft.x0 + 0.4, z: ft.z1 + 1.6, w: pw, d: 2.6 }; this._decoPool(L, pool.x, pool.z, pool.w, pool.d); }
+    // espreguiçadeiras e guarda-sol do lado da piscina
+    const lxA = pool.x + pool.w + 1.25;
+    if (lxA + 0.5 < lx1 - 0.2) { this._lounger(L, lxA, pool.z + pool.d / 2 - 0.1, 0); if (lxA + 0.95 < lx1 - 0.3) this._lounger(L, lxA + 0.85, pool.z + pool.d / 2 - 0.1, 0); this._umbrella(L, Math.min(lx1 - 0.6, lxA + 0.45), pool.z + pool.d + 0.55); }
+    else { this._lounger(L, pool.x + pool.w * 0.3, pool.z + pool.d + 1.3, Math.PI); this._lounger(L, pool.x + pool.w * 0.3 + 0.85, pool.z + pool.d + 1.3, Math.PI); this._umbrella(L, pool.x + pool.w * 0.3 + 1.9, pool.z + pool.d + 1.0); }
+    // cerca viva na frente do lote, com passagem no meio
+    const cx = (lx0 + lx1) / 2;
+    this._mBoxes(L, [[lx0, 0, lz1 - 0.5, cx - 0.75, 0.62, lz1 - 0.08], [cx + 0.75, 0, lz1 - 0.5, lx1, 0.62, lz1 - 0.08]], M.hedge, null);
+    this._box(L, cx - 0.7, 0, lz1 - 2.6, cx + 0.7, 0.03, lz1 + 0.01, M.paver, null, true);
+    // árvores
+    this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
+    this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
+    E.frontTrees.push(this._tree(L, lx1 + 1.0, lz1 + 1.3, 0.85, 9), this._tree(L, lx0 - 1.0, lz1 + 1.3, 0.8, 13));
+  }
+
+  _lotComercio(L, blocks, lx0, lx1, lz0, lz1) {
+    const E = this._E, M = E.mat, ft = E.foot || E.bb;
+    // pátio da frente em concreto, vagas encostadas na calçada e um carro estacionado
+    this._box(L, lx0, 0, ft.z1, lx1, 0.03, lz1 + 0.01, M.yard, null, true);
+    const doors = E.shopDoors || [], busy = doors.map((d) => [d.x - 1.7, d.x + 1.7]);
+    const vz0 = lz1 - 5.1, vz1 = lz1 - 0.25, lines = [], spots = [];
+    for (let x = lx0 + 0.5; x + 2.5 <= lx1 - 0.5; x += 2.5) {
+      if (busy.some((q) => x + 2.5 > q[0] && x < q[1])) continue;
+      lines.push([x, 0.03, vz0, x + 0.1, 0.036, vz1], [x + 2.4, 0.03, vz0, x + 2.5, 0.036, vz1]); spots.push(x + 1.25);
+    }
+    if (lines.length) this._mBoxes(L, lines, M.lane, null, true);
+    const dx0 = doors.length ? doors[0].x : (lx0 + lx1) / 2;
+    if (spots.length) { const sx = spots.slice().sort((a, b) => Math.abs(a - dx0 - 2.6) - Math.abs(b - dx0 - 2.6))[0]; this._car(L, sx, (vz0 + vz1) / 2, M.carBody2); }
+    const d0 = doors[0];
+    if (d0) this._bike(L, d0.x - 1.5, d0.z + 1.9);
+    // banco, lixeira e poste na calçada
+    this._bench(L, lx1 - 2.6, lz1 + 0.75);
+    this._cyl(L, lx1 - 1.3, 0.12, lz1 + 0.5, 0.2, 0.18, 0.75, M.bin, 14);
+    this._streetLamp(L, lx0 + 1.0, lz1 + 1.95);
+    // pedestres andando na calçada
+    const pa = this._person(L, lx0 - 2, lz1 + 1.05, 0x2F74C0, 0xC8946E, 0x2B1D14, 0.3), pb = this._person(L, lx1 + 2, lz1 + 1.65, 0xE4572E, 0x8D5A3B, 0x1A1410, 1.7);
+    E.amb.peds.push(Object.assign(pa, { u: lx0 - 2, v: 1.05, xa: lx0 - 7, xb: lx1 + 7 }), Object.assign(pb, { u: lx1 + 2, v: -0.85, xa: lx0 - 7, xb: lx1 + 7 }));
+    // carros passando nas duas mãos da rua
+    const cx = (lx0 + lx1) / 2;
+    this._movingCar(L, lz1 + 4.7, 7.5, cx - 48, cx + 48, cx - 30, M.carBody3);
+    this._movingCar(L, lz1 + 8.7, -6.2, cx - 48, cx + 48, cx + 20, M.carBody4);
+    // árvores
+    this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
+    this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
+    E.frontTrees.push(this._tree(L, lx0 - 1.0, lz1 + 1.4, 0.8, 13));
+  }
+
+  // ---------- animações do cenário (até 30 quadros por segundo) ----------
+  _animAmbient(dt) {
+    const E = this._E, A = E.amb, T = E.T, t = (A.t += dt);
+    A.fans.forEach((f) => { f.rotation.y += dt * 5.5; });
+    A.smoke.forEach((p) => {
+      p.age += dt; if (p.age > p.life) p.age -= p.life;
+      const k = p.age / p.life, s = 0.3 + 1.15 * k;
+      p.sp.position.set(p.x + p.dx * k, p.y + 1.5 * k, p.z + p.dz * k); p.sp.scale.set(s, s, 1);
+      p.sp.material.opacity = 0.5 * Math.sin(Math.PI * Math.min(1, k * 1.1));
+    });
+    if (A.bulbs) {
+      const im = A.bulbs, n = im.count, c = A.cTmp || (A.cTmp = new T.Color()), gk = A.glowK || 1;
+      for (let q = 0; q < n; q++) { const v = (0.58 + 0.42 * Math.max(0, Math.sin(t * 2.4 - q * 0.5))) * gk; c.setRGB(1.0 * v, 0.8 * v, 0.46 * v); im.setColorAt(q, c); }
+      im.instanceColor.needsUpdate = true;
+    }
+    if (A.ember) E.mat.ember.emissiveIntensity = 1.05 + 0.45 * Math.sin(t * 7.3) * Math.sin(t * 2.9 + 1.3);
+    A.neons.forEach((nn) => { const ph = (t + nn.ph) % 2.6, on = ph < 2.0 && !(ph > 1.3 && ph < 1.42); nn.mat.color.setScalar(on ? 1 : 0.22); });
+    if (A.water) E.tex.caustic.offset.set((t * 0.025) % 1, (t * 0.04) % 1);
+    A.floats.forEach((f) => { const a = t * 0.22 + f.ph; f.m.position.set(f.cx + Math.cos(a) * f.rx, f.y0 + 0.022 * Math.sin(t * 1.7 + f.ph), f.cz + Math.sin(a) * f.rz); f.m.rotation.y = 0.07 * Math.sin(t * 1.3); });
+    A.cars.forEach((c) => { const p = c.g.position; p.x += c.v * dt; if (c.v > 0 && p.x > c.xb) p.x = c.xa; if (c.v < 0 && p.x < c.xa) p.x = c.xb; });
+    A.peds.forEach((p) => {
+      p.u += p.v * dt; if (p.u > p.xb) { p.u = p.xb; p.v = -Math.abs(p.v); } if (p.u < p.xa) { p.u = p.xa; p.v = Math.abs(p.v); }
+      const sw = Math.sin(t * 7.2 + p.ph);
+      p.g.position.x = p.u; p.g.position.y = 0.12 + 0.025 * Math.abs(sw); p.g.rotation.y = p.v > 0 ? Math.PI / 2 : -Math.PI / 2;
+      p.legs[0].rotation.x = 0.45 * sw; p.legs[1].rotation.x = -0.45 * sw; p.arms[0].rotation.x = -0.35 * sw; p.arms[1].rotation.x = 0.35 * sw;
+    });
+  }
+
+  // luzes do cenário acompanham a hora do dia (aba Sol e calor)
+  _applyGlow() {
+    const E = this._E, A = E.amb; if (!A) return;
+    const n = E.night || 0;
+    A.glowK = 0.8 + 0.55 * n;
+    A.glow.forEach((gg) => { gg.mat.color.copy(gg.c).multiplyScalar(gg.k0 + gg.k1 * n); });
+    E.mat.bulb.color.setHex(0xFFD08A).multiplyScalar(0.85 + 0.6 * n);
+    A.lights.forEach((l) => { l.l.intensity = n * l.max; });
+    E.dirty = true;
+  }
+
   _buildLot(blocks, Hg) {
     const E = this._E, T = E.T, M = E.mat, bb = E.bb;
-    const lx0 = bb.x0 - 1.6, lx1 = bb.x1 + 1.6, lz0 = bb.z0 - 3, lz1 = bb.z1 + (E.galpao ? 11 : 4.5);
+    const poolB = blocks.some((b) => b.t === 'piscina');
+    const lx0 = bb.x0 - 1.6, lx1 = bb.x1 + 1.6, lz0 = bb.z0 - 3, lz1 = bb.z1 + (E.galpao ? 11 : E.area === 'comercio' ? 7.2 : E.area === 'gourmet' && !poolB ? 7.4 : 4.5);
     E.lot = { lx0, lx1, lz0, lz1 }; E.frontTrees = [];
     const L = new T.Group(); Hg.add(L); E.lotGroup = L;
     const cx = (lx0 + lx1) / 2;
@@ -2407,7 +3083,9 @@ class Studio extends DCLogic {
     this._box(L, lx1, 0, lz0, lx1 + mt, mh, lz1, M.muro);
     this._box(L, lx0 - mt, 0, lz0 - mt, lx1 + mt, mh, lz0, M.muro);
     [[lx0 - mt - 0.02, lz0 - mt - 0.02, lx0 + 0.02, lz1], [lx1 - 0.02, lz0 - mt - 0.02, lx1 + mt + 0.02, lz1], [lx0 - mt - 0.02, lz0 - mt - 0.02, lx1 + mt + 0.02, lz0 + 0.02]].forEach((q) => this._box(L, q[0], mh, q[1], q[2], mh + 0.04, q[3], M.coping, null, true));
-    if (E.galpao) {
+    if (E.area === 'gourmet') this._lotGourmet(L, blocks, lx0, lx1, lz0, lz1);
+    else if (E.area === 'comercio') this._lotComercio(L, blocks, lx0, lx1, lz0, lz1);
+    else if (E.galpao) {
       // pátio de manobra em concreto, faixa de vagas e caminhão no portão
       this._box(L, lx0, 0, bb.z0 - 0.6, lx1, 0.03, lz1 + 0.01, M.yard, null, true);
       for (let xq = lx0 + 0.8; xq < lx0 + 0.8 + 2.5 * 4; xq += 2.5) this._box(L, xq, 0.03, lz1 - 5.2, xq + 0.1, 0.036, lz1 - 0.4, M.lane, null, true);
@@ -2443,6 +3121,9 @@ class Studio extends DCLogic {
   //  Sistema da casa: cumeeira ao longo de x (0..L), caimento ao longo de z (0..S).
   //  O chalé é girado 90° para a empena ficar de frente para a rua.
   // =====================================================================
+  // altura das paredes (ou pilares) até o beiral
+  hEave(m) { const k = this.kfg(); return m.galpao ? k.HG : m.gourmet ? k.HO : m.comercio ? k.HC : 2.8; }
+
   slopeV(m) {
     if (m.forma === 'chale') { const k = this.kfg(), hc = m.hC !== null && m.hC !== undefined ? m.hC : this.chaleH(m.casa.S).h; return (hc - k.HCW) / (m.casa.S / 2); }
     const k = this.kfg(), s = k.SLOPES.find((x) => x.id === m.slope) || k.SLOPES[1];
@@ -2465,12 +3146,12 @@ class Studio extends DCLogic {
     const sv = this.slopeV(m), cosA = 1 / Math.sqrt(1 + sv * sv);
     const P = { faces: [], sv, L, S };
     if (f === '2' || f === 'chale') {
-      const H = f === 'chale' ? k.HCW : (m.galpao ? k.HG : 2.8), half = S / 2, rise = sv * half;
+      const H = f === 'chale' ? k.HCW : this.hEave(m), half = S / 2, rise = sv * half;
       Object.assign(P, { H, half, rise, ridgeY: H + rise });
       P.faces.push({ id: 'F', phi: 0, sx: 0, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
       P.faces.push({ id: 'B', phi: Math.PI, sx: L, sz: half, y: H + rise, acr: L, run: half, ov: 0.6 });
     } else if (f === '1') {
-      const H = m.galpao ? k.HG : 2.8, rise = sv * S;
+      const H = this.hEave(m), rise = sv * S;
       Object.assign(P, { H, rise, ridgeY: H + rise });
       if (m.fall1 === 'S') P.faces.push({ id: 'F', phi: 0, sx: 0, sz: 0, y: H + rise, acr: L, run: S, ov: 0.6 });
       else P.faces.push({ id: 'F', phi: Math.PI, sx: L, sz: S, y: H + rise, acr: L, run: S, ov: 0.6 });
@@ -2525,7 +3206,7 @@ class Studio extends DCLogic {
 
   _footWorld(m) { const C = m.casa; return m.forma === 'chale' ? { x0: 0, x1: C.S, z0: 0, z1: C.L } : { x0: 0, x1: C.L, z0: 0, z1: C.S }; }
 
-  _hkOf(m) { return JSON.stringify([m.forma, m.galpao, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1, m.hC, m.mm || 0]); }
+  _hkOf(m) { return JSON.stringify([m.forma, m.area, m.blocksMode ? m.blocks : m.casa, m.color, m.telha, m.slope, m.fall1, m.hC, m.mm || 0]); }
 
   _prism(g, pts, x0, x1, mat, ud) {
     const T = this._E.T;
@@ -2577,9 +3258,12 @@ class Studio extends DCLogic {
       this._box(rg, P.cx0 - ro, ry0, P.cz0, P.cx0, ry1, P.cz1, M.rufo);
       const hv = this._box(G, P.cx0 + 0.25, 0.1, P.cz0 + 0.25, P.cx1 - 0.25, P.Hc - 0.1, P.cz1 - 0.25, M.heatCool, null, true);
       hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
+    } else if (m.gourmet && f !== 'chale') {
+      this._gourmetPitched(G, P, m, ud);
     } else {
-      const ind = !!m.galpao && f !== 'chale';
+      const ind = !!m.galpao && f !== 'chale', shop = !!m.comercio && f !== 'chale', SD = shop ? this._shopDepth(S) : 0;
       if (ind) { const hb = Math.min(2.5, P.H - 1); this._box(G, 0, 0, 0, L, hb, S, M.wall, ud); this._box(G, 0, hb, 0, L, P.H, S, M.clad, ud); }
+      else if (shop) { this._box(G, 0, 0, 0, L, P.H, S - SD, M.wall, ud); this._box(G, 0, 0, S - SD, Tw, P.H, S, M.wall, ud); this._box(G, L - Tw, 0, S - SD, L, P.H, S, M.wall, ud); }
       else this._box(G, 0, 0, 0, L, P.H, S, M.wall, ud);
       const WM = ind ? M.clad : M.wallNoAO;
       if (f === '1') {
@@ -2594,6 +3278,7 @@ class Studio extends DCLogic {
       }
       if (f === 'chale') this._chaleOpenings(G, P, ud);
       else if (ind) this._openingsInd(G, { x: 0, y: 0, w: L, d: S }, P.H, ud, null, 0);
+      else if (shop) this._shopFront(G, { x0: 0, x1: L, zf: S, zb: S - SD, H: P.H, hFront: f === '1' && m.fall1 !== 'S' ? P.H + P.rise : P.H, name: 'SUA LOJA', seed: 3, ud });
       else { const pb = { t: 'casa', x: 0, y: 0, w: L, d: S }; this._openings(pb, 0, G, [pb], { H0: P.H }); }
       const hv = this._box(G, 0.25, 0.1, 0.25, L - 0.25, Math.max(0.6, P.H - 0.1), S - 0.25, M.heatCool, null, true);
       hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
@@ -2605,7 +3290,7 @@ class Studio extends DCLogic {
     const bx = new T.Box3().setFromObject(G);
     E.bb = { x0: bx.min.x, x1: bx.max.x, z0: bx.min.z, z1: bx.max.z };
     E.roofTop = bx.max.y;
-    const wl = this._footWorld(m);
+    const wl = this._footWorld(m); E.foot = wl;
     this._blob(Hg, wl.x0, wl.z0, wl.x1, wl.z1, 1.2);
     if (E.doorAt) { const v = G.localToWorld(new T.Vector3(E.doorAt.x, 0, E.doorAt.z)); E.doorAt = { x: v.x, z: wl.z1 }; }
     this._buildLot([], Hg);
@@ -2799,6 +3484,9 @@ class Studio extends DCLogic {
       const ang = Math.atan2(s.NW[0], s.NW[2]);
       E.compass.rotation.set(-Math.PI / 2, 0, ang);
     }
+    // fim da tarde: as luzes do cenário acendem
+    E.night = Math.max(0, Math.min(1, (0.32 - Math.sin(s.el)) / 0.32));
+    this._applyGlow();
     this._fitShadow();
     E.dirty = true;
   }
@@ -3565,7 +4253,7 @@ function esBindGrab() {
   });
 }
 // o que foi montado fica guardado por área (casa ou galpão) e formato
-const studioMemKey = (cs, forma) => (cs.area === 'galpao' ? 'galpao:' : '') + forma;
+const studioMemKey = (cs, forma) => (cs.area && cs.area !== 'casa' ? cs.area + ':' : '') + forma;
 
 // classes do Estúdio ganham o prefixo "es-" para não misturar com o CSS do fluxo principal
 const esPfx = (h) => h.replace(/class="([^"]*)"/g, (m, c) => 'class="' + c.trim().split(/\s+/).filter(Boolean).map((t) => 'es-' + t).join(' ') + '"');
@@ -3586,9 +4274,9 @@ function studioView(v) {
   const segs = '<div class="seg done"></div><div class="seg cur"></div>' + '<div class="seg"></div>'.repeat(4);
   const head = `<div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px;background:#F4F6F8;position:relative;z-index:3"><button class="iconbtn" data-c="${on(closeStudio)}" aria-label="Voltar para os formatos">${esIco(ES_BACK, 20, 2.4)}</button><div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>Obra · Monte seu telhado</span><span>2/6</span></div><div style="display:flex;gap:4px">${segs}</div></div></div>`;
 
-  const vp = `<div class="${v.vpCls}" data-k="vp"><canvas data-keep="1" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none" aria-label="Sua casa em 3D. Arraste para girar."></canvas>`
+  const vp = `<div class="${v.vpCls}" data-k="vp"><canvas data-keep="1" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;touch-action:none" aria-label="${v.oQueCap} em 3D. Arraste para girar."></canvas>`
     + `<div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 40%,rgba(0,0,0,0) 60%,rgba(16,38,63,.22) 100%)"></div>`
-    + iff(v.loading, `<div class="vpmsg" data-k="ld"><span class="spin"></span><span>Montando sua casa em 3D…</span></div>`)
+    + iff(v.loading, `<div class="vpmsg" data-k="ld"><span class="spin"></span><span>Montando ${v.oQue} em 3D…</span></div>`)
     + iff(v.failed, `<div class="vpmsg" data-k="fl"><span>O 3D não abriu neste navegador. Você ainda pode ajustar tudo aqui embaixo.</span></div>`)
     + `<div class="glass statp" data-k="st">${v.statTxt}</div>`
     + `<div style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:8px" data-k="cams">${each(v.cams, (c) => `<button class="${c.cls}" data-c="${on(c.pick)}" aria-label="${c.aria}" aria-pressed="${c.on}">${esIco(c.icon, 20, 2)}<span>${c.nome}</span></button>`)}</div>`
@@ -3603,7 +4291,7 @@ function studioView(v) {
       const c = v.cur;
       modelo = `<div style="display:flex;flex-direction:column;gap:18px" data-k="bk">
 <div class="sect"><span class="lbl2">Comece por um modelo</span><div class="hscroll">${each(v.tpls, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}"><svg width="40" height="34" viewBox="0 0 40 34" aria-hidden="true"><path d="${it.icon}" fill="#FFFFFF" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg><span>${it.nome}</span></button>`)}</div></div>
-<div class="sect"><span class="lbl2">Blocos da casa</span><div class="hscroll">${each(v.blks, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}">${it.txt}</button>`)}${each(v.adds, (it) => `<button class="chip2 add" data-c="${on(it.pick)}"${it.off ? ' disabled' : ''}>${esc(it.txt)}</button>`)}</div></div>
+<div class="sect"><span class="lbl2">${v.blocosLbl}</span><div class="hscroll">${each(v.blks, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}">${it.txt}</button>`)}${each(v.adds, (it) => `<button class="chip2 add" data-c="${on(it.pick)}"${it.off ? ' disabled' : ''}>${esc(it.txt)}</button>`)}</div></div>
 <div class="card"><div style="display:flex;align-items:center;gap:10px"><span class="blkbadge">${c.letra}</span><div style="flex-grow:1;display:flex;flex-direction:column;min-width:0"><b style="font-size:16px">${c.nome}</b><span style="font-size:13px;color:#56657A">${c.resumo}</span></div><button class="minibtn" data-c="${on(c.remove)}"${c.noRemove ? ' disabled' : ''} aria-label="Remover este bloco">${esIco(ES_TRASH, 18, 2.2)}Remover</button></div>
 <div class="grid2">${esStp('Largura', c.wTxt, c.decW, c.incW, 'a largura')}${esStp('Profundidade', c.dTxt, c.decD, c.incD, 'a profundidade')}</div>
 ${iff(c.isRoof, `<div style="display:flex;flex-direction:column;gap:14px">${esGrp('Para onde a água escorre?', `<div class="grid5">${each(c.falls, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}" aria-label="${it.aria}">${esIco(it.icon, 22, 2.4)}<span>${it.nome}</span></button>`)}</div>`)}${esGrp('Altura do bloco', `<div class="grid4">${each(c.lvls, esBtn2)}</div>`)}</div>`)}</div></div>`;
@@ -3661,8 +4349,8 @@ function openStudio(forma) {
   const cs = C.state || {};
   if (STU && studioMounted) { STU.componentWillUnmount(); studioMounted = false; }
   STU = new Studio();
-  // galpão: o Estúdio mostra um galpão comercial (portões, pátio e caminhão) em vez da casa
-  STU.props = { accent: (C.props && C.props.accent) || '#0A4DA2', startForma: forma, startMode: 'montar', startTpl: 'auto', area: cs.area === 'galpao' ? 'galpao' : 'casa' };
+  // cada tipo de obra tem o seu 3D: casa, área gourmet, galpão ou comércio
+  STU.props = { accent: (C.props && C.props.accent) || '#0A4DA2', startForma: forma, startMode: 'montar', startTpl: 'auto', area: cs.area || 'casa' };
   const pitched = ['1', '2', 'chale', 'varanda'].indexOf(forma) >= 0;
   const mem = (cs.studioMem || {})[studioMemKey(cs, forma)];
   const st = mem ? Object.assign({}, mem) : {};
