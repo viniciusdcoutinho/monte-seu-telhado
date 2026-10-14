@@ -225,6 +225,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-cta{width:100%;height:46px;border:0;border-radius:14px;background:var(--p);color:#fff;text-decoration:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 16px var(--pSoft)}
 .es-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .es-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.es-grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
 .es-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .es-grid6{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}
 .es-cta:hover{color:#fff}
@@ -517,6 +518,28 @@ class Component extends DCLogic {
       add(faceY(yf, (xa + xb) / 2 - 0.6, (xa + xb) / 2 + 0.6, 1.0, 2.0), { f: '#BFD6EA', s: K, w: 1.4 });
       add(faceX(xf, dy - 0.45, dy + 0.45, 0, 2.1), { f: '#6E4B35', s: K, w: 1.4 });
     };
+    // fachada de galpão (portão e faixa de janelas) e de loja (vitrine e toldo): usadas em 2 águas e na platibanda
+    const galpaoOpenings = () => {
+      const x0 = 0.28 * GW, x1 = 0.72 * GW, dh = Math.min(4, WH - 0.6);
+      add(faceY(0, x0, x1, 0, dh), { f: '#8E99A4', s: K, w: 1.4 });
+      let fd = '';
+      for (let h = 0.4; h < dh; h += 0.4) fd += line(P(x0, 0, h), P(x1, 0, h));
+      add(faceX(0, 0.08 * GL, 0.92 * GL, WH - 1.4, WH - 0.5), { f: '#BFD6EA', s: K, w: 1.4 });
+      for (let y = 0.08 * GL + 2; y < 0.92 * GL; y += 2) fd += line(P(0, y, WH - 1.4), P(0, y, WH - 0.5));
+      add(fd, { s: K, w: 1, o: 0.45 });
+    };
+    const lojaOpenings = () => {
+      add(faceY(0, 0.12 * GW, 0.88 * GW, 0.1, 2.5), { f: '#BFD6EA', s: K, w: 1.4 });
+      add(faceY(0, 0.42 * GW, 0.58 * GW, 0, 2.3), { f: '#1F3347', s: K, w: 1.4 });
+      add(line(P(0.27 * GW, 0, 0.1), P(0.27 * GW, 0, 2.5)) + line(P(0.73 * GW, 0, 0.1), P(0.73 * GW, 0, 2.5)), { s: K, w: 1, o: 0.45 });
+      add(faceX(0, 0.35 * GL, 0.65 * GL, 1.0, 2.2), { f: '#BFD6EA', s: K, w: 1.4 });
+      const aw = poly([P(0.06 * GW, 0, 2.9), P(0.94 * GW, 0, 2.9), P(0.94 * GW, -1.1, 2.3), P(0.06 * GW, -1.1, 2.3)]);
+      add(aw, { f: '#FFFFFF' });
+      let st = '';
+      for (let i = 0; i < 8; i += 2) { const t0 = 0.06 + 0.88 * i / 8, t1 = 0.06 + 0.88 * (i + 1) / 8; st += poly([P(t0 * GW, 0, 2.9), P(t1 * GW, 0, 2.9), P(t1 * GW, -1.1, 2.3), P(t0 * GW, -1.1, 2.3)]); }
+      add(st, { f: '#E4572E' });
+      add(aw, { s: K, w: 1.4 });
+    };
     const H = WH;
     let ridge = '', rufD = '', vedD = '', ridgeC = '#2B3440';
 
@@ -555,7 +578,9 @@ class Component extends DCLogic {
       plane([GW / 2, 0, H], [GW / 2, GL, H], [0, 0, Hr], [0, GL, Hr], true, true);
       add(faceX(0, 0, GL, 0, Hp), { f: WALL2, s: K, w: 1.6 });
       add(faceY(0, 0, GW, 0, Hp), { f: WALL, s: K, w: 1.6 });
-      casaOpenings(0, 0, GL, 0, 0, GW);
+      if (btype === 'galpao') galpaoOpenings();
+      else if (btype === 'comercio') lojaOpenings();
+      else casaOpenings(0, 0, GL, 0, 0, GW);
       add(line(P(0, 0, Hp), P(0, GL, Hp)) + line(P(0, 0, Hp), P(GW, 0, Hp)) + line(P(GW, 0, Hp), P(GW, GL, Hp)) + line(P(0, GL, Hp), P(GW, GL, Hp)), { s: '#FFFFFF', w: 3 });
       ridge = line(P(GW / 2, 0, H + tkm), P(GW / 2, GL, H + tkm));
       ridgeC = '#3E4C5B';
@@ -595,26 +620,8 @@ class Component extends DCLogic {
         if (topZ > 3.6) add(faceY(0, GW / 2 - 0.5, GW / 2 + 0.5, 2.6, 3.3), { f: '#BFD6EA', s: K, w: 1.4 });
         add(faceY(0, GW * 0.18, GW * 0.18 + 0.9, 0.3, Math.min(0.9, H - 0.05)), { f: '#BFD6EA', s: K, w: 1.2 });
       } else if (btype === 'casa') casaOpenings(0, 0, GL, 0, 0, GW);
-      else if (btype === 'galpao') {
-        const x0 = 0.28 * GW, x1 = 0.72 * GW, dh = Math.min(4, WH - 0.6);
-        add(faceY(0, x0, x1, 0, dh), { f: '#8E99A4', s: K, w: 1.4 });
-        let fd = '';
-        for (let h = 0.4; h < dh; h += 0.4) fd += line(P(x0, 0, h), P(x1, 0, h));
-        add(faceX(0, 0.08 * GL, 0.92 * GL, WH - 1.4, WH - 0.5), { f: '#BFD6EA', s: K, w: 1.4 });
-        for (let y = 0.08 * GL + 2; y < 0.92 * GL; y += 2) fd += line(P(0, y, WH - 1.4), P(0, y, WH - 0.5));
-        add(fd, { s: K, w: 1, o: 0.45 });
-      } else if (btype === 'comercio') {
-        add(faceY(0, 0.12 * GW, 0.88 * GW, 0.1, 2.5), { f: '#BFD6EA', s: K, w: 1.4 });
-        add(faceY(0, 0.42 * GW, 0.58 * GW, 0, 2.3), { f: '#1F3347', s: K, w: 1.4 });
-        add(line(P(0.27 * GW, 0, 0.1), P(0.27 * GW, 0, 2.5)) + line(P(0.73 * GW, 0, 0.1), P(0.73 * GW, 0, 2.5)), { s: K, w: 1, o: 0.45 });
-        add(faceX(0, 0.35 * GL, 0.65 * GL, 1.0, 2.2), { f: '#BFD6EA', s: K, w: 1.4 });
-        const aw = poly([P(0.06 * GW, 0, 2.9), P(0.94 * GW, 0, 2.9), P(0.94 * GW, -1.1, 2.3), P(0.06 * GW, -1.1, 2.3)]);
-        add(aw, { f: '#FFFFFF' });
-        let st = '';
-        for (let i = 0; i < 8; i += 2) { const t0 = 0.06 + 0.88 * i / 8, t1 = 0.06 + 0.88 * (i + 1) / 8; st += poly([P(t0 * GW, 0, 2.9), P(t1 * GW, 0, 2.9), P(t1 * GW, -1.1, 2.3), P(t0 * GW, -1.1, 2.3)]); }
-        add(st, { f: '#E4572E' });
-        add(aw, { s: K, w: 1.4 });
-      }
+      else if (btype === 'galpao') galpaoOpenings();
+      else if (btype === 'comercio') lojaOpenings();
       plane([GW, 0, H], [GW, GL, H], [GW / 2, 0, topZ], [GW / 2, GL, topZ], true);
       plane([0, 0, H], [0, GL, H], [GW / 2, 0, topZ], [GW / 2, GL, topZ], false);
       ridge = line(P(GW / 2, 0, topZ + tkm), P(GW / 2, GL, topZ + tkm));
@@ -730,8 +737,9 @@ class Component extends DCLogic {
       { id: 'varanda', nome: 'Varanda ao redor', sub: 'Telhado de 4 lados com varanda em volta', wall: 'M24 52 V30 H56 V52 Z M11 52 V41 H14 V52 Z M66 52 V41 H69 V52 Z', roof: 'M5 41 L24 33 M75 41 L56 33 M22 30 L40 16 L58 30' },
       { id: 'outro', nome: 'Outro formato', sub: 'Monte em blocos: casa em L, em U ou com pátio', wall: 'M12 52 V32 H68 V52 Z', roof: 'M7 33 L24 17 H56 L73 33' }
     ];
-    const shapeList = SHAPES.filter((x) => isCasa || ['1', '2', 'outro'].indexOf(x.id) >= 0);
-    const shapes = shapeList.map((x) => ({ ...x, sub: btype === 'galpao' && x.id === 'outro' ? 'Galpão com platibanda, com ou sem escritório' : x.sub, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' && shapeList.length % 2 === 1 ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => openStudio(x.id) }));
+    // galpão e comércio também têm a Platibanda (2 águas para o meio, com calha central)
+    const shapeList = SHAPES.filter((x) => isCasa || ['1', '2', 'outro'].indexOf(x.id) >= 0 || (x.id === 'plat' && (btype === 'galpao' || btype === 'comercio')));
+    const shapes = shapeList.map((x) => ({ ...x, sub: x.id === 'plat' && !isCasa ? '2 águas para o meio, atrás da mureta' : btype === 'galpao' && x.id === 'outro' ? "Monte em blocos: galpão, escritório e caixa d'água" : x.sub, on: shape === x.id, cls: 'opt shape' + (x.id === 'outro' && shapeList.length % 2 === 1 ? ' wide' : '') + (shape === x.id ? ' on' : ''), pick: () => openStudio(x.id) }));
     const slopes = SLOPES.map((x) => ({ nome: x.nome, on: x.id === slopeId, cls: x.id === slopeId ? 'slope on' : 'slope', d: 'M4 26 H40 M4 26 L40 ' + (26 - x.k), pick: () => set({ slope: x.id }) }));
     const FIXO = [
       { id: 'madeira', nome: 'Madeira', sub: 'Vigas e caibros de madeira', fillD: 'M6 12 H42 V36 H6 Z', fillC: '#C08A55', lineD: 'M10 19 Q24 15 38 19 M10 25 Q24 21 38 25 M10 31 Q24 27 38 31', lineC: '#7A4E28' },
@@ -1120,6 +1128,9 @@ class Studio extends DCLogic {
         unico: { nome: 'Bloco único', icon: 'M8 4 H32 V30 H8 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 10, d: 13, lvl: 'terreo', fall: 'O' }] },
         garagem: { nome: 'Casa + garagem', icon: 'M6 3 H30 V22 H6 Z M18 22 H30 V31 H18 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 9, d: 12, lvl: 'alto', fall: 'L' }, { t: 'garagem', x: 4.5, y: 12, w: 4.5, d: 5.5, lvl: 'garagem', fall: 'O' }] },
         dois: { nome: 'Dois blocos', icon: 'M6 9 H19 V31 H6 Z M19 3 H33 V27 H19 Z', blocks: [{ t: 'casa', x: 0, y: 3, w: 5, d: 11, lvl: 'terreo', fall: 'O' }, { t: 'casa', x: 5, y: 0, w: 4.5, d: 12, lvl: 'alto', fall: 'L' }, { t: 'caixa', x: 1, y: 3.5, w: 2.5, d: 2.5 }] },
+        // dois blocos lado a lado, garagem na frente do bloco da esquerda e caixa d'água no terço de trás
+        // do bloco da esquerda, encostada na parede comum
+        doisgar: { nome: 'Dois blocos + garagem', icon: 'M7 3 H20 V21 H7 Z M20 3 H33 V21 H20 Z M7 21 H20 V31 H7 Z M13.5 5.5 H17.5 V9.5 H13.5 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 5, d: 11, lvl: 'terreo', fall: 'O' }, { t: 'casa', x: 5, y: 0, w: 5, d: 11, lvl: 'alto', fall: 'L' }, { t: 'garagem', x: 0, y: 11, w: 5, d: 5.5, lvl: 'garagem', fall: 'O' }, { t: 'caixa', x: 2.2, y: 1, w: 2.5, d: 2.5 }] },
         patio: { nome: 'Com pátio', icon: 'M4 4 H36 V14 H4 Z M4 14 H14 V31 H4 Z M26 14 H36 V31 H26 Z', blocks: [{ t: 'casa', x: 0, y: 0, w: 12, d: 5, lvl: 'alto', fall: 'N' }, { t: 'casa', x: 0, y: 5, w: 4, d: 8, lvl: 'terreo', fall: 'O' }, { t: 'casa', x: 8, y: 5, w: 4, d: 8, lvl: 'terreo', fall: 'L' }, { t: 'piscina', x: 5, y: 6.5, w: 2.5, d: 5 }] }
       },
       NOME: { casa: 'Casa', garagem: 'Garagem', caixa: "Caixa d'água", piscina: 'Piscina' },
@@ -1152,7 +1163,7 @@ class Studio extends DCLogic {
         '2': ['Telhado de 2 águas', 'A chuva cai para os dois lados, a partir da cumeeira no meio.'],
         chale: ['Chalé', 'Telhado bem inclinado, quase até o chão, com a empena virada para a rua.'],
         varanda: ['Varanda ao redor', 'Telhado de 4 águas na casa e uma varanda coberta em volta.'],
-        plat: ['Platibanda', 'Cada bloco tem a mureta em volta e um telhado escondido, que escorre para uma calha.'],
+        plat: ['Platibanda', 'O telhado fica escondido atrás da mureta, com 2 águas que descem para uma calha no meio.'],
         outro: ['Monte sua casa com blocos', 'Combine blocos para formar L, U ou pátio. Cada bloco tem platibanda e calha.']
       },
       SLOPES: [{ id: 'reto', nome: 'Quase reto', sub: '10%', v: 0.10 }, { id: 'medio', nome: 'Médio', sub: '15%', v: 0.15 }, { id: 'inclinado', nome: 'Inclinado', sub: '25%', v: 0.25 }],
@@ -1171,7 +1182,8 @@ class Studio extends DCLogic {
       FTXTG: {
         '1': ['Galpão de 1 água', 'A chuva cai para um lado só. Ajuste as medidas e a inclinação.'],
         '2': ['Galpão de 2 águas', 'A chuva cai para os dois lados, a partir da cumeeira no meio.'],
-        outro: ['Galpão com platibanda', "Monte em blocos: o galpão, um escritório na frente e a caixa d'água."]
+        plat: ['Galpão com platibanda', 'O telhado fica escondido atrás da mureta, com 2 águas que descem para uma calha no meio.'],
+        outro: ['Monte seu galpão com blocos', "Combine o galpão, um escritório na frente e a caixa d'água. Cada bloco tem platibanda e calha."]
       },
       IR: 0.05, T: 0.15, CW: 0.3, PIRMM: 30, U_PIR: 0.73, U_COMUM: 4.5, VAO: 2.6,
       // Linha "Formato do telhado" no topo do painel Montar: escondida em 09/10/2026, porque o cliente
@@ -1189,12 +1201,14 @@ class Studio extends DCLogic {
     const s = viewer && this.props.vState ? Object.assign({}, this.state || {}, this.props.vState) : (this.state || {});
     const galpao = this.props.area === 'galpao';
     const forma0 = s.forma || this.props.startForma || 'outro';
-    const forma = galpao && ['1', '2', 'outro'].indexOf(forma0) < 0 ? '2' : forma0;
+    const forma = galpao && ['1', '2', 'plat', 'outro'].indexOf(forma0) < 0 ? '2' : forma0;
     const blocksMode = forma === 'plat' || forma === 'outro';
     const TPLS = galpao ? k.TPLG : k.TPL;
     const st0 = this.props.startTpl && this.props.startTpl !== 'auto' && TPLS[this.props.startTpl] ? this.props.startTpl : null;
     const tplId = (s.tpl && TPLS[s.tpl]) ? s.tpl : (st0 || (galpao ? 'galpao' : (forma === 'plat' ? 'garagem' : 'dois')));
-    const src = s.blocks || TPLS[tplId].blocks;
+    // Platibanda: casas e galpão começam com 2 águas para o meio (calha central), como no desenho do card
+    const src0 = s.blocks || TPLS[tplId].blocks;
+    const src = !s.blocks && forma === 'plat' ? src0.map((b) => (b.t === 'casa' ? Object.assign({}, b, { fall: 'C' }) : b)) : src0;
     const blocks = src.map((b) => Object.assign({}, b));
     const sel = blocksMode ? Math.max(0, Math.min(blocks.length - 1, s.sel || 0)) : 0;
     const pd = (galpao ? k.PDG[forma] : k.PD[forma]) || k.PD['2'];
@@ -1244,11 +1258,13 @@ class Studio extends DCLogic {
   rInfo(b) {
     const k = this.kfg(), T = k.T;
     const ix0 = b.x + T, ix1 = b.x + b.w - T, iz0 = b.y + T, iz1 = b.y + b.d - T;
-    const alongZ = b.fall === 'N' || b.fall === 'S';
+    // fall 'C' = 2 águas para o meio: o vale (calha) corre ao longo do lado maior do bloco
+    const mid = b.fall === 'C';
+    const alongZ = mid ? b.w >= b.d : (b.fall === 'N' || b.fall === 'S');
     const run = alongZ ? iz1 - iz0 : ix1 - ix0, acr = alongZ ? ix1 - ix0 : iz1 - iz0;
-    const H0 = k.LV[b.lvl] || 3;
-    const yLow = H0 + 0.25, yHigh = yLow + k.IR * run, top = yHigh + 0.45;
-    return { ix0, ix1, iz0, iz1, alongZ, run, acr, H0, yLow, yHigh, top };
+    const H0 = k.LV[b.lvl] || 3, half = mid ? run / 2 : run;
+    const yLow = H0 + 0.25, yHigh = yLow + k.IR * half, top = yHigh + 0.45;
+    return { ix0, ix1, iz0, iz1, alongZ, run, acr, H0, yLow, yHigh, top, mid, half };
   }
 
   bomCalc(blocks) {
@@ -1257,11 +1273,12 @@ class Studio extends DCLogic {
     blocks.forEach((b, i) => {
       if (b.t === 'caixa') { B.capa += 2 * (b.w + b.d); return; }
       if (!this.isRoof(b)) return;
-      const r = this.rInfo(b);
-      const n = Math.ceil(r.acr / 1.0 - 1e-9);
-      const L = Math.ceil((r.run - k.CW + 0.1) / cosA * 10 - 1e-6) / 10;
-      B.tiles += n; B.area += r.acr * r.run / cosA; B.calha += r.acr; B.rufo += r.acr + 2 * r.run / cosA; B.capa += 2 * (b.w + b.d);
-      B.terca += (Math.ceil((r.run - k.CW - 0.3) / k.VAO) + 1) * r.acr;
+      const r = this.rInfo(b), parts = r.mid ? 2 : 1, cw = r.mid ? k.CW / 2 : k.CW;
+      // na água para o meio: 2 fileiras de telhas, 1 calha central e rufo de encosto nas 2 muretas altas
+      const n = Math.ceil(r.acr / 1.0 - 1e-9) * parts;
+      const L = Math.ceil((r.half - cw + 0.1) / cosA * 10 - 1e-6) / 10;
+      B.tiles += n; B.area += r.acr * r.run / cosA; B.calha += r.acr; B.rufo += parts * r.acr + 2 * r.run / cosA; B.capa += 2 * (b.w + b.d);
+      B.terca += parts * (Math.ceil((r.half - cw - 0.3) / k.VAO) + 1) * r.acr;
       B.per.push({ i, n, L }); B.lens[L] = (B.lens[L] || 0) + n;
     });
     B.parafusos = Math.ceil(B.area * 4 / 50) * 50;
@@ -1307,7 +1324,7 @@ class Studio extends DCLogic {
     return { I, tar, tsup, tsupB, qP, qC, QP: qP * area, QC: qC * area, red: 1 - U / k.U_COMUM, col };
   }
 
-  plainBlocks(blocks) { return blocks.map((b) => ({ t: b.t, x: b.x, y: b.y, w: b.w, d: b.d, lvl: b.lvl, fall: b.fall })); }
+  plainBlocks(blocks) { return blocks.map((b) => { const o = { t: b.t, x: b.x, y: b.y, w: b.w, d: b.d, lvl: b.lvl, fall: b.fall }; if (b.ind) o.ind = true; return o; }); }
 
   // =====================================================================
   //  TELA
@@ -1347,7 +1364,7 @@ class Studio extends DCLogic {
     const bump = (s.camReq || 0) + 1;
     const pitched = !m.blocksMode, PB = pitched ? this.bomPitched(m) : null, TN = k.TELHAS[m.telha] || k.TELHAS.trap;
     const FT = (m.galpao && k.FTXTG[m.forma]) || k.FTXT[m.forma] || k.FTXT.outro, formaNome = (k.FORMAS.find((f) => f.id === m.forma) || k.FORMAS[5]).nome;
-    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, hC: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
+    const formas = k.FORMAS.filter((f) => !m.galpao || ['1', '2', 'plat', 'outro'].indexOf(f.id) >= 0).map((f) => ({ nome: f.nome, wall: f.wall, roof: f.roof, on: m.forma === f.id, cls: m.forma === f.id ? 'fmb on' : 'fmb', pick: () => set({ forma: f.id, cL: undefined, cS: undefined, hC: undefined, tpl: undefined, blocks: undefined, sel: 0, pick: null, inside: false, telha: undefined, color: undefined, cam: 'drone', camReq: bump }) }));
     const C = m.casa, ch = m.forma === 'chale';
     const setA = (v) => set(ch ? { cS: v } : { cL: v }), setB = (v) => set(ch ? { cL: v } : { cS: v });
     const vA = ch ? C.S : C.L, vB = ch ? C.L : C.S;
@@ -1382,7 +1399,7 @@ class Studio extends DCLogic {
     const addB = (nb) => { if (blocks.length >= 7) return; const nbs = plain(); nbs.push(nb); commit(nbs, { sel: nbs.length - 1 }); };
     const adds = [
       { txt: '+ Garagem', fn: () => addB({ t: 'garagem', x: base.x, y: base.y + base.d, w: Math.min(4.5, base.w), d: 5.5, lvl: 'garagem', fall: 'O' }) },
-      { txt: '+ Bloco', fn: () => addB({ t: 'casa', x: base.x + base.w, y: base.y, w: 4, d: Math.min(base.d, 8), lvl: 'terreo', fall: 'L' }) },
+      { txt: '+ Bloco', fn: () => addB({ t: 'casa', x: base.x + base.w, y: base.y, w: 4, d: Math.min(base.d, 8), lvl: 'terreo', fall: m.forma === 'plat' ? 'C' : 'L' }) },
       { txt: "+ Caixa d'água", fn: () => addB({ t: 'caixa', x: base.x + 0.5, y: base.y + 0.5, w: 2.5, d: 2.5 }) },
       { txt: '+ Piscina', fn: () => addB({ t: 'piscina', x: base.x + base.w + 1.5, y: base.y + 1, w: 3, d: 6 }) }
     ].filter((a) => !m.galpao || a.txt === '+ Bloco' || a.txt === "+ Caixa d'água").map((a) => ({ txt: a.txt, pick: a.fn, off: full }));
@@ -1390,20 +1407,22 @@ class Studio extends DCLogic {
       { id: 'N', nome: 'Fundos', icon: 'M12 19 V5 M6 11 L12 5 L18 11' },
       { id: 'S', nome: 'Frente', icon: 'M12 5 V19 M6 13 L12 19 L18 13' },
       { id: 'O', nome: 'Esquerda', icon: 'M19 12 H5 M11 6 L5 12 L11 18' },
-      { id: 'L', nome: 'Direita', icon: 'M5 12 H19 M13 6 L19 12 L13 18' }
+      { id: 'L', nome: 'Direita', icon: 'M5 12 H19 M13 6 L19 12 L13 18' },
+      { id: 'C', nome: 'Meio', icon: 'M12 4 V20 M2.5 12 H8.5 M6 9 L9 12 L6 15 M21.5 12 H15.5 M18 9 L15 12 L18 15' }
     ];
+    const FTXT2 = { N: 'os fundos', S: 'a frente', O: 'a esquerda', L: 'a direita', C: 'o meio' };
     const LVLS = [{ id: 'garagem', nome: 'Baixo', sub: '2,7 m' }, { id: 'terreo', nome: 'Térreo', sub: '3,0 m' }, { id: 'alto', nome: 'Alto', sub: '3,5 m' }, { id: 'sobrado', nome: 'Sobrado', sub: '6,0 m' }];
     const isR = this.isRoof(cb);
     const fallObj = FALLS.find((f) => f.id === cb.fall) || FALLS[0];
     const cur = {
       letra: letra(m.sel), nome: k.NOME[cb.t], isRoof: isR,
-      resumo: nf(cb.w, 1) + ' × ' + nf(cb.d, 1) + ' m' + (isR ? ' · água para ' + fallObj.nome.toLowerCase() : cb.t === 'caixa' ? ' · sobre a laje' : ''),
+      resumo: nf(cb.w, 1) + ' × ' + nf(cb.d, 1) + ' m' + (isR ? ' · água para ' + (FTXT2[fallObj.id] || fallObj.nome.toLowerCase()) : cb.t === 'caixa' ? ' · sobre a laje' : ''),
       wTxt: nf(cb.w, 1) + ' m', dTxt: nf(cb.d, 1) + ' m',
       decW: () => upd({ w: clamp(r05(cb.w - 0.5), 1.5, 24) }), incW: () => upd({ w: clamp(r05(cb.w + 0.5), 1.5, 24) }),
       decD: () => upd({ d: clamp(r05(cb.d - 0.5), 1.5, 24) }), incD: () => upd({ d: clamp(r05(cb.d + 0.5), 1.5, 24) }),
       noRemove: blocks.length <= 1 || (isR && nRoof <= 1),
       remove: () => { if (blocks.length <= 1 || (isR && nRoof <= 1)) return; commit(plain().filter((b, j) => j !== m.sel), { sel: 0 }); },
-      falls: FALLS.map((f) => ({ nome: f.nome, icon: f.icon, on: cb.fall === f.id, cls: cb.fall === f.id ? 'fbtn on' : 'fbtn', pick: () => upd({ fall: f.id }) })),
+      falls: FALLS.map((f) => ({ nome: f.nome, icon: f.icon, aria: 'Água para ' + FTXT2[f.id], on: cb.fall === f.id, cls: cb.fall === f.id ? 'fbtn on' : 'fbtn', pick: () => upd({ fall: f.id }) })),
       lvls: LVLS.map((l) => ({ nome: l.nome, sub: l.sub, on: cb.lvl === l.id, cls: cb.lvl === l.id ? 'fbtn on' : 'fbtn', pick: () => upd({ lvl: l.id }) }))
     };
     const colors = k.COLORS.map((c) => ({ nome: c.nome, curto: c.curto, hex: c.hex, on: m.color === c.id, cls: m.color === c.id ? 'swb on' : 'swb', pick: () => set({ color: c.id }) }));
@@ -1894,7 +1913,7 @@ class Studio extends DCLogic {
     if (E.house) { E.scene.remove(E.house); this._dispose(E.house); }
     const Hg = new T.Group(); E.house = Hg; E.scene.add(Hg);
     [E.hlMats, E.dimMats, E.ghMats].forEach((mp) => { if (mp) { mp.forEach((x) => x.dispose()); mp.clear(); } });
-    E.pieces = []; E.flows = []; E.heatVols = []; E.blockGroups = []; E.frames = []; E.roofMeshes = []; E.house0 = null; E.capInfo = null;
+    E.pieces = []; E.flows = []; E.heatVols = []; E.blockGroups = []; E.frames = []; E.framesB = []; E.roofMeshes = []; E.house0 = null; E.capInfo = null;
     E.viewer = !!m.viewer; E.kitBits = []; E.tkind = m.telha || 'trap';
     if (m.telha === 'colonial') { const ar = m.blocksMode ? this.bomCalc(blocks).area : this.bomPitched(m).area; E.colLod = ar < 130 ? 0 : ar < 320 ? 1 : 2; } E.thkB = m.blocksMode ? (m.mm || k.PIRMM) / 1000 : this.thk(m); E.vaoB = this.vaoOf(m);
     const col = k.COLORS.find((c) => c.id === m.color) || k.COLORS[1];
@@ -1921,6 +1940,20 @@ class Studio extends DCLogic {
     Hg.updateMatrixWorld(true);
     E.pieces.forEach((p) => { p.userData.base = p.position.clone(); });
     this._applyExplode();
+  }
+
+  // bloco que recebe a porta: o de casa mais à frente com um trecho de frente livre para a porta;
+  // se nenhum tiver, o mais à frente (como antes)
+  _frontIdx(blocks) {
+    const fy = (o) => o.y + o.d;
+    const free = (o, j) => { for (let u = o.x + 1.0; u <= o.x + o.w - 1.0; u += 0.25) if (this._exposed(blocks, j, u - 0.6, fy(o) + 0.3) && this._exposed(blocks, j, u + 0.6, fy(o) + 0.3)) return true; return false; };
+    let best = -1, bestFree = -1;
+    blocks.forEach((o, j) => {
+      if (o.t !== 'casa') return;
+      if (best < 0 || fy(o) > fy(blocks[best])) best = j;
+      if ((bestFree < 0 || fy(o) > fy(blocks[bestFree])) && free(o, j)) bestFree = j;
+    });
+    return bestFree >= 0 ? bestFree : best;
   }
 
   _exposed(blocks, i, px, pz) {
@@ -1998,8 +2031,7 @@ class Studio extends DCLogic {
     const ud = { block: i, kind: 'parede' };
     const exp = (sd, u) => { const p = sd.out(u); return this._exposed(blocks, i, p[0], p[1]); };
     // porta: na frente do bloco de casa mais à frente
-    let front = -1;
-    blocks.forEach((o2, j) => { if (o2.t === 'casa' && (front < 0 || o2.y + o2.d > blocks[front].y + blocks[front].d)) front = j; });
+    const front = this._frontIdx(blocks);
     let doorU = null;
     if (front === i) {
       const sd = sides[0];
@@ -2217,19 +2249,33 @@ class Studio extends DCLogic {
   }
 
   _buildRoof(b, i, g, r) {
+    const E = this._E;
+    if (!r.mid) { E.frames[i] = this._roofPart(b, i, g, r, b.fall, r.run, false, true); return; }
+    // 2 águas para o meio: as duas metades descem para uma calha só, no meio do bloco
+    // (o vale corre ao longo do lado maior). A metade principal, usada pelas etiquetas e
+    // pelas câmeras, é a de trás (ou a da esquerda), que desce na direção da câmera.
+    E.frames[i] = this._roofPart(b, i, g, r, r.alongZ ? 'S' : 'L', r.half, true, true);
+    E.framesB[i] = this._roofPart(b, i, g, r, r.alongZ ? 'N' : 'O', r.half, true, false);
+  }
+
+  // uma água de telhado de platibanda: telhas, rufos, calha, terças, kit e setas de escoamento.
+  // fall = para onde escorre; run = comprimento da água; mid = a calha é a do meio (dividida entre as 2 águas)
+  _roofPart(b, i, g, r, fall, run, mid, withCalha) {
     const E = this._E, T = E.T, M = E.mat, k = this.kfg();
     const th = Math.atan(k.IR), thk = E.thkB || k.PIRMM / 1000, CW = k.CW;
+    // na água que escorre para o meio, metade da largura da calha fica de cada lado
+    const cw = mid ? CW / 2 : CW;
     let phi, sx, sz;
-    if (b.fall === 'S') { phi = 0; sx = r.ix0; sz = r.iz0; }
-    else if (b.fall === 'N') { phi = Math.PI; sx = r.ix1; sz = r.iz1; }
-    else if (b.fall === 'L') { phi = Math.PI / 2; sx = r.ix0; sz = r.iz1; }
+    if (fall === 'S') { phi = 0; sx = r.ix0; sz = r.iz0; }
+    else if (fall === 'N') { phi = Math.PI; sx = r.ix1; sz = r.iz1; }
+    else if (fall === 'L') { phi = Math.PI / 2; sx = r.ix0; sz = r.iz1; }
     else { phi = -Math.PI / 2; sx = r.ix1; sz = r.iz0; }
     const F = new T.Group();
     F.position.set(sx, r.yHigh + thk + 0.004, sz);
     F.rotation.set(th, phi, 0, 'YXZ');
-    F.userData = { block: i, acr: r.acr, run: r.run };
-    g.add(F); E.frames[i] = F;
-    const L = r.run - CW + 0.1, n = Math.ceil(r.acr / 1.0 - 1e-9);
+    F.userData = { block: i, acr: r.acr, run, mid };
+    g.add(F);
+    const L = run - cw + 0.1, n = Math.ceil(r.acr / 1.0 - 1e-9);
     for (let t = 0; t < n; t++) {
       const w = Math.min(1.0, r.acr - t * 1.0);
       const tile = this._tile(w, L, thk, E.tkind, null, t < n - 1);
@@ -2243,21 +2289,23 @@ class Studio extends DCLogic {
     const tk = 0.007, legH = 0.16, legW = 0.13, rh = this.ribH(E.tkind);
     this._box(rf, 0, yb, -tk, r.acr, legH, 0, M.rufo);
     this._box(rf, 0, rh, 0, r.acr, rh + tk, legW, M.rufo);
-    this._box(rf, -tk, yb, 0, 0, legH, r.run - CW, M.rufo);
-    this._box(rf, 0, rh, 0, legW, rh + tk, r.run - CW, M.rufo);
-    this._box(rf, r.acr, yb, 0, r.acr + tk, legH, r.run - CW, M.rufo);
-    this._box(rf, r.acr - legW, rh, 0, r.acr, rh + tk, r.run - CW, M.rufo);
-    // calha
-    const ca = new T.Group(); ca.userData = { block: i, kind: 'calha', ex: { dy: 1.1, dz: 1.0, delay: 0.3 } }; F.add(ca); E.pieces.push(ca);
-    const cz0 = r.run - CW, cz1 = r.run - 0.01, cy0 = yb - 0.17, cy1 = yb - 0.01, ct = 0.008;
-    this._box(ca, 0, cy0, cz0, r.acr, cy0 + ct, cz1, M.calha);
-    this._box(ca, 0, cy0, cz0, r.acr, cy1, cz0 + ct, M.calha);
-    this._box(ca, 0, cy0, cz1 - ct, r.acr, cy1 + 0.12, cz1, M.calha);
-    this._box(ca, 0, cy0, cz0, ct, cy1, cz1, M.calha);
-    this._box(ca, r.acr - ct, cy0, cz0, r.acr, cy1, cz1, M.calha);
+    this._box(rf, -tk, yb, 0, 0, legH, run - cw, M.rufo);
+    this._box(rf, 0, rh, 0, legW, rh + tk, run - cw, M.rufo);
+    this._box(rf, r.acr, yb, 0, r.acr + tk, legH, run - cw, M.rufo);
+    this._box(rf, r.acr - legW, rh, 0, r.acr, rh + tk, run - cw, M.rufo);
+    // calha (junto da mureta mais baixa; na água para o meio, uma só, no vale entre as duas metades)
+    if (withCalha) {
+      const ca = new T.Group(); ca.userData = { block: i, kind: 'calha', ex: mid ? { dy: 1.6, delay: 0.3 } : { dy: 1.1, dz: 1.0, delay: 0.3 } }; F.add(ca); E.pieces.push(ca);
+      const cz0 = run - cw, cz1 = mid ? run + cw : run - 0.01, cy0 = yb - 0.17, cy1 = yb - 0.01, ct = 0.008;
+      this._box(ca, 0, cy0, cz0, r.acr, cy0 + ct, cz1, M.calha);
+      this._box(ca, 0, cy0, cz0, r.acr, cy1, cz0 + ct, M.calha);
+      this._box(ca, 0, cy0, cz1 - ct, r.acr, mid ? cy1 : cy1 + 0.12, cz1, M.calha);
+      this._box(ca, 0, cy0, cz0, ct, cy1, cz1, M.calha);
+      this._box(ca, r.acr - ct, cy0, cz0, r.acr, cy1, cz1, M.calha);
+    }
     // terças e pontaletes (estrutura)
     const tg = new T.Group(); tg.userData = { block: i, kind: 'terca' }; F.add(tg);
-    const zs = []; const zEnd = r.run - CW - 0.15; const nT = Math.ceil((zEnd - 0.15) / (E.vaoB || k.VAO)) + 1;
+    const zs = []; const zEnd = run - cw - 0.15; const nT = Math.ceil((zEnd - 0.15) / (E.vaoB || k.VAO)) + 1;
     for (let q = 0; q < nT; q++) zs.push(0.15 + (zEnd - 0.15) * (nT === 1 ? 0 : q / (nT - 1)));
     const tw2 = E.viewer ? 0.045 : 0.025;
     zs.forEach((zc) => {
@@ -2270,13 +2318,14 @@ class Studio extends DCLogic {
     this._kitBits(F, stB, zs, E.tkind, rh, null);
     // setas de escoamento (modo Montar)
     const tx = E.tex.chev.clone(); tx.needsUpdate = true; tx.wrapS = tx.wrapT = T.RepeatWrapping;
-    const flen = Math.max(0.5, r.run - CW - 0.5);
+    const flen = Math.max(0.5, run - cw - 0.5);
     tx.repeat.set(Math.max(1, Math.round(r.acr / 1.4)), Math.max(1, Math.round(flen / 1.3)));
     const fm = new T.MeshBasicMaterial({ map: tx, transparent: true, opacity: 0.45, depthWrite: false });
     const fl = new T.Mesh(new T.PlaneGeometry(r.acr * 0.92, flen), fm);
     fl.rotation.x = -Math.PI / 2; fl.position.set(r.acr / 2, rh + 0.02, 0.25 + flen / 2); fl.renderOrder = 3;
     fl.userData.own = true; fl.userData.block = i; fl.visible = E.mode === 'montar';
     F.add(fl); E.flows.push(fl);
+    return F;
   }
 
   _buildCaixa(b, i, g, blocks) {
@@ -2374,7 +2423,14 @@ class Studio extends DCLogic {
       // árvores
       this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
       this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
-      E.frontTrees.push(this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9), this._tree(L, lx0 + 2.6, lz1 + 1.3, 0.8, 13));
+      const busy = [];
+      blocks.forEach((b) => { if (b.t === 'garagem') busy.push([b.x - 0.3, b.x + b.w + 0.3]); });
+      if (E.doorAt) busy.push([E.doorAt.x - 1.2, E.doorAt.x + 1.2]);
+      const freeX = (x) => busy.every((q) => x < q[0] || x > q[1]);
+      const near = (x0, a, b) => { for (let d = 0; d < 40; d += 0.25) for (const x of [x0 - d, x0 + d]) if (x >= a && x <= b && freeX(x)) return x; return null; };
+      const tA = near(lx1 - 1.0, lx0 + 3.6, lx1 - 0.8), tB = near(lx0 + 2.6, lx0 + 0.8, (tA === null ? lx1 - 0.8 : tA - 2.8));
+      if (tA !== null) E.frontTrees.push(this._tree(L, tA, lz1 + 1.3, 0.85, 9));
+      if (tB !== null) E.frontTrees.push(this._tree(L, tB, lz1 + 1.3, 0.8, 13));
     }
     // bússola
     const cp = new T.Mesh(new T.PlaneGeometry(1.6, 1.6), M.compass);
@@ -2542,7 +2598,7 @@ class Studio extends DCLogic {
       const hv = this._box(G, 0.25, 0.1, 0.25, L - 0.25, Math.max(0.6, P.H - 0.1), S - 0.25, M.heatCool, null, true);
       hv.visible = false; hv.receiveShadow = false; hv.renderOrder = 6; E.heatVols.push(hv);
     }
-    E.frames = [];
+    E.frames = []; E.framesB = [];
     P.faces.forEach((fc) => this._buildFace(G, fc, P, m, thk));
     this._caps(G, P, m, thk);
     G.updateMatrixWorld(true);
@@ -3131,12 +3187,15 @@ class Studio extends DCLogic {
     const hide = (m.mode === 'pecas' || m.viewer) && m.inside;
     const itH = hide ? this._insideTile(m) : null;
     (E.insHid || []).forEach((c) => { c.visible = true; }); E.insHid = [];
-    (E.frames || []).forEach((f) => { if (f) f.children.forEach((c) => { c.visible = true; }); });
+    (E.frames || []).concat(E.framesB || []).forEach((f) => { if (f) f.children.forEach((c) => { c.visible = true; }); });
     E.pieces.forEach((pc) => { const kd = pc.userData.kind; if (kd === 'calha' || kd === 'rufo' || kd === 'capa' || kd === 'cumeeira' || kd === 'espigao') pc.visible = !hide; });
     E.flows.forEach((f) => { f.visible = m.mode === 'montar'; });
     if (m.blocksMode) {
       let fi = m.sel; if (!E.frames[fi]) fi = E.frames.findIndex((f) => !!f);
       (E.blockGroups || []).forEach((bg, j) => { if (bg) bg.visible = !hide || j === fi; });
+      // telha por dentro na água para o meio: a outra metade sai da frente
+      const fB = (E.framesB || [])[fi];
+      if (hide && itH && fB && fB.visible) { fB.visible = false; E.insHid.push(fB); }
       // vitrine: a telha fica no lugar, então paredes e mureta do bloco também saem da frente
       if (hide && m.viewer && itH && E.blockGroups[fi]) E.blockGroups[fi].children.forEach((c) => { if (c !== itH.F && c.visible) { c.visible = false; E.insHid.push(c); } });
     } else if (E.house0) {
@@ -3198,8 +3257,16 @@ class Studio extends DCLogic {
     const acr = F.userData.acr, run = F.userData.run;
     const add = (lines, p) => { const sp = this._label(lines, { dark: true }); sp.position.copy(p); F.add(sp); E.labels.push(sp); };
     if (per) add([per.n + ' telhas de ' + nf(per.L, 2) + ' m'], new T.Vector3(acr * 0.5, 2.55, run * 0.62));
-    add(['Rufo de encosto'], new T.Vector3(acr * 0.85, 3.85, 0.1));
-    add(['Calha · ' + nf(acr, 1) + ' m'], new T.Vector3(acr * 0.4, 1.5, run + 1.05));
+    // na água para o meio, o rufo de encosto é marcado na outra metade (na mureta mais perto da câmera),
+    // para a etiqueta não cair em cima da das telhas
+    const FB = (E.framesB || [])[i];
+    if (FB) {
+      FB.updateMatrixWorld(true);
+      const pa = FB.localToWorld(new T.Vector3(acr * 0.15, 0, 0.1)), pb = FB.localToWorld(new T.Vector3(acr * 0.85, 0, 0.1));
+      const sp = this._label(['Rufo de encosto'], { dark: true }); sp.position.set(acr * (pa.x + pa.z > pb.x + pb.z ? 0.15 : 0.85), 3.85, 0.1);
+      FB.add(sp); E.labels.push(sp);
+    } else add(['Rufo de encosto'], new T.Vector3(acr * 0.85, 3.85, 0.1));
+    add([(F.userData.mid ? 'Calha central · ' : 'Calha · ') + nf(acr, 1) + ' m'], new T.Vector3(acr * 0.4, 1.5, run + 1.05));
     add(['Terças (estrutura)'], new T.Vector3(acr * 0.12, -0.25, run * 0.2));
     this._applyExplode();
   }
@@ -3539,7 +3606,7 @@ function studioView(v) {
 <div class="sect"><span class="lbl2">Blocos da casa</span><div class="hscroll">${each(v.blks, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}">${it.txt}</button>`)}${each(v.adds, (it) => `<button class="chip2 add" data-c="${on(it.pick)}"${it.off ? ' disabled' : ''}>${esc(it.txt)}</button>`)}</div></div>
 <div class="card"><div style="display:flex;align-items:center;gap:10px"><span class="blkbadge">${c.letra}</span><div style="flex-grow:1;display:flex;flex-direction:column;min-width:0"><b style="font-size:16px">${c.nome}</b><span style="font-size:13px;color:#56657A">${c.resumo}</span></div><button class="minibtn" data-c="${on(c.remove)}"${c.noRemove ? ' disabled' : ''} aria-label="Remover este bloco">${esIco(ES_TRASH, 18, 2.2)}Remover</button></div>
 <div class="grid2">${esStp('Largura', c.wTxt, c.decW, c.incW, 'a largura')}${esStp('Profundidade', c.dTxt, c.decD, c.incD, 'a profundidade')}</div>
-${iff(c.isRoof, `<div style="display:flex;flex-direction:column;gap:14px">${esGrp('Para onde a água escorre?', `<div class="grid4">${each(c.falls, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}">${esIco(it.icon, 22, 2.4)}<span>${it.nome}</span></button>`)}</div>`)}${esGrp('Altura do bloco', `<div class="grid4">${each(c.lvls, esBtn2)}</div>`)}</div>`)}</div></div>`;
+${iff(c.isRoof, `<div style="display:flex;flex-direction:column;gap:14px">${esGrp('Para onde a água escorre?', `<div class="grid5">${each(c.falls, (it) => `<button class="${it.cls}" data-c="${on(it.pick)}" aria-pressed="${it.on}" aria-label="${it.aria}">${esIco(it.icon, 22, 2.4)}<span>${it.nome}</span></button>`)}</div>`)}${esGrp('Altura do bloco', `<div class="grid4">${each(c.lvls, esBtn2)}</div>`)}</div>`)}</div></div>`;
     } else {
       const pc = v.pc;
       modelo = `<div class="card" data-k="pt"><div class="grid2">${esStp(pc.aLbl, pc.aTxt, pc.decA, pc.incA, 'a frente')}${esStp(pc.bLbl, pc.bTxt, pc.decB, pc.incB, 'a profundidade')}</div>
