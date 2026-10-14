@@ -786,6 +786,8 @@ class Component extends DCLogic {
         return;
       }
       if (step === 4 && revealed) set({ revealed: false });
+      // reabre o Estúdio com a casa como o cliente deixou; o Voltar do Estúdio segue para os formatos
+      else if ((step === 4 || (step === 5 && s.knownTelha)) && shape) { openStudio(shape); set({ step: 2, alertKey: null }); }
       else if (step === 5 && s.knownTelha) go(3);
       else if (step > 0) go(step - 1);
     };
@@ -3603,6 +3605,8 @@ function openStudio(forma) {
   if (pitched && fromFlow && cs.w !== undefined && cs.l !== undefined) { st.cL = cs.w; st.cS = cs.l; }
   if (pitched && !mem && cs.slope && forma !== 'chale') st.slope = cs.slope;
   if (forma === 'chale' && cs.hC !== undefined) st.hC = cs.hC;
+  // voltando das etapas seguintes: a cor escolhida depois continua no 3D
+  if (mem && cs.color && (cs.step || 0) >= 4) st.color = cs.color;
   STU.state = st;
   C.setState({ shape: forma, especialista: false, studio: forma });
 }
