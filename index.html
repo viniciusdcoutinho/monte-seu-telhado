@@ -129,6 +129,11 @@ button{font-family:inherit;color:inherit}
 .conf{position:absolute;top:-20px;width:9px;height:15px;border-radius:2px;animation:fall 2.8s ease-in both;pointer-events:none}
 @keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(620deg);opacity:.3}}
 .toast{display:flex;gap:10px;align-items:center;justify-content:center;padding:12px;border-radius:14px;background:#E3F3EA;color:#155C39;font-weight:700;animation:pop .4s both}
+.cartbtn{flex:none;width:100%;min-height:52px;padding:8px 14px;line-height:1.25;text-align:center;color:#10263F}
+.cartbtn.ok{border-color:#2E8B57;background:#E3F3EA;color:#155C39}
+.cartnote{margin:-4px 6px 0;font-size:13px;line-height:1.4;color:#56657A;text-align:center}
+.cartman{display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.4;color:#56657A}
+.cartman input{height:42px;border:2px solid #CBD5DF;border-radius:12px;padding:0 10px;font:inherit;font-size:12px;color:#0F1E2E;background:#fff}
 .ctabar{position:absolute;left:0;right:0;bottom:0;padding:8px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--ground);box-shadow:0 -8px 24px rgba(15,30,46,.08)}
 .scroll{flex-grow:1;min-height:0;overflow-y:auto;padding:4px 20px 106px;-webkit-overflow-scrolling:touch}
 button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offset:2px}
@@ -266,6 +271,31 @@ class Component extends DCLogic {
     if (s[k] !== undefined) return s[k];
     return Number(this.props.startStep || 0) > 0 ? demo : blank;
   }
+  // ---------- link do carrinho: o pedido vai no próprio link (?carrinho=…) para comprar depois ----------
+  cartPack(o) {
+    const p = { v: 1 };
+    ['area', 'cep', 'shape', 'w', 'l', 'slope', 'hC', 'knowSize', 'kLen', 'kQty', 'telha', 'comfort', 'color', 'fix', 'kit', 'studioPieces', 'studioKey'].forEach((k) => { if (o[k] !== undefined && o[k] !== null && o[k] !== false) p[k] = o[k]; });
+    if (!p.knowSize) { delete p.kLen; delete p.kQty; }
+    const mk = (o.area && o.area !== 'casa' ? o.area + ':' : '') + (o.shape || ''), mem = (o.studioMem || {})[mk];
+    if (mem) { const m = {}; ['forma', 'tpl', 'blocks', 'cL', 'cS', 'slope', 'hC', 'fall1', 'telha', 'color', '__w', '__l'].forEach((k) => { if (mem[k] !== undefined) m[k] = mem[k]; }); p.mem = [mk, m]; }
+    try { return btoa(unescape(encodeURIComponent(JSON.stringify(p)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; }
+  }
+  cartUnpack(t) {
+    try {
+      let b = String(t).replace(/-/g, '+').replace(/_/g, '/'); while (b.length % 4) b += '=';
+      const o = JSON.parse(decodeURIComponent(escape(atob(b))));
+      if (!o || o.v !== 1) return null;
+      const p = {};
+      Object.keys(o).forEach((k) => { if (k !== 'v' && k !== 'mem') p[k] = o[k]; });
+      if (o.mem && o.mem[0]) p.studioMem = { [o.mem[0]]: o.mem[1] };
+      return p;
+    } catch (e) { return null; }
+  }
+  cartUrl(o) {
+    let base = '';
+    try { base = location.origin && location.origin !== 'null' ? location.origin + location.pathname : String(location.href).split(/[?#]/)[0]; } catch (e) { base = ''; }
+    return base + '?carrinho=' + this.cartPack(o);
+  }
   renderVals() {
     const self = this;
     const s = this.state || {};
@@ -273,6 +303,17 @@ class Component extends DCLogic {
     const step = s.step !== undefined ? s.step : start;
     const accent = this.props.accent || '#0A4DA2';
     const set = (p) => self.setState(p);
+    // abriu pelo link do carrinho: volta na tela final com o mesmo pedido
+    if (!self._cartChk) {
+      self._cartChk = true;
+      let q = null;
+      try { q = new URLSearchParams(location.search).get('carrinho'); } catch (e) { q = null; }
+      const cp = q ? self.cartUnpack(q) : null;
+      if (cp) {
+        setTimeout(() => self.setState(Object.assign(cp, { step: 9, pirAns: 'pulou', fromCart: true, added: false })), 0);
+        try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* sem histórico */ }
+      }
+    }
     const go = (n) => set({ step: n, alertKey: null });
     const f1 = (n) => n.toFixed(1);
     const nf = (n, d) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -294,6 +335,9 @@ class Component extends DCLogic {
     const onCep = (e) => {
       const d = String(e.target.value).replace(/\D/g, '').slice(0, 8);
       set({ cep: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d });
+      // CEP completo: fecha o teclado do celular para o botão de ação aparecer
+      const el = e && e.target;
+      if (d.length === 8 && digits.length < 8 && el && el.blur) setTimeout(() => { try { el.blur(); } catch (er) { /* já sem foco */ } }, 40);
     };
 
     // ---------- Telhas ----------
@@ -882,6 +926,22 @@ class Component extends DCLogic {
       parc10Money: money(total * 0.0099 / (1 - Math.pow(1.0099, -10))),
       colOnly: isColonial,
       added: !!s.added,
+      fromCart: !!s.fromCart && !s.added,
+      cartCls: s.cartCopied === 'ok' ? 'sec cartbtn ok' : 'sec cartbtn',
+      cartIco: s.cartCopied === 'ok' ? 'M5 12.5 L10 17 L19 7' : 'M10 13.5 a4 4 0 0 0 5.66 0 l3 -3 a4 4 0 0 0 -5.66 -5.66 l-1.2 1.2 M14 10.5 a4 4 0 0 0 -5.66 0 l-3 3 a4 4 0 0 0 5.66 5.66 l1.2 -1.2',
+      cartBtnTxt: s.cartCopied === 'ok' ? 'Link copiado!' : 'Copiar link do meu carrinho para comprar depois',
+      cartCopied: s.cartCopied === 'ok', cartManual: s.cartCopied === 'manual', cartUrlTxt: s.cartUrlTxt || '',
+      selAll: (e) => { try { e.target.select(); } catch (er) { /* sem seleção */ } },
+      copyCart: () => {
+        const url = self.cartUrl({ area: btype, cep, shape: SH, w, l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, knowSize, kLen, kQty, telha: telhaId, comfort: comfortId, color: colorId, fix, kit, studioPieces: s.studioPieces, studioKey: s.studioKey, studioMem: s.studioMem });
+        const done = (ok) => { clearTimeout(self._ccT); set({ cartCopied: ok ? 'ok' : 'manual', cartUrlTxt: url }); self._ccT = setTimeout(() => set({ cartCopied: undefined }), ok ? 4000 : 30000); };
+        const fb = () => {
+          let ok = false;
+          try { const ta = document.createElement('textarea'); ta.value = url; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0'; document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, url.length); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (e) { ok = false; }
+          done(ok);
+        };
+        try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => done(true), fb); else fb(); } catch (e) { fb(); }
+      },
       confetti,
       ctaTxt, ctaOff, onCta
     };
@@ -1072,6 +1132,7 @@ ${iff(v.kitComplete, `<div class="complete"><svg width="30" height="30" viewBox=
 ${iff(k.showAlert, `<div class="warn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5 V13 M12 16.5 v.01"></path></svg><span>${k.alert}</span></div>`)}</div>`)}</div></div>`;
   else if (v.is9) body = `<div class="screen" data-k="s9" style="gap:14px">
 <div style="display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center"><span class="seal" style="align-self:center;background:#E3F3EA;color:#155C39">Obra concluída</span><h1 class="h1">Seu telhado está 100%</h1><p class="sub">Tudo compatível entre si e pronto para entrega.</p></div>
+${iff(v.fromCart, `<div class="toast" style="background:#E8F0FA;color:#0A4DA2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.5 a4 4 0 0 0 5.66 0 l3 -3 a4 4 0 0 0 -5.66 -5.66 l-1.2 1.2 M14 10.5 a4 4 0 0 0 -5.66 0 l-3 3 a4 4 0 0 0 5.66 5.66 l1.2 -1.2"></path></svg><span>Este é o pedido salvo no seu link.</span></div>`)}
 <div class="sum"><button class="sumhead" data-c="${on(v.toggleSum)}" aria-expanded="${v.sumOpen}"><span>Resumo do pedido</span><svg class="${v.chevCls}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9 L12 15 L18 9"></path></svg></button>
 ${iff(v.sumOpen, `<div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:12px;animation:rise .25s both">
 <div style="display:flex;flex-direction:column;gap:4px"><div class="line"><b>${v.sumTelha}</b><b>${v.telhasMoney}</b></div><span class="muted" style="font-size:13px">${v.sumTelhaDet}</span></div>
@@ -1079,6 +1140,9 @@ ${iff(v.sumOpen, `<div style="padding:0 16px 14px;display:flex;flex-direction:co
 <div class="line" style="border-top:1px solid #E4E9EE;padding-top:12px"><span>Frete · fábrica de ${v.fab}, ${v.dias} dias úteis</span><span>${v.freteMoney}</span></div></div>`)}
 <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:14px 16px;background:#F1F5F9"><span style="font-weight:700">Total</span><div style="display:flex;flex-direction:column;align-items:flex-end"><span class="big" style="font-size:26px">${v.totalMoney}</span><span class="muted" style="font-size:13px">ou 6x de ${v.parc6Money} sem juros</span><span class="muted" style="font-size:12px">ou 10x de ${v.parc10Money} (juros de 0,99% a.m.)</span></div></div></div>
 ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg><span>Tudo no carrinho!</span></div>`)}
+<button class="${v.cartCls}" data-c="${on(v.copyCart)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="${v.cartIco}"></path></svg><span>${v.cartBtnTxt}</span></button>
+${iff(v.cartCopied, `<p class="cartnote">Guarde ou envie para você. Ao abrir o link, este pedido volta pronto para comprar.</p>`)}
+${iff(v.cartManual, `<div class="cartman"><span>Não deu para copiar sozinho. Toque e segure o link abaixo para copiar:</span><input readonly value="${esc(v.cartUrlTxt)}" onfocus="this.select()"></div>`)}
 <div style="display:flex;gap:10px"><button class="sec"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 L5.3 16.2 A8 8 0 1 1 8 18.8 Z"></path></svg>Receber no WhatsApp</button><button class="sec"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21 C4 16.5 7.5 14 12 14 C16.5 14 20 16.5 20 21"></path></svg>Falar com especialista</button></div>
 <button class="link" data-c="${on(v.openPir)}">O que é PIR? Por que essa telha não é isopor</button>
 <button class="link" data-c="${on(restart)}">Recomeçar a simulação</button></div>`;
