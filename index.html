@@ -250,9 +250,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .stage.on .cv3d{opacity:1}
 .stage.on .stage-in{visibility:hidden}
 .hint3d{position:absolute;left:12px;bottom:15px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.9);font-size:12px;font-weight:700;color:#34435A;pointer-events:none;animation:rise .4s both}
-.cmp3d{position:absolute;left:10px;top:10px;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(16,38,63,.14)}
-.cmp3d button{height:30px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:#34435A;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
-.cmp3d button.on{background:#10263F;color:#fff}
+.cmpbar{display:flex;flex-direction:column;gap:8px;margin:-8px -4px 18px}
+.cmpseg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:16px;background:#E6ECF2}
+.cmpb{min-height:50px;border:0;border-radius:12px;background:#fff;color:#34435A;font:inherit;font-size:14px;font-weight:800;line-height:1.15;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px;cursor:pointer;box-shadow:0 1px 2px rgba(15,30,46,.1)}
+.cmpb svg{flex-shrink:0}
+.cmpb.pir.on{background:var(--p);color:#fff}
+.cmpb.hot.on{background:#E4572E;color:#fff}
+.cmpb.pulse{animation:cmpPulse 1.6s ease-in-out infinite}
+@keyframes cmpPulse{0%,100%{box-shadow:0 0 0 0 rgba(228,87,46,.5)}50%{box-shadow:0 0 0 8px rgba(228,87,46,0)}}
+.cmpcap{margin:0 6px;font-size:13px;line-height:1.4;color:#34435A;text-align:center}
 .leg3d{position:absolute;left:12px;bottom:15px;display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:10px;background:rgba(255,255,255,.9);font-size:11px;font-weight:700;color:#34435A;pointer-events:none}
 .leg3d i{width:8px;height:8px;border-radius:50%;background:#FF7A1A}
 .shot3d{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#10263F;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(16,38,63,.12)}
@@ -1465,7 +1471,7 @@ class Studio extends DCLogic {
     if (m.viewer) {
       return {
         isViewer: true, notViewer: false, accent, setCanvas: this._refCv,
-        loading: !s.glReady && !s.glFail, failed: !!s.glFail, vHint: !!s.glReady && !s.touched && !s.glFail,
+        loading: !s.glReady && !s.glFail, failed: !!s.glFail, vHint: !!s.glReady && !s.touched && !s.glFail && m.vstep !== 'calor',
         vTurn: () => this.turn(Math.PI / 2),
         vShotOn: !!s.glReady && !s.glFail && m.vstep === 'pronto', vShot: () => this.shareShot(this.props.vShot || []),
         // card "Na sua obra": raio-x do calor com a Isotelha ou com uma telha comum
@@ -4508,11 +4514,21 @@ function stage3d(v, house) {
   return `<div class="stage s3d${ready ? ' on' : ''}" style="height:${VW_H}px" data-k="stage3d"><div class="stage-in">${house}</div>`
     + `<canvas class="cv3d" data-keep="1" aria-label="Sua casa em 3D. Arraste para os lados para girar."></canvas>`
     + iff(ready && !st.touched && p.state.vstep !== 'calor', `<div class="hint3d" data-k="h3d">${ICO_ARR}Arraste para girar</div>`)
-    // card "Na sua obra": o mesmo telhado com a Isotelha ou com uma telha comum, com o calor do sol entrando
-    + iff(ready && p.state.vstep === 'calor', `<div class="cmp3d" data-k="cmp">${[['Isotelha PIR', false], ['Telha comum', true]].map((o) => `<button class="${!!p.state.comum === o[1] ? 'on' : ''}" data-c="${on(() => C.setState({ pirComum: o[1] }))}" aria-pressed="${!!p.state.comum === o[1]}">${o[0]}</button>`).join('')}</div><div class="leg3d" data-k="leg"><i></i>Calor do sol</div>`)
+    + iff(ready && p.state.vstep === 'calor', `<div class="leg3d" data-k="leg"><i></i>Calor do sol</div>`)
     + `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(rot)}" aria-label="Girar a casa">${ICO_ROT}</button>`
     + iff(ready && v.is9, `<button class="shot3d" data-k="shot" data-c="${on(shareShot)}" aria-label="Salvar ou compartilhar a foto do seu telhado">${ICO_CAM}<span>Salvar foto</span></button>`)
-    + `</div>`;
+    + `</div>`
+    // card "Na sua obra": a comparação fica embaixo da imagem, em botões grandes; "Com telha comum" pulsa até o primeiro toque
+    + iff(ready && p.state.vstep === 'calor', cmpBar(!!p.state.comum, !!(C.state || {}).pirCmpSeen));
+}
+
+function cmpBar(comum, seen) {
+  const b = (hot, txt, ico) => {
+    const onB = comum === hot;
+    return `<button class="cmpb ${hot ? 'hot' : 'pir'}${onB ? ' on' : ''}${hot && !seen ? ' pulse' : ''}" data-c="${on(() => C.setState(hot ? { pirComum: true, pirCmpSeen: true } : { pirComum: false }))}" aria-pressed="${onB}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${ico}"></path></svg><span>${txt}</span></button>`;
+  };
+  const cap = (!seen ? 'Toque em “Com telha comum” e compare o calor entrando.' : comum ? 'Com telha comum, muito mais calor do sol passa para dentro.' : 'Com a Isotelha PIR, a maior parte do calor do sol fica do lado de fora.');
+  return `<div class="cmpbar" data-k="cmpbar"><div class="cmpseg" role="group" aria-label="Compare o calor entrando">${b(false, 'Com Isotelha PIR', 'M12 3 V21 M4.2 7.5 L19.8 16.5 M4.2 16.5 L19.8 7.5 M9.5 4.5 L12 7 L14.5 4.5 M9.5 19.5 L12 17 L14.5 19.5')}${b(true, 'Com telha comum', 'M16 12 A4 4 0 1 1 8 12 A4 4 0 1 1 16 12 Z M12 2.5 V4.5 M12 19.5 V21.5 M2.5 12 H4.5 M19.5 12 H21.5 M5.3 5.3 L6.7 6.7 M17.3 17.3 L18.7 18.7 M5.3 18.7 L6.7 17.3 M17.3 6.7 L18.7 5.3')}</div><p class="cmpcap">${cap}</p></div>`;
 }
 
 function vwUnmount() {
