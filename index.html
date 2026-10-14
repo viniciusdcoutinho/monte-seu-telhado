@@ -207,6 +207,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .es-tog.es-on{border-color:var(--p)}
 .es-tog.es-on .es-knob{background:var(--p)}
 .es-tog.es-on .es-knob i{transform:translateX(18px)}
+.es-xopt{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:10px 12px;border-radius:14px;border:2px solid #DAE1E8;background:#fff;cursor:pointer;text-align:left;font-size:14px;font-weight:700;color:#10263F;line-height:1.3}
+.es-xopt .es-rd{width:20px;height:20px;border-radius:50%;border:2px solid #9AA6B2;flex-shrink:0;background:#fff}
+.es-xopt.es-on{border-color:var(--p);background:#F2F6FB}
+.es-xopt.es-on .es-rd{border-color:var(--p);box-shadow:inset 0 0 0 4px #fff;background:var(--p)}
 .es-rng{width:100%;-webkit-appearance:none;appearance:none;height:44px;background:transparent;cursor:pointer;margin:0}
 .es-rng::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:linear-gradient(90deg,#2F5E8C,#F6B73C 30%,#F29A3F 50%,#F6B73C 70%,#2F5E8C)}
 .es-rng::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:15px;background:#fff;border:4px solid #F29A3F;margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
@@ -240,6 +244,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--p);outline-offs
 .stage.on .cv3d{opacity:1}
 .stage.on .stage-in{visibility:hidden}
 .hint3d{position:absolute;left:12px;bottom:15px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.9);font-size:12px;font-weight:700;color:#34435A;pointer-events:none;animation:rise .4s both}
+.cmp3d{position:absolute;left:10px;top:10px;display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(16,38,63,.14)}
+.cmp3d button{height:30px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:#34435A;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.cmp3d button.on{background:#10263F;color:#fff}
+.leg3d{position:absolute;left:12px;bottom:15px;display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:10px;background:rgba(255,255,255,.9);font-size:11px;font-weight:700;color:#34435A;pointer-events:none}
+.leg3d i{width:8px;height:8px;border-radius:50%;background:#FF7A1A}
 .shot3d{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:0;border-radius:12px;background:rgba(255,255,255,.94);color:#10263F;font:inherit;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(16,38,63,.12)}
 </style>
 </head>
@@ -794,13 +803,13 @@ class Component extends DCLogic {
       const tv = step === 4 && revealed && !pirMode ? (ordered[cardIdx] || telha).id : telhaId;
       const cv3 = tv === telhaId ? colorId : (tv === 'colonial' ? 'terracota' : 'grafite');
       const mm3 = tv === 'colonial' ? 40 : ({ bom: 20, melhor: 30, max: 50 })[s.comfort && s.comfort !== 'col' ? s.comfort : 'melhor'];
-      const vstep = pirMode ? 'pir' : step === 9 ? (pirView ? 'casa' : 'pronto') : step === 4 ? (revealed ? 'telha' : 'casa') : ({ 5: 'cor', 6: 'conforto', 7: 'fix', 8: 'kit' })[step];
+      const vstep = pirMode ? (pirIdx === 2 ? 'calor' : 'pir') : step === 9 ? (pirView ? 'casa' : 'pronto') : step === 4 ? (revealed ? 'telha' : 'casa') : ({ 5: 'cor', 6: 'conforto', 7: 'fix', 8: 'kit' })[step];
       let blocks3 = mem3d && mem3d.blocks ? mem3d.blocks : undefined;
       // medidas mudadas na etapa Medidas depois do Estúdio: os blocos acompanham na mesma proporção
       if (blocks3 && mem3d.__w && mem3d.__l && (w !== mem3d.__w || l !== mem3d.__l)) { const fx = w / mem3d.__w, fz = l / mem3d.__l; blocks3 = blocks3.map((b) => Object.assign({}, b, { x: b.x * fx, w: b.w * fx, y: b.y * fz, d: b.d * fz })); }
       v3d = {
         area: btype === 'galpao' ? 'galpao' : 'casa',
-        state: { forma: shape, cL: w, cS: l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, fall1: mem3d ? mem3d.fall1 : undefined, tpl: mem3d ? mem3d.tpl : undefined, blocks: blocks3, telha: tv, color: cv3, mm: mm3, fix: fix || null, kit, vstep },
+        state: { forma: shape, cL: w, cS: l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, fall1: mem3d ? mem3d.fall1 : undefined, tpl: mem3d ? mem3d.tpl : undefined, blocks: blocks3, telha: tv, color: cv3, mm: mm3, fix: fix || null, kit, vstep, comum: vstep === 'calor' && !!s.pirComum },
         shot: ['Meu telhado Kingspan Isoeste', tQty + ' telhas ' + telha.curto + ' · ' + color.nome, comfort.mm + ' de PIR · ' + nf(Math.round(areaM2), 0) + ' m² de telhado']
       };
     }
@@ -1202,6 +1211,7 @@ class Studio extends DCLogic {
       city: s.city || 'goiania', frente: s.frente || 'N', epoca: s.epoca || 'hoje',
       hora: s.hora !== undefined ? Number(s.hora) : 15.5,
       xray: !!s.xray, comum: !!s.comum, pick: s.pick || null,
+      xrayOn: viewer ? vstep === 'calor' : ((s.mode || this.props.startMode) === 'sol' && !!s.xray),
       camReq: s.camReq || 0, cam: s.cam || 'drone', inside: viewer ? (vstep === 'conforto' || vstep === 'pir') : !!s.inside,
       vp: !viewer && (s.vp === 'half' || s.vp === 'full') ? s.vp : 'normal'
     };
@@ -1320,7 +1330,10 @@ class Studio extends DCLogic {
         isViewer: true, notViewer: false, accent, setCanvas: this._refCv,
         loading: !s.glReady && !s.glFail, failed: !!s.glFail, vHint: !!s.glReady && !s.touched && !s.glFail,
         vTurn: () => this.turn(Math.PI / 2),
-        vShotOn: !!s.glReady && !s.glFail && m.vstep === 'pronto', vShot: () => this.shareShot(this.props.vShot || [])
+        vShotOn: !!s.glReady && !s.glFail && m.vstep === 'pronto', vShot: () => this.shareShot(this.props.vShot || []),
+        // card "Na sua obra": raio-x do calor com a Isotelha ou com uma telha comum
+        vCalor: !!s.glReady && !s.glFail && m.vstep === 'calor',
+        vCmp: [['Isotelha PIR', false], ['Telha comum', true]].map((o) => ({ nome: o[0], on: m.comum === o[1], cls: m.comum === o[1] ? 'on' : '', pick: () => set({ comum: o[1] }) }))
       };
     }
     const blocks = m.blocks, cb = blocks[m.sel];
@@ -1463,8 +1476,11 @@ class Studio extends DCLogic {
       wPir: Math.max(2, heat.qP / qmax * 100).toFixed(1) + '%', wCom: (heat.qC > 0 ? 100 : 2) + '%',
       ganhoTxt: heat.qC > 0.5 ? 'O PIR barra cerca de ' + Math.round(heat.red * 100) + '% desse calor: ' + kw(heat.QC - heat.QP) + ' a menos entrando pelo telhado agora.' : 'Sem sol forte agora. Mova a hora para ver o efeito do calor.',
       // ao ligar o raio-x ou a comparação, a câmera vai para a Rua: casa de frente, com o calor entrando
-      xr: { on: xrOn, cls: xrOn ? 'tog on' : 'tog', pick: () => set(xrOn ? { xray: false } : { xray: true, cam: 'rua', camReq: bump, inside: false }) },
-      cm: { on: cmOn, cls: cmOn ? 'tog on' : 'tog', pick: () => set(cmOn ? { comum: false } : { comum: true, xray: true, cam: 'rua', camReq: bump, inside: false }) },
+      // Raio-X do calor: com a telha Kingspan (PIR) ou com uma telha metálica comum. Tocar de novo na opção marcada desliga.
+      xrOpts: [['Com isolamento de PIR ' + MM + ' mm Kingspan', false], ['Telha metálica comum sem isolamento Kingspan', true]].map((o) => {
+        const on = xrOn && cmOn === o[1];
+        return { nome: o[0], on, cls: on ? 'xopt on' : 'xopt', pick: () => set(on ? { xray: false, comum: false } : { xray: true, comum: o[1], cam: 'rua', camReq: bump, inside: false }) };
+      }),
       notaSol: 'Sol calculado para ' + sun.city.nome + '. Calor estimado com U = ' + nf(UPIR, 2) + ' W/m²K (PIR ' + MM + ' mm, ficha técnica) contra U ≈ ' + nf(k.U_COMUM, 1) + ' W/m²K de uma telha sem isolamento (estimativa). Conta simplificada, só para comparar.'
     };
   }
@@ -1771,7 +1787,7 @@ class Studio extends DCLogic {
     if (force || rebuilt || m.sel !== E.sel || m.mode !== E.giMode) { E.sel = m.sel; E.giMode = m.mode; this._gizmo(m, m.blocks); }
     if (m.mode !== E.mode) { E.mode = m.mode; E.exTarget = m.mode === 'pecas' ? 1 : 0; E.flows.forEach((f) => { f.visible = m.mode === 'montar'; }); }
     if (force || rebuilt || m.pick !== E.pick || m.inside !== E.inside || m.mode !== E.lblMode) { E.pick = m.pick; E.lblMode = m.mode; this._applyPick(m); this._labels(m); }
-    const xk = (m.mode === 'sol' && m.xray) + '|' + m.comum;
+    const xk = m.xrayOn + '|' + m.comum;
     if (force || rebuilt || xk !== E.xk) { E.xk = xk; this._applyXray(m); }
     if (m.viewer) { if (force) this._camPreset('drone', false); this._viewSync(m, force, rebuilt); this._declutter(); E.dirty = true; return; }
     if (force) { E.camReq = m.camReq; this._camPreset(m.cam, false); }
@@ -2299,9 +2315,9 @@ class Studio extends DCLogic {
   }
 
   _tree(g, x, z, s, seed) {
-    const E = this._E, T = E.T, M = E.mat, rnd = this._rng(seed);
+    const E = this._E, T = E.T, M = E.mat, rnd = this._rng(seed), tg = new T.Group(); g.add(tg);
     const tr = new T.Mesh(new T.CylinderGeometry(0.09 * s, 0.15 * s, 2.4 * s, 10), M.trunk);
-    tr.position.set(x, 1.2 * s, z); tr.castShadow = true; g.add(tr);
+    tr.position.set(x, 1.2 * s, z); tr.castShadow = true; tg.add(tr);
     const nb = 5 + Math.floor(rnd() * 3);
     for (let q = 0; q < nb; q++) {
       const r = (0.75 + rnd() * 0.55) * s;
@@ -2312,14 +2328,15 @@ class Studio extends DCLogic {
       const f = new T.Mesh(geo, M.leaf[q % 3]);
       const a = rnd() * Math.PI * 2, rr = (q === 0 ? 0 : 0.55 + rnd() * 0.45) * s;
       f.position.set(x + Math.cos(a) * rr, (2.6 + rnd() * 0.9 + (q === 0 ? 0.6 : 0)) * s, z + Math.sin(a) * rr);
-      f.castShadow = true; f.receiveShadow = true; g.add(f);
+      f.castShadow = true; f.receiveShadow = true; tg.add(f);
     }
+    return tg;
   }
 
   _buildLot(blocks, Hg) {
     const E = this._E, T = E.T, M = E.mat, bb = E.bb;
     const lx0 = bb.x0 - 1.6, lx1 = bb.x1 + 1.6, lz0 = bb.z0 - 3, lz1 = bb.z1 + (E.galpao ? 11 : 4.5);
-    E.lot = { lx0, lx1, lz0, lz1 };
+    E.lot = { lx0, lx1, lz0, lz1 }; E.frontTrees = [];
     const L = new T.Group(); Hg.add(L); E.lotGroup = L;
     const cx = (lx0 + lx1) / 2;
     const gp = new T.Mesh(new T.PlaneGeometry(420, 420), M.grass);
@@ -2347,7 +2364,7 @@ class Studio extends DCLogic {
       if (gt) this._truck(L, gt.x, gt.z + 1.0);
       this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
       this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
-      this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9);
+      E.frontTrees.push(this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9));
     } else {
       // entrada de carro e caminho
       blocks.forEach((b) => { if (b.t === 'garagem') { this._box(L, b.x + 0.2, 0, b.y + b.d, b.x + b.w - 0.2, 0.03, lz1 + 0.01, M.paver, null, true); } });
@@ -2355,8 +2372,7 @@ class Studio extends DCLogic {
       // árvores
       this._tree(L, lx0 - 1.6, lz0 - 2.2, 1.25, 3);
       this._tree(L, lx1 + 1.4, lz0 - 1.0, 1.05, 7);
-      this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9);
-      this._tree(L, lx0 + 2.6, lz1 + 1.3, 0.8, 13);
+      E.frontTrees.push(this._tree(L, lx1 - 1.0, lz1 + 1.3, 0.85, 9), this._tree(L, lx0 + 2.6, lz1 + 1.3, 0.8, 13));
     }
     // bússola
     const cp = new T.Mesh(new T.PlaneGeometry(1.6, 1.6), M.compass);
@@ -2811,6 +2827,7 @@ class Studio extends DCLogic {
   _camView(m, animate) {
     const E = this._E, b = E.bb; if (!b) return;
     if (m.vstep === 'telha') { this._camRoof(m, animate); return; }
+    if (m.vstep === 'calor') { this._camPreset('rua', animate); const to = E.tw ? E.tw.to : E.orb; to.r *= 0.8; to.ty += 0.5; return; }
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, size = Math.max(b.x1 - b.x0, b.z1 - b.z0, 7);
     const vs = m.vstep, rf = this._fitR(size);
     const to = vs === 'fix' ? { tx: cx, ty: (E.roofTop || 4) * 0.62, tz: cz, r: rf * 0.98, th: 0.62, ph: 0.72 }
@@ -2860,7 +2877,7 @@ class Studio extends DCLogic {
     E.pieces.forEach((pc) => { const id = this._kitIdOf(pc, m); if (id && !inside) pc.visible = kit[id] !== false; });
     (E.kitBits || []).forEach((b) => { const id = b.userData.kind === 'parafuso' ? 'parafusos' : 'vedacao'; b.visible = vs === 'kit' && !inside && kit[id] !== false; });
     E.house.traverse((n) => {
-      if (!n.isMesh) return;
+      if (!n.isMesh || E.heatVols.indexOf(n) >= 0) return;
       if (!n.userData.mat0) n.userData.mat0 = n.material;
       const kd = this._kindOf(n);
       if (kd === 'terca') { n.material = m.fix || vs === 'fix' ? fixMat : n.userData.mat0; return; }
@@ -2982,7 +2999,7 @@ class Studio extends DCLogic {
     const roofKinds = { telha: 1, rufo: 1, calha: 1, capa: 1, terca: 1, cumeeira: 1, espigao: 1 };
     const pick = m.mode === 'pecas' ? m.pick : null;
     E.house.traverse((n) => {
-      if (!n.isMesh) return;
+      if (!n.isMesh || E.heatVols.indexOf(n) >= 0) return;
       if (!n.userData.mat0) n.userData.mat0 = n.material;
       const kd = this._kindOf(n);
       if (!pick || !kd) { n.material = n.userData.mat0; return; }
@@ -3187,7 +3204,7 @@ class Studio extends DCLogic {
 
   // ---------- raio-x do calor ----------
   _applyXray(m) {
-    const E = this._E, M = E.mat, on = m.mode === 'sol' && m.xray;
+    const E = this._E, M = E.mat, on = !!m.xrayOn;
     E.ghostable.forEach((kk) => {
       const mt = M[kk]; if (!mt) return;
       if (on) { if (mt.userData.op0 === undefined) { mt.userData.op0 = mt.opacity; mt.userData.tr0 = mt.transparent; mt.userData.dw0 = mt.depthWrite; } mt.transparent = true; mt.opacity = (kk === 'roof' || kk === 'pir' || kk === 'liner') ? 0.35 : 0.14; mt.depthWrite = false; }
@@ -3195,6 +3212,7 @@ class Studio extends DCLogic {
       mt.needsUpdate = true;
     });
     E.heatVols.forEach((h) => { h.visible = on; h.material = m.comum ? M.heatHot : M.heatCool; });
+    (E.frontTrees || []).forEach((t) => { t.visible = !on; });
     E.parts.visible = on;
     if (on) { E.pd.st.fill(0); E.pd.life.fill(0); for (let q = 0; q < E.pd.N; q++) { E.pd.life[q] = -E.pd.rnd() * 2; this._spawn(q, m); } }
     E.passP = m.comum ? 0.88 : 0.14;
@@ -3546,7 +3564,8 @@ ${modelo}
 <button class="${v.insideCls}" data-c="${on(v.toggleInside)}">${esIco(ES_LUPA, 20, 2.2)}${v.insideTxt}</button>
 <div class="note">Telhas, acabamentos, parafusos e fita saem da mesma lista, compatíveis entre si. Medidas e comprimentos ainda são ilustrativos.</div></div>`;
   } else {
-    const tog = (t, titulo, sub) => `<button class="${t.cls}" data-c="${on(t.pick)}" aria-pressed="${t.on}"><span style="display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">${titulo}</b><span style="font-size:12px;color:#56657A">${sub}</span></span><span class="knob"><i></i></span></button>`;
+    // Raio-X do calor: com a telha Kingspan (PIR) ou com uma telha metálica comum; tocar de novo na opção marcada desliga
+    const xrBox = `<div class="card" style="gap:10px"><div style="display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">Raio-X do calor</b><span style="font-size:12px;color:#56657A">Veja o calor do sol batendo e entrando no imóvel</span></div>${each(v.xrOpts, (o) => `<button class="${o.cls}" data-c="${on(o.pick)}" aria-pressed="${o.on}"><span class="rd"></span><span>${o.nome}</span></button>`)}</div>`;
     body = `<div style="display:flex;flex-direction:column;gap:16px" data-k="ps">
 <div class="card" style="gap:6px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><span class="big">${v.horaTxt}</span><span style="font-size:12px;font-weight:700;color:#56657A;text-align:right">${v.sunTxt}</span></div>
 <label for="es-hora" class="lbl2" style="margin-top:6px">Hora do dia</label>
@@ -3558,8 +3577,7 @@ ${modelo}
 <div class="hrow"><div class="t"><span>Kingspan PIR ${v.pirmm} mm</span><span>${v.qPirTxt}</span></div><div class="hbar"><i style="width:${v.wPir};background:#2E8B57"></i></div></div>
 <div class="hrow"><div class="t"><span>Telha sem isolamento</span><span>${v.qComTxt}</span></div><div class="hbar"><i style="width:${v.wCom};background:#E4572E"></i></div></div>
 <div style="font-size:14px;font-weight:800;color:#155C39;background:#E3F3EA;border-radius:12px;padding:10px 12px;line-height:1.35">${v.ganhoTxt}</div></div>
-${tog(v.xr, 'Raio-X do calor', 'Veja o calor do sol batendo e entrando na casa')}
-${tog(v.cm, 'Comparar com telha comum', 'Troca o PIR por uma telha sem isolamento')}
+${xrBox}
 <div class="note">${v.notaSol}</div></div>`;
   }
 
@@ -3666,7 +3684,9 @@ function stage3d(v, house) {
   const rot = ready ? () => { if (VW) VW.turn(Math.PI / 2); } : v.rotate;
   return `<div class="stage s3d${ready ? ' on' : ''}" style="height:${VW_H}px" data-k="stage3d"><div class="stage-in">${house}</div>`
     + `<canvas class="cv3d" data-keep="1" aria-label="Sua casa em 3D. Arraste para os lados para girar."></canvas>`
-    + iff(ready && !st.touched, `<div class="hint3d" data-k="h3d">${ICO_ARR}Arraste para girar</div>`)
+    + iff(ready && !st.touched && p.state.vstep !== 'calor', `<div class="hint3d" data-k="h3d">${ICO_ARR}Arraste para girar</div>`)
+    // card "Na sua obra": o mesmo telhado com a Isotelha ou com uma telha comum, com o calor do sol entrando
+    + iff(ready && p.state.vstep === 'calor', `<div class="cmp3d" data-k="cmp">${[['Isotelha PIR', false], ['Telha comum', true]].map((o) => `<button class="${!!p.state.comum === o[1] ? 'on' : ''}" data-c="${on(() => C.setState({ pirComum: o[1] }))}" aria-pressed="${!!p.state.comum === o[1]}">${o[0]}</button>`).join('')}</div><div class="leg3d" data-k="leg"><i></i>Calor do sol</div>`)
     + `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(rot)}" aria-label="Girar a casa">${ICO_ROT}</button>`
     + iff(ready && v.is9, `<button class="shot3d" data-k="shot" data-c="${on(shareShot)}" aria-label="Salvar ou compartilhar a foto do seu telhado">${ICO_CAM}<span>Salvar foto</span></button>`)
     + `</div>`;
