@@ -280,7 +280,7 @@ class Component extends DCLogic {
   // ---------- link do carrinho: o pedido vai no próprio link (?carrinho=…) para comprar depois ----------
   cartPack(o) {
     const p = { v: 1 };
-    ['area', 'cep', 'shape', 'w', 'l', 'slope', 'hC', 'knowSize', 'kLen', 'kQty', 'telha', 'comfort', 'color', 'fix', 'kit', 'studioPieces', 'studioKey'].forEach((k) => { if (o[k] !== undefined && o[k] !== null && o[k] !== false) p[k] = o[k]; });
+    ['area', 'shape', 'w', 'l', 'slope', 'hC', 'knowSize', 'kLen', 'kQty', 'telha', 'comfort', 'color', 'fix', 'kit', 'studioPieces', 'studioKey'].forEach((k) => { if (o[k] !== undefined && o[k] !== null && o[k] !== false) p[k] = o[k]; });
     if (!p.knowSize) { delete p.kLen; delete p.kQty; }
     const mk = (o.area && o.area !== 'casa' ? o.area + ':' : '') + (o.shape || ''), mem = (o.studioMem || {})[mk];
     if (mem) { const m = {}; ['forma', 'tpl', 'blocks', 'cL', 'cS', 'slope', 'hC', 'fall1', 'telha', 'color', '__w', '__l'].forEach((k) => { if (mem[k] !== undefined) m[k] = mem[k]; }); p.mem = [mk, m]; }
@@ -306,7 +306,7 @@ class Component extends DCLogic {
     const self = this;
     const s = this.state || {};
     const start = Number(this.props.startStep || 0);
-    const step = s.step !== undefined ? s.step : start;
+    const step = s.step !== undefined ? s.step : (start > 0 ? start : 1);
     const accent = this.props.accent || '#0A4DA2';
     const set = (p) => self.setState(p);
     // abriu pelo link do carrinho: volta na tela final com o mesmo pedido
@@ -325,26 +325,7 @@ class Component extends DCLogic {
     const nf = (n, d) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
     const money = (n) => 'R$ ' + nf(n, 2);
 
-    // ---------- CEP e fábrica ----------
-    const cep = this.st('cep', '', '75132-000');
-    const digits = cep.replace(/\D/g, '');
-    const cepOk = digits.length === 8;
-    const p2 = parseInt(digits.slice(0, 2) || '0', 10);
-    let fab = 'Anápolis (GO)', dias = 4;
-    if (p2 >= 78 && p2 <= 79) { fab = 'Várzea Grande (MT)'; dias = 5; }
-    else if (p2 >= 80) { fab = 'Araquari (SC)'; dias = 5; }
-    else if (p2 >= 66 && p2 <= 69) { fab = 'Várzea Grande (MT)'; dias = 12; }
-    else if (p2 >= 50 && p2 <= 56) { fab = 'Vitória de Santo Antão (PE)'; dias = 5; }
-    else if (p2 >= 40 && p2 <= 65) { fab = 'Vitória de Santo Antão (PE)'; dias = 8; }
-    else if (p2 >= 20 && p2 <= 39) { fab = 'Cambuí (MG)'; dias = 5; }
-    else if (p2 >= 1 && p2 <= 19) { fab = 'Cambuí (MG)'; dias = 4; }
-    const onCep = (e) => {
-      const d = String(e.target.value).replace(/\D/g, '').slice(0, 8);
-      set({ cep: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d });
-      // CEP completo: fecha o teclado do celular para o botão de ação aparecer
-      const el = e && e.target;
-      if (d.length === 8 && digits.length < 8 && el && el.blur) setTimeout(() => { try { el.blur(); } catch (er) { /* já sem foco */ } }, 40);
-    };
+    // CEP saiu do fluxo (15/10/2026): frete e prazo aparecem no carrinho do e-commerce, com o CEP do cliente
 
     // ---------- Telhas ----------
     const TELHAS = [
@@ -477,8 +458,8 @@ class Component extends DCLogic {
     const acess = kitItems.reduce((a, k) => a + k.total, 0);
     const precoM2 = telha.base + comfort.extraV;
     const telhasV = areaM2 * precoM2;
-    const frete = 290 + dias * 25;
-    const total = telhasV + acess + frete;
+    // total só dos produtos: o frete sai no carrinho do e-commerce
+    const total = telhasV + acess;
 
     // ---------- Casa 3D (isométrica) ----------
     // eixo x = comprimento (sentido da caída da telha), eixo y = largura (sentido da cumeeira); z em metros
@@ -735,7 +716,7 @@ class Component extends DCLogic {
     const NAMES = ['Área', 'Medidas', 'Telha', 'Conforto', 'Kit', 'Pronto'];
     const phase = [0, 1, 2, 2, 3, 3, 4, 5, 5, 6][step];
     const segs = NAMES.map((n, i) => ({ cls: (i < phase - 1 || fin) ? 'seg done' : (i === phase - 1 ? 'seg cur' : 'seg') }));
-    const phaseLabel = step === 0 ? 'Obra · vamos começar' : (fin ? 'Obra concluída' : (step === 9 ? 'Obra · Pronto' : 'Obra · ' + NAMES[phase - 1]));
+    const phaseLabel = fin ? 'Obra concluída' : (step === 9 ? 'Obra · Pronto' : 'Obra · ' + NAMES[phase - 1]);
     const phaseCount = phase + '/6';
 
     // ---------- Opções ----------
@@ -812,8 +793,7 @@ class Component extends DCLogic {
 
     // ---------- Botão principal ----------
     let ctaTxt = 'Continuar', ctaOff = false, onCta = () => go(step + 1);
-    if (step === 0) { ctaTxt = 'Começar obra'; ctaOff = !cepOk; }
-    else if (step === 1) { ctaOff = !area; }
+    if (step === 1) { ctaOff = !area; }
     else if (step === 2) {
       ctaOff = !shape;
       if (shape === 'outro') { ctaTxt = 'Falar com especialista'; onCta = () => set({ especialista: true }); }
@@ -847,7 +827,7 @@ class Component extends DCLogic {
       // reabre o Estúdio com a casa como o cliente deixou; o Voltar do Estúdio segue para os formatos
       else if ((step === 4 || (step === 5 && s.knownTelha)) && shape) { openStudio(shape); set({ step: 2, alertKey: null }); }
       else if (step === 5 && s.knownTelha) go(3);
-      else if (step > 0) go(step - 1);
+      else if (step > 1) go(step - 1);
     };
 
     const PALETTE = [accent, '#F29A3F', '#F6C445', '#2E8B57', '#E4572E'];
@@ -891,10 +871,10 @@ class Component extends DCLogic {
       decW: () => bumpD('w', -0.5), incW: () => bumpD('w', 0.5), decL: () => bumpD('l', -0.5), incL: () => bumpD('l', 0.5),
       mirrorT, rotate: () => set({ mirror: !s.mirror }),
       H: Hs, items,
-      is0: step === 0, is1: step === 1, is2: step === 2, is3: step === 3,
+      is1: step === 1, is2: step === 2, is3: step === 3,
       is4a: step === 4 && !revealed, is4b: step === 4 && revealed,
       is5: step === 5, is6: step === 6, is7: step === 7, is8: step === 8, is9: fin,
-      cep, onCep, cepOk, fab, dias, roofHex,
+      roofHex, backVis: !pirView && step <= 1 ? 'hidden' : 'visible',
       sunOp: step >= 4 && has('fresca') ? 1 : 0,
       tagW, tagL, wTxt: nf(w, 1), lTxt: nf(l, 1),
       focusW: () => focusIn('w'), focusL: () => focusIn('l'),
@@ -925,7 +905,7 @@ class Component extends DCLogic {
       sumOpen, toggleSum: () => set({ sumOpen: !sumOpen }), chevCls: sumOpen ? 'chev open' : 'chev',
       sumTelha: tQty + ' × ' + telha.nome,
       sumTelhaDet: color.nome + ' · ' + comfort.mm + ' · ' + pieces.map((p) => p.qty + ' de ' + nf(p.len, 2) + ' m').join(' + ') + ' · ' + nf(Math.round(areaM2), 0) + ' m²',
-      telhasMoney: money(telhasV), freteMoney: money(frete),
+      telhasMoney: money(telhasV),
       // Parcelamento real da loja (vendedores, Hablla ago–set/2026): 6x sem juros ou 10x com 0,99% a.m.
       // Provisório: no definitivo vem da simulação de pagamento da VTEX, nunca fixo na tela.
       totalMoney: money(total), parc6Money: money(total / 6),
@@ -939,7 +919,7 @@ class Component extends DCLogic {
       cartCopied: s.cartCopied === 'ok', cartManual: s.cartCopied === 'manual', cartUrlTxt: s.cartUrlTxt || '',
       selAll: (e) => { try { e.target.select(); } catch (er) { /* sem seleção */ } },
       copyCart: () => {
-        const url = self.cartUrl({ area: btype, cep, shape: SH, w, l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, knowSize, kLen, kQty, telha: telhaId, comfort: comfortId, color: colorId, fix, kit, studioPieces: s.studioPieces, studioKey: s.studioKey, studioMem: s.studioMem });
+        const url = self.cartUrl({ area: btype, shape: SH, w, l, slope: slopeId, hC: hs === 'chale' ? hC : undefined, knowSize, kLen, kQty, telha: telhaId, comfort: comfortId, color: colorId, fix, kit, studioPieces: s.studioPieces, studioKey: s.studioKey, studioMem: s.studioMem });
         const done = (ok) => { clearTimeout(self._ccT); set({ cartCopied: ok ? 'ok' : 'manual', cartUrlTxt: url }); self._ccT = setTimeout(() => set({ cartCopied: undefined }), ok ? 4000 : 30000); };
         const fb = () => {
           let ok = false;
@@ -1066,15 +1046,8 @@ ${iff(v.isPersp && !v.pirView, `<button class="${v.tagW.cls}" style="--tc:#0A4DA
 
   let body = '';
   if (v.pirView) body = pirBody(v);
-  else if (v.is0) body = `<div class="screen" data-k="s0">
-<h1 class="h1">Monte seu telhado em 2 minutos</h1>
-<p class="sub">Responda algumas perguntas rápidas e a gente monta a lista completa, com tudo que combina entre si.</p>
-<div style="display:flex;flex-direction:column;gap:8px"><label for="cep" style="font-weight:700;font-size:15px">CEP da obra</label>
-<input id="cep" class="field" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${esc(v.cep)}" data-in="${on(v.onCep)}"></div>
-${iff(v.cepOk, `<div class="ok"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21 C12 21 5 14.5 5 9.5 A7 7 0 0 1 19 9.5 C19 14.5 12 21 12 21 Z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg><span>Atendido pela fábrica de ${v.fab} · entrega em ${v.dias} dias úteis</span></div>`)}
-</div>`;
   else if (v.is1) body = `<div class="screen" data-k="s1">
-<h1 class="h1">O que você vai cobrir?</h1>
+<h1 class="h1">O que você vai cobrir?</h1><p class="sub">Sua lista completa em 2 minutos.</p>
 <div class="grid2">${each(v.areas, (it) => optCard(it, 'min-height:150px'))}</div>
 <button class="link" data-c="${on(v.toggleModels)}">Já sei qual telha quero</button>
 ${iff(v.showModels, `<div style="display:flex;flex-direction:column;gap:8px;animation:rise .3s both"><span class="odesc" style="text-align:center">Escolha o modelo. A gente pula a parte das prioridades.</span><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${each(v.models, (m) => `<button class="chip" data-c="${on(m.pick)}">${m.curto}</button>`)}</div></div>`)}
@@ -1143,8 +1116,8 @@ ${iff(v.fromCart, `<div class="toast" style="background:#E8F0FA;color:#0A4DA2"><
 ${iff(v.sumOpen, `<div style="padding:0 16px 14px;display:flex;flex-direction:column;gap:12px;animation:rise .25s both">
 <div style="display:flex;flex-direction:column;gap:4px"><div class="line"><b>${v.sumTelha}</b><b>${v.telhasMoney}</b></div><span class="muted" style="font-size:13px">${v.sumTelhaDet}</span></div>
 <div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #E4E9EE;padding-top:12px">${each(v.kitOn, (k) => `<div class="line"><span>${k.nome} <span class="muted">· ${k.qtyTxt}</span></span><span>${k.price}</span></div>`)}</div>
-<div class="line" style="border-top:1px solid #E4E9EE;padding-top:12px"><span>Frete · fábrica de ${v.fab}, ${v.dias} dias úteis</span><span>${v.freteMoney}</span></div></div>`)}
-<div style="display:flex;justify-content:space-between;align-items:flex-end;padding:14px 16px;background:#F1F5F9"><span style="font-weight:700">Total</span><div style="display:flex;flex-direction:column;align-items:flex-end"><span class="big" style="font-size:26px">${v.totalMoney}</span><span class="muted" style="font-size:13px">ou 6x de ${v.parc6Money} sem juros</span><span class="muted" style="font-size:12px">ou 10x de ${v.parc10Money} (juros de 0,99% a.m.)</span></div></div></div>
+<div class="line" style="border-top:1px solid #E4E9EE;padding-top:12px"><span>Frete</span><span class="muted">no carrinho, pelo seu CEP</span></div></div>`)}
+<div style="display:flex;justify-content:space-between;align-items:flex-end;padding:14px 16px;background:#F1F5F9"><span style="font-weight:700">Total</span><div style="display:flex;flex-direction:column;align-items:flex-end"><span class="big" style="font-size:26px">${v.totalMoney}</span><span class="muted" style="font-size:13px">ou 6x de ${v.parc6Money} sem juros</span><span class="muted" style="font-size:12px">ou 10x de ${v.parc10Money} (juros de 0,99% a.m.)</span><span class="muted" style="font-size:12px">+ frete, calculado no carrinho com o seu CEP</span></div></div></div>
 ${iff(v.added, `<div class="toast"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 L10 17 L19 7"></path></svg><span>Tudo no carrinho!</span></div>`)}
 <button class="${v.cartCls}" data-c="${on(v.copyCart)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="${v.cartIco}"></path></svg><span>${v.cartBtnTxt}</span></button>
 ${iff(v.cartCopied, `<p class="cartnote">Guarde ou envie para você. Ao abrir o link, este pedido volta pronto para comprar.</p>`)}
@@ -1155,7 +1128,7 @@ ${iff(v.cartManual, `<div class="cartman"><span>Não deu para copiar sozinho. To
 
   return `<div class="app" style="--p:${v.accent}">
 <div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px">
-<button class="iconbtn backbtn" aria-label="Voltar" data-c="${on(v.onBack)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
+<button class="iconbtn backbtn" aria-label="Voltar" data-c="${on(v.onBack)}" style="visibility:${v.backVis}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"></path></svg></button>
 <div style="flex-grow:1;display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#34435A"><span>${v.phaseLabel}</span><span>${v.phaseCount}</span></div><div style="display:flex;gap:4px">${each(v.segs, (sg) => `<div class="${sg.cls}"></div>`)}</div></div></div>
 <div class="scroll" data-k="scroll">${v.v3d ? stage3d(v, house) : `<div class="stage" style="height:${H}px"><div class="stage-in">${house}</div>
 ${iff(v.notPersp, `<button class="iconbtn" style="position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.9)" data-c="${on(v.rotate)}" aria-label="Girar a casa"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12 A8 8 0 1 1 17.7 6.3"></path><path d="M20 4 V9 H15"></path></svg></button>`)}</div>`}
@@ -1165,7 +1138,7 @@ ${iff(v.is9, `<div style="position:absolute;inset:0;pointer-events:none;overflow
 </div>`;
 }
 
-function restart() { C.state = { step: 0 }; scheduleRender(); }
+function restart() { C.state = { step: 1 }; scheduleRender(); }
 
 function morph(a, b) {
   // o canvas do 3D é do three.js: tamanho e conteúdo não podem ser tocados
